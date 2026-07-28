@@ -93,53 +93,71 @@
     openLogin() { openModal('signin'); },
   };
 
+  // Kolumna z metryką: czas (niższy lepszy) lub punkty.
+  function metricCol(opts) { return opts && opts.lowerIsBetter ? 'time_seconds' : 'score'; }
+
   const GryScores = {
     /**
-     * Zapisuje wynik. Zalogowany -> Supabase; gość -> null (bez zapisu).
-     * @param {string} game  identyfikator gry, np. 'snake'
-     * @param {number} value wynik/czas
-     * @param {object} [opts] { mode, lowerIsBetter, meta }
+     * Zapisuje wynik do gry2.scores. Zalogowany -> Supabase; gość -> null.
+     * @param {string} game  gra, np. 'snake', 'reflex'
+     * @param {number} value wartość głównej metryki (punkty lub czas)
+     * @param {object} [opts] { subgame, mode, level, errors, wave, lowerIsBetter, meta, metric }
      */
     async submit(game, value, opts) {
       opts = opts || {};
       if (!ready || !currentUser) return null; // gość — nie zapisujemy rekordów
+      const lower = !!opts.lowerIsBetter;
       const row = {
         user_id: currentUser.id,
         display_name: displayName(currentUser),
         game: String(game),
+        subgame: String(opts.subgame || ''),
         mode: String(opts.mode || ''),
-        value: Number(value),
-        lower_is_better: !!opts.lowerIsBetter,
+        level: String(opts.level || ''),
+        score: null,
+        time_seconds: null,
+        errors: opts.errors != null ? Number(opts.errors) : null,
+        wave: opts.wave != null ? Number(opts.wave) : null,
+        lower_is_better: lower,
         meta: opts.meta || {},
       };
+      if (value != null) {
+        const metric = opts.metric || (lower ? 'time' : 'score');
+        if (metric === 'time') row.time_seconds = Number(value);
+        else row.score = Number(value);
+      }
       const { data, error } = await client.from('scores').insert(row).select().single();
       if (error) { console.warn('[GryScores] zapis nieudany:', error.message); return null; }
       return data;
     },
 
-    /** Najlepszy wynik zalogowanego gracza dla gry (+ opcjonalnie mode). */
+    /** Najlepszy wynik zalogowanego gracza (+ opcjonalnie subgame/mode/level). */
     async best(game, opts) {
       opts = opts || {};
       if (!ready || !currentUser) return null;
-      const asc = !!opts.lowerIsBetter;
-      let q = client.from('scores').select('value')
+      const col = metricCol(opts);
+      let q = client.from('scores').select(col)
         .eq('game', game).eq('user_id', currentUser.id)
-        .order('value', { ascending: asc }).limit(1);
+        .order(col, { ascending: !!opts.lowerIsBetter, nullsFirst: false }).limit(1);
+      if (opts.subgame != null) q = q.eq('subgame', String(opts.subgame));
       if (opts.mode != null) q = q.eq('mode', String(opts.mode));
+      if (opts.level != null) q = q.eq('level', String(opts.level));
       const { data, error } = await q;
       if (error || !data || !data.length) return null;
-      return data[0].value;
+      return data[0][col];
     },
 
     /** Globalna tabela rekordów (top N wśród zalogowanych). */
     async leaderboard(game, opts) {
       opts = opts || {};
       if (!ready) return [];
-      const asc = !!opts.lowerIsBetter;
-      let q = client.from('scores').select('display_name,value,created_at')
+      const col = metricCol(opts);
+      let q = client.from('scores').select('display_name,score,time_seconds,errors,wave,mode,level,subgame,created_at')
         .eq('game', game)
-        .order('value', { ascending: asc }).limit(opts.limit || 10);
+        .order(col, { ascending: !!opts.lowerIsBetter, nullsFirst: false }).limit(opts.limit || 10);
+      if (opts.subgame != null) q = q.eq('subgame', String(opts.subgame));
       if (opts.mode != null) q = q.eq('mode', String(opts.mode));
+      if (opts.level != null) q = q.eq('level', String(opts.level));
       const { data, error } = await q;
       if (error) return [];
       return data || [];
@@ -176,6 +194,8 @@
   }
 
   function handleWrite(key, rawValue) {
+    // Gry reflex: JSON pod kluczem reflex…Records (leaderboard z imieniem).
+    if (/^reflex[A-Za-z0-9]*Records$/.test(key)) { submitReflexRecords(rawValue); return; }
     const m = matchWatch(key);
     if (!m) return;
     const num = parseFloat(rawValue);
@@ -184,6 +204,40 @@
     if (!ready || !currentUser) return; // gość -> bez zapisu w chmurze
     lastSubmitted[key] = num;
     GryScores.submit(m.w.game, num, { mode: m.mode, lowerIsBetter: !!m.w.lowerIsBetter });
+  }
+
+  // Wariant (podgra) reflex z URL, np. 'znikanie'.
+  function reflexSubgame() {
+    const parts = location.pathname.split('/').filter(Boolean);
+    const i = parts.indexOf('reflex');
+    if (i >= 0 && parts[i + 1] && parts[i + 1] !== 'index.html') return parts[i + 1];
+    return '';
+  }
+
+  // Z zapisanego leaderboardu wyławiamy wynik 'total' zalogowanego gracza i wysyłamy do chmury.
+  function submitReflexRecords(rawValue) {
+    if (!ready || !currentUser) return; // gość -> bez zapisu w chmurze
+    let obj;
+    try { obj = JSON.parse(rawValue); } catch (e) { return; }
+    if (!obj || typeof obj !== 'object') return;
+    const subgame = reflexSubgame();
+    const me = String(GryAuth.displayName() || '').trim().toLowerCase();
+    if (!me) return;
+    for (const mode of Object.keys(obj)) {
+      const arr = obj[mode] && obj[mode]['total'];
+      if (!Array.isArray(arr)) continue;
+      let best = null, bestErr = null;
+      for (const r of arr) {
+        if (r && String(r.name || '').trim().toLowerCase() === me) {
+          if (best == null || Number(r.score) > best) { best = Number(r.score); bestErr = (r.errors != null ? Number(r.errors) : null); }
+        }
+      }
+      if (best == null || !isFinite(best) || best <= 0) continue;
+      const dedupKey = 'reflex/' + subgame + '|' + mode;
+      if (lastSubmitted[dedupKey] === best) continue;
+      lastSubmitted[dedupKey] = best;
+      GryScores.submit('reflex', best, { subgame: subgame, mode: mode, level: 'total', errors: bestErr });
+    }
   }
 
   function installWatch() {
@@ -356,7 +410,7 @@
   async function init() {
     try {
       const sb = await loadSdk();
-      client = sb.createClient(SUPABASE_URL, SUPABASE_KEY);
+      client = sb.createClient(SUPABASE_URL, SUPABASE_KEY, { db: { schema: 'gry2' } });
       const { data } = await client.auth.getSession();
       currentUser = (data && data.session && data.session.user) || null;
       client.auth.onAuthStateChange((_event, session) => {
@@ -366,14 +420,38 @@
       ready = true;
       injectStyles();
       renderWidget();
+      initReflex();
       readyCbs.forEach((cb) => { try { cb(); } catch (e) { /* noop */ } });
     } catch (e) {
       console.warn('[GryAuth] init nieudany:', e.message);
       ready = true; // tryb offline / gość
       injectStyles();
       renderWidget();
+      initReflex();
       readyCbs.forEach((cb) => { try { cb(); } catch (e2) { /* noop */ } });
     }
+  }
+
+  // Reflex: dla zalogowanego auto-uzupełnij imię i zapisz rekord bez klikania „Zapisz".
+  function initReflex() {
+    const btn = document.getElementById('save-record-btn');
+    const input = document.getElementById('player-name-input');
+    const section = document.getElementById('save-section');
+    if (!btn || !input || !section) return; // to nie strona reflex
+    const tryAuto = () => {
+      if (section.classList.contains('hidden')) return; // ekran końcowy niewidoczny
+      if (!currentUser) return;                         // gość -> ręczny zapis
+      if (btn.disabled) return;                         // już zapisano w tym cyklu
+      const name = GryAuth.displayName();
+      if (name) {
+        input.value = name;
+        try { localStorage.setItem('reflexLastName', name); } catch (e) { /* noop */ }
+      }
+      btn.click(); // lokalny zapis + (przez mostek localStorage) zapis w chmurze
+    };
+    new MutationObserver(tryAuto).observe(section, { attributes: true, attributeFilter: ['class'] });
+    GryAuth.onChange(() => tryAuto()); // gdy zaloguje się już na ekranie końcowym
+    tryAuto();
   }
 
   if (document.readyState === 'loading') {

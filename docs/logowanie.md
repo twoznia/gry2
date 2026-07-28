@@ -17,8 +17,14 @@ Wyniki zapisują się w chmurze **tylko dla zalogowanych**. Gość gra bez zapis
 ## Projekt Supabase
 
 - Projekt: `gry2` (ref `bvsbiwivavcnwazctdfh`), region eu-central-1.
-- Tabela `public.scores` z RLS: odczyt dla zalogowanych (globalne rekordy),
-  zapis/edycja/usuwanie tylko własnych wierszy.
+- Dedykowany **schemat `gry2`**, tabela `gry2.scores` z RLS: odczyt dla zalogowanych
+  (globalne rekordy), zapis/edycja/usuwanie tylko własnych wierszy.
+- Klient supabase-js łączy się domyślnie ze schematem `gry2`
+  (`createClient(url, key, { db: { schema: 'gry2' } })`). Schemat jest wystawiony
+  w API (Exposed schemas: `public, graphql_public, gry2`).
+- Kolumny: `user_id, display_name, game, subgame, mode, level, score, time_seconds,
+  errors, wave, lower_is_better, meta, created_at`. Reflex zapisuje `game='reflex'`,
+  `subgame=<wariant>` (np. `znikanie`), `level='total'`.
 - Schemat wersjonowany: `supabase/migrations/20260727180000_scores_core.sql`.
 
 ## API dla gier
@@ -54,15 +60,17 @@ automatycznie (rejestr `WATCH` w `auth.js`):
 | soltaire | `solitaire_piatnik_best` | niższy (czas) |
 | memo | `memo-rec-*` | niższy (czas) |
 
+## Reflex (leaderboard z imieniem) — obsłużone automatycznie
+
+Wszystkie 11 wariantów reflex jest zintegrowanych bez zmian w ich kodzie:
+- **Auto-uzupełnienie imienia**: na ekranie końcowym pole imienia dostaje nazwę
+  zalogowanego gracza, a przycisk „Zapisz" jest klikany automatycznie.
+- **Chmura**: `auth.js` obserwuje zapis `reflex…Records`, wyławia wynik `total`
+  zalogowanego gracza i wysyła jako `game='reflex', subgame=<wariant>, level='total'`.
+- Gość gra jak dotąd — ręczne wpisanie imienia, tylko zapis lokalny.
+
 ## Do rozszerzenia (na razie tylko zapis lokalny)
 
-Gry z rekordami w formie obiektów/tablic (leaderboardy z imieniem lub rekordy
-per-poziom) nie są jeszcze synchronizowane do chmury — działają lokalnie jak
-wcześniej. Aby dodać synchronizację, wstaw w miejscu zapisu rekordu wywołanie
-`GryScores.submit(...)`:
-
-- **reflex/** (11 wariantów) — `RECORDS_KEY` = tablica `{name, score, ...}`.
-  Dodaj `GryScores.submit('reflex/<wariant>', score, { mode: poziom })` w funkcji
-  zapisującej rekord.
 - **binairo, calcudoku, nonogram, piramidy, sudoku** — `RECORDS_KEY` = rekordy
-  czasowe per-poziom (`lowerIsBetter: true`).
+  czasowe per-poziom (obiekty). Aby zsynchronizować, wstaw w miejscu zapisu rekordu
+  `GryScores.submit('<gra>', czas, { level: poziom, lowerIsBetter: true })`.
