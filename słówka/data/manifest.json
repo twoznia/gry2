@@ -37,9 +37,9 @@
       "path": "data/Przyroda",
       "sets": [
         {
-          "name": "przyroda",
-          "fileName": "przyroda.csv",
-          "path": "data/Przyroda/przyroda.csv"
+          "name": "Przyroda",
+          "fileName": "Przyroda.csv",
+          "path": "data/Przyroda/Przyroda.csv"
         }
       ]
     },
