@@ -1,0 +1,51 @@
+        .back-link {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 100;
+            background: #334155;
+            color: #fff;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 8px 14px;
+            text-decoration: none;
+            font-size: 13px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .back-link:hover { background: #475569; }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+
+            background-color: #030712;
+            touch-action: none; /* Zapobiega domyślnym gestom przeglądarki, np. zoom, swipe down to refresh */
+            user-select: none;
+        }
+        .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+        /* Neonowe poświaty */
+        .neon-shadow {
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+        }
+        .neon-text-green {
+            text-shadow: 0 0 8px rgba(52, 211, 153, 0.6);
+        }
+        .neon-text-pink {
+            text-shadow: 0 0 8px rgba(244, 63, 94, 0.6);
+        }
+        .neon-border {
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.4), inset 0 0 10px rgba(16, 185, 129, 0.2);
+        }
+        /* Płynna zmiana stanów przycisków */
+        .btn-glow {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-glow:active {
+            transform: scale(0.95);
+        }
+        /* Zapobieganie podświetlaniu elementów na iOS */
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }

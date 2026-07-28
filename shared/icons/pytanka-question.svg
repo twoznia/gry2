@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" aria-hidden="true">
+  <defs>
+    <linearGradient id="pytanka-bubble-main-menu" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fde68a"/>
+      <stop offset="50%" stop-color="#f9a8d4"/>
+      <stop offset="100%" stop-color="#60a5fa"/>
+    </linearGradient>
+  </defs>
+  <circle cx="60" cy="60" r="48" fill="url(#pytanka-bubble-main-menu)"/>
+  <circle cx="60" cy="60" r="43" fill="none" stroke="#fff7ed" stroke-width="4" opacity="0.8"/>
+  <path d="M48 46c0-9 7.5-16 17.5-16 9 0 16.5 6 16.5 14.5 0 8-4.5 11.5-10.5 15.5-5.5 3.5-7 5.5-7 10.5v2" fill="none" stroke="#312e81" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="58" cy="88" r="6" fill="#312e81"/>
+  <circle cx="28" cy="33" r="6" fill="#fff"/>
+  <circle cx="87" cy="29" r="4.5" fill="#fff"/>
+  <path d="M89 82l3 6 6 3-6 3-3 6-3-6-6-3 6-3z" fill="#fff9c4"/>
+</svg>

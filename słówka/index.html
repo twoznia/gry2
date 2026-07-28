@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trener Słówek</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <a class="back-link" href="../">← Wróć</a>
+
+    <!-- ===== SETUP ===== -->
+    <div id="setup">
+        <div class="container">
+            <div class="app-header">
+                <h1>
+                    <img src="https://flagcdn.com/24x18/gb.png" width="24" height="18" alt="" aria-hidden="true" style="border-radius:3px;">
+                    Trener Słówek
+                </h1>
+                <div id="loader">Ładowanie zestawów…</div>
+            </div>
+
+            <div class="setup-section" id="githubSection">
+                <div class="section-label">Zestaw</div>
+                <div class="select-row">
+                    <select id="categorySelect" onchange="loadSubcategories()" disabled>
+                        <option value="">Kategoria…</option>
+                    </select>
+                    <select id="subcategorySelect" onchange="handleSubcategoryChange()" disabled>
+                        <option value="">Zestaw…</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="setup-section hidden" id="levelFilterGroup">
+                <div class="section-label">Poziom</div>
+                <div class="chips" id="levelChips"></div>
+            </div>
+
+            <div class="setup-section hidden" id="wordCountGroup">
+                <div class="section-label">Liczba słówek</div>
+                <div class="chips" id="wordCountChips">
+                    <span class="chip" data-count="10" onclick="setWordCount(this)">10</span>
+                    <span class="chip active" data-count="20" onclick="setWordCount(this)">20</span>
+                    <span class="chip" data-count="30" onclick="setWordCount(this)">30</span>
+                    <span class="chip" data-count="50" onclick="setWordCount(this)">50</span>
+                    <span class="chip" data-count="100" onclick="setWordCount(this)">100</span>
+                    <span class="chip" data-count="__all__" onclick="setWordCount(this)">Wszystkie</span>
+                </div>
+            </div>
+
+            <div class="setup-section">
+                <div class="section-label">Kierunek</div>
+                <div class="direction-toggle">
+                    <button class="dir-btn active" data-dir="pl_en" onclick="setDirection('pl_en')">
+                        <span class="flags">🇵🇱 → 🇬🇧</span>
+                        <span class="label">Polski → Angielski</span>
+                    </button>
+                    <button class="dir-btn" data-dir="en_pl" onclick="setDirection('en_pl')">
+                        <span class="flags">🇬🇧 → 🇵🇱</span>
+                        <span class="label">Angielski → Polski</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="setup-section">
+                <div class="section-label">Czas na odpowiedź</div>
+                <div class="chips" id="delayChips">
+                    <span class="chip" data-delay="3000" onclick="setDelay(this)">3 s</span>
+                    <span class="chip active" data-delay="5000" onclick="setDelay(this)">5 s</span>
+                    <span class="chip" data-delay="8000" onclick="setDelay(this)">8 s</span>
+                </div>
+            </div>
+
+            <button class="btn-start" onclick="startGame()">Rozpocznij →</button>
+
+            <div class="local-toggle">
+                <a onclick="toggleLocalSection()">📁 Użyj pliku lokalnego CSV</a>
+            </div>
+            <div id="localSection" class="hidden">
+                <div id="localReuseBox" class="hidden">
+                    <div id="localReuseText"></div>
+                    <span class="chip active" style="display:inline-block;cursor:pointer;" onclick="reuseLastLocalFile()">Użyj ostatniego pliku</span>
+                </div>
+                <div class="local-hint">Format: en,pl lub english,polish,type,level</div>
+                <input type="file" id="fileInput" accept=".csv" onchange="selectNewLocalFile()">
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== GAME ===== -->
+    <div id="game" class="hidden">
+        <div class="container">
+            <div class="game-header">
+                <button class="btn-back-game" onclick="backToSetup()">← Wróć</button>
+                <div class="progress-info">
+                    <div class="progress-count" id="progressCount"></div>
+                    <div class="progress-errors" id="progressErrors"></div>
+                </div>
+            </div>
+
+            <div class="word-card">
+                <div id="questionBox" class="word-text"></div>
+                <div id="questionMeta" class="word-meta"></div>
+                <div class="timer-bar" id="timerBar" role="progressbar" aria-label="Odliczanie" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"></div>
+            </div>
+
+            <div class="countdown-text" id="countdownText" aria-hidden="true"></div>
+            <div class="sr-only" id="countdownStatus" aria-live="polite"></div>
+
+            <div id="answerBox" class="answer-box hidden" tabindex="0"></div>
+
+            <div id="quickActions">
+                <button class="btn-know" onclick="revealAnswer(false)">Pokaż odpowiedź</button>
+            </div>
+            <div id="controls" class="hidden">
+                <div class="verdict-btns">
+                    <button class="btn-correct" onclick="submitResult(true)">✓ Wiedziałem</button>
+                    <button class="btn-wrong" onclick="submitResult(false)">✗ Powtórka</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== RESULTS ===== -->
+    <div id="results" class="hidden">
+        <div class="container">
+            <div class="results-header">
+                <h2>Wyniki 📈</h2>
+                <div class="results-file" id="resultsFile"></div>
+            </div>
+            <div id="statsContent"></div>
+            <button class="btn-start" style="margin-top:20px;" onclick="backToSetup()">Nowa sesja</button>
+        </div>
+    </div>
+
+<script src="script.js"></script>
+  <script src="../shared/auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wędkarski Wyzwanie - Progresja +5</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <a class="back-link" href="../">← Wróć</a>
+    <div id="lang-switcher" style="position:fixed;top:10px;right:10px;z-index:100;display:flex;gap:4px;">
+        <button id="btn-pl" onclick="setLang('pl')" style="background:rgba(0,0,0,0.7);border:1px solid #888;border-radius:20px;padding:4px 10px;line-height:0;cursor:pointer;"><img src="https://flagcdn.com/24x18/pl.png" width="24" height="18" alt="Polski" style="display:block;border-radius:3px;"></button>
+        <button id="btn-en" onclick="setLang('en')" style="background:rgba(0,0,0,0.7);border:1px solid #888;border-radius:20px;padding:4px 10px;line-height:0;cursor:pointer;"><img src="https://flagcdn.com/24x18/gb.png" width="24" height="18" alt="English" style="display:block;border-radius:3px;"></button>
+    </div>
+
+    <div id="ui">
+        <div><span id="lbl-fish">Ryby:</span> <span id="score">0</span> / <span id="target">10</span><br><span id="hi-score">Rekord: 0</span></div>
+        <div id="lvl-display" style="color: #FFD700;">Poziom: 1</div>
+        <div><span id="lbl-time">Czas:</span> <span id="timer">60</span>s</div>
+    </div>
+    
+    <div id="warning-msg">UCIEKAJ!!!</div>
+    <div id="level-msg">LEVEL UP!</div>
+
+    <div id="time-up" class="screen">
+        <h1 id="time-up-title">Koniec Połowu!</h1>
+        <p><span id="lbl-total-fish">Łącznie ryb:</span> <span id="total-score-time">0</span></p>
+        <p><span id="lbl-final-lvl">Osiągnięty Poziom:</span> <span id="final-lvl-time">1</span></p>
+        <p id="new-record-time" style="color:#FFD700;display:none;font-weight:bold;">🏆 NOWY REKORD!</p>
+        <p><span id="lbl-record-time">Rekord:</span> <span id="hi-score-time">0</span></p>
+        <button id="btn-play-again" onclick="location.reload()">Zagraj ponownie</button>
+        <button class="btn-reset" id="btn-reset-time" onclick="resetHiScore()">Resetuj rekord</button>
+    </div>
+
+    <div id="game-over" class="screen">
+        <h1 id="game-over-title" style="color: #ff4444;">TRAFIONY! 💩</h1>
+        <p><span id="lbl-total-fish2">Łącznie ryb:</span> <span id="total-score-bird">0</span></p>
+        <p id="new-record-bird" style="color:#FFD700;display:none;font-weight:bold;">🏆 NOWY REKORD!</p>
+        <p><span id="lbl-record-bird">Rekord:</span> <span id="hi-score-bird">0</span></p>
+        <button id="btn-try-again" onclick="location.reload()">Spróbuj ponownie</button>
+        <button class="btn-reset" id="btn-reset-bird" onclick="resetHiScore()">Resetuj rekord</button>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+<script src="script.js"></script>
+  <script src="../shared/auth.js"></script>
+</body>
+</html>

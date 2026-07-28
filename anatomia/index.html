@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ANATOM — Anatomia człowieka 🧠</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<a class="back-link" href="../">← Wróć</a>
+
+<!-- ─────────── EKRAN STARTOWY ─────────── -->
+<section id="screen-start" class="screen active">
+  <h1 class="title">🫀 ANATOM</h1>
+  <p class="subtitle">Naucz się anatomii człowieka — od przedszkola po studia.</p>
+
+  <div class="card">
+    <div class="group-label">Poziom trudności</div>
+    <div id="level-buttons" class="opt-grid"></div>
+
+    <div class="group-label">Tryb gry</div>
+    <div id="mode-buttons" class="opt-grid two">
+      <button class="opt-btn mode-btn selected" data-mode="locate">
+        <span class="opt-icon">👆</span>
+        <span class="opt-name">Wskaż</span>
+        <span class="opt-desc">Pokażę nazwę — kliknij właściwe miejsce na ciele.</span>
+      </button>
+      <button class="opt-btn mode-btn" data-mode="identify">
+        <span class="opt-icon">🏷️</span>
+        <span class="opt-name">Nazwij</span>
+        <span class="opt-desc">Podświetlę miejsce — wybierz poprawną nazwę.</span>
+      </button>
+    </div>
+
+    <button id="btn-play" class="big-btn">Graj ▶</button>
+  </div>
+</section>
+
+<!-- ─────────── EKRAN GRY ─────────── -->
+<section id="screen-play" class="screen">
+  <div id="hud">
+    <div><span class="hud-label">Pytanie</span> <span id="q-counter">1 / 10</span></div>
+    <div><span class="hud-label">Wynik</span> <span id="score" class="hud-score">0</span></div>
+    <div><span class="hud-label">Seria</span> <span id="streak">0</span></div>
+  </div>
+
+  <div id="prompt" class="prompt">…</div>
+
+  <div id="figure-wrap">
+    <svg id="figure" viewBox="0 0 200 384" aria-label="Sylwetka człowieka">
+      <defs>
+        <linearGradient id="skin" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#f4cca8"/>
+          <stop offset="0.5" stop-color="#ecba8d"/>
+          <stop offset="1" stop-color="#d89c70"/>
+        </linearGradient>
+      </defs>
+
+      <!-- CIAŁO (lewa strona rysowana, prawa = lustro przez oś x=100) -->
+      <g id="body" fill="url(#skin)" stroke="#c2895c" stroke-width="1.2" stroke-linejoin="round">
+        <!-- nogi -->
+        <path id="legL" d="M70,238 C68,266 69,290 73,310 C75,330 75,346 80,360 L86,360 C92,344 94,326 95,304 C96,280 96,258 96,250 C90,242 80,239 70,238 Z"/>
+        <use href="#legL" transform="matrix(-1,0,0,1,200,0)"/>
+        <!-- stopy -->
+        <path id="footL" d="M84,357 C77,359 72,365 71,372 C70,379 75,381 81,381 L89,381 C91,374 90,365 87,358 Z"/>
+        <use href="#footL" transform="matrix(-1,0,0,1,200,0)"/>
+        <!-- ramiona (zakończone bardziej naturalną dłonią) -->
+        <path id="armL" d="M62,110 C50,116 46,134 47,152 C47,173 44,190 41,206 C37,210 35,219 39,225 C44,229 49,226 50,217 C51,198 54,176 56,154 C58,138 60,126 64,122 Z"/>
+        <use href="#armL" transform="matrix(-1,0,0,1,200,0)"/>
+        <!-- tułów -->
+        <path d="M100,92 C116,92 130,100 138,116 C142,128 141,134 140,142 C137,166 131,182 126,196 C124,214 128,228 132,238 C126,250 112,253 100,253 C88,253 74,250 68,238 C72,228 76,214 74,196 C69,182 63,166 60,142 C59,134 58,128 62,116 C70,100 84,92 100,92 Z"/>
+        <!-- szyja -->
+        <path d="M92,72 L108,72 L106,98 L94,98 Z"/>
+        <!-- głowa -->
+        <ellipse cx="100" cy="42" rx="25" ry="31"/>
+      </g>
+
+      <!-- DETALE -->
+      <g stroke="none">
+        <!-- delikatny połysk skóry (objętość) -->
+        <ellipse cx="90" cy="150" rx="30" ry="56" fill="#ffffff" opacity="0.05"/>
+        <ellipse cx="84" cy="300" rx="10" ry="60" fill="#ffffff" opacity="0.05"/>
+        <ellipse cx="50" cy="172" rx="7" ry="54" fill="#ffffff" opacity="0.05"/>
+        <ellipse cx="100" cy="34" rx="16" ry="14" fill="#ffffff" opacity="0.06"/>
+
+        <!-- włosy -->
+        <path d="M74,44 C70,12 90,5 100,5 C110,5 130,12 126,44 C123,33 116,26 110,30 C107,24 100,23 100,23 C100,23 93,24 90,30 C84,26 77,33 74,44 Z" fill="#5a3a1f"/>
+        <path d="M75,43 C74,33 79,27 85,28" fill="none" stroke="#6e4a28" stroke-width="1.8" stroke-linecap="round" opacity="0.7"/>
+
+        <!-- uszy -->
+        <ellipse cx="76" cy="45" rx="3.6" ry="5.4" fill="#e3a878"/>
+        <ellipse cx="124" cy="45" rx="3.6" ry="5.4" fill="#e3a878"/>
+        <ellipse cx="76" cy="45" rx="1.5" ry="2.7" fill="#cf8d5c"/>
+        <ellipse cx="124" cy="45" rx="1.5" ry="2.7" fill="#cf8d5c"/>
+
+        <!-- mięśnie/cieniowanie -->
+        <g fill="none" stroke="#c98a5e" stroke-linecap="round">
+          <path d="M84,128 Q100,141 116,128" stroke-width="1.1" opacity="0.42"/>
+          <path d="M100,150 L100,212" stroke-width="1" opacity="0.26"/>
+          <path d="M85,176 Q100,182 115,176" stroke-width="0.9" opacity="0.24"/>
+          <path d="M85,193 Q100,199 115,193" stroke-width="0.9" opacity="0.24"/>
+          <path d="M84,300 Q84,320 84,340" stroke-width="1" opacity="0.22"/>
+          <path d="M116,300 Q116,320 116,340" stroke-width="1" opacity="0.22"/>
+        </g>
+
+        <!-- brwi -->
+        <path d="M85,36.5 Q90,34.9 95,36" stroke="#5a3a1f" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+        <path d="M105,36 Q110,34.9 115,36.5" stroke="#5a3a1f" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+
+        <!-- oczy (migdałowe) -->
+        <path d="M86.5,40.5 Q91,38 95.5,40.5 Q91,42.6 86.5,40.5 Z" fill="#fdfdfd"/>
+        <path d="M104.5,40.5 Q109,38 113.5,40.5 Q109,42.6 104.5,40.5 Z" fill="#fdfdfd"/>
+        <circle cx="91" cy="40.4" r="1.5" fill="#5b4636"/>
+        <circle cx="109" cy="40.4" r="1.5" fill="#5b4636"/>
+        <path d="M86.5,40.4 Q91,37.7 95.5,40.4" stroke="#9c6b45" stroke-width="0.7" fill="none" stroke-linecap="round"/>
+        <path d="M104.5,40.4 Q109,37.7 113.5,40.4" stroke="#9c6b45" stroke-width="0.7" fill="none" stroke-linecap="round"/>
+
+        <!-- nos -->
+        <path d="M100,45 L98.4,52" stroke="#cf8d5c" stroke-width="1" fill="none" stroke-linecap="round"/>
+        <path d="M97,53 Q100,55 103,53" stroke="#cf8d5c" stroke-width="1" fill="none" stroke-linecap="round"/>
+
+        <!-- usta -->
+        <path d="M94,59.5 Q100,61.4 106,59.5" stroke="#b5654d" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+      </g>
+
+      <g id="markers"></g>
+    </svg>
+    <div id="figure-feedback"></div>
+  </div>
+
+  <div id="options" class="options"></div>
+  <div id="feedback-bar" class="feedback-bar"></div>
+  <button id="btn-next" class="big-btn hidden">Dalej →</button>
+</section>
+
+<!-- ─────────── EKRAN WYNIKU ─────────── -->
+<section id="screen-result" class="screen">
+  <h1 class="title" id="result-emoji">🏆</h1>
+  <div id="result-score" class="result-score">0 / 10</div>
+  <div id="result-comment" class="subtitle"></div>
+  <div id="result-best" class="subtitle"></div>
+  <div class="card">
+    <button id="btn-again" class="big-btn">Zagraj ponownie</button>
+    <button id="btn-menu" class="big-btn ghost">Zmień poziom / tryb</button>
+  </div>
+</section>
+
+<script src="script.js"></script>
+  <script src="../shared/auth.js"></script>
+</body>
+</html>

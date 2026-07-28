@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>🎨 Koloruję Zwierzątka</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<a class="back-link" href="../">← Wróć</a>
+
+<h1>🎨 Koloruję Zwierzątka</h1>
+
+<div id="animal-selector">
+    <button class="animal-btn active" data-animal="cat">🐱 Kotek</button>
+    <button class="animal-btn" data-animal="dog">🐶 Piesek</button>
+    <button class="animal-btn" data-animal="parrot">🦜 Papuga</button>
+    <button class="animal-btn" data-animal="goat">🐐 Koza</button>
+    <button class="animal-btn" data-animal="hen">🐔 Kura</button>
+    <button class="animal-btn" data-animal="horse">🐴 Koń</button>
+    <button class="animal-btn" data-animal="sheep">🐑 Owca</button>
+    <button class="animal-btn" data-animal="house">🏠 Dom</button>
+    <button class="animal-btn" data-animal="tree">🎄 Choinka</button>
+    <button class="animal-btn" data-animal="flower">🌸 Kwiatek</button>
+</div>
+
+<div id="canvas-wrap">
+    <canvas id="gameCanvas"></canvas>
+</div>
+
+<div id="palette"></div>
+
+<div id="buttons">
+    <button class="action-btn" id="clear-btn">🗑️ Wyczyść</button>
+    <button class="action-btn" id="done-btn">🎉 Gotowe!</button>
+</div>
+
+<div id="message"></div>
+
+<script src="script.js"></script>
+  <script src="../shared/auth.js"></script>
+</body>
+</html>

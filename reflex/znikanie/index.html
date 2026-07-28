@@ -1,0 +1,568 @@
+
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Szybka Reakcja - Kulki</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        #gameCanvas { touch-action: none; background-color: #1a1a1a; border-radius: 8px; cursor: crosshair; display: block; }
+        body { background-color: #111; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100dvh; margin: 0; font-family: 'Inter', sans-serif; }
+        .back-link { position: fixed; top: 10px; left: 10px; z-index: 100; background: #334155; color: #fff; border: 1px solid #475569; border-radius: 8px; padding: 8px 14px; text-decoration: none; font-size: 13px; }
+        .back-link:hover { background: #475569; }
+        @keyframes pulse-ring {
+            0% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(1.6); opacity: 0; }
+        }
+        #main-btn:disabled { opacity: 0.5; pointer-events: none; }
+            /* Mobile: plansza wykorzystuje cały ekran */
+        @media (max-width: 768px), (max-height: 500px) {
+            body { justify-content: flex-start; }
+            body > div.text-center { max-width: 100%; padding-left: 0; padding-right: 0; }
+            #game-title { display: none; }
+            #hud { height: 40px; padding: 0 10px 0 82px; gap: 8px; margin-bottom: 0; border-radius: 0; font-size: 12px; flex-wrap: nowrap; align-items: center; overflow-x: auto; white-space: nowrap; }
+            #gameCanvas { height: calc(100dvh - 40px) !important; border-radius: 0; }
+            .back-link { top: 5px; left: 6px; padding: 6px 10px; font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+<a class="back-link" href="../">← Wróć</a>
+
+<div class="text-center w-full max-w-6xl px-4">
+    <h1 id="game-title" class="text-3xl font-bold mb-4 text-orange-400">Time Trial: Kulki</h1>
+
+    <div id="hud" class="flex flex-wrap justify-between items-center w-full gap-2 md:gap-6 bg-gray-800 p-3 rounded-xl mb-3 shadow-lg border border-gray-700 text-sm md:text-base">
+        <div>Etap: <span id="current-level-display" class="font-bold text-blue-400">1</span>/<span id="max-level-display">4</span></div>
+        <div>Trafione: <span id="score-display" class="font-bold text-green-400">0</span></div>
+        <div>Czas: <span id="timer" class="font-bold text-yellow-400">30</span>s</div>
+    </div>
+
+    <div id="game-container" class="relative">
+        <canvas id="gameCanvas" class="w-full shadow-2xl" style="height: clamp(260px, calc(100dvh - 300px), 680px)"></canvas>
+
+        <div id="overlay" class="absolute inset-0 flex flex-col items-center justify-center bg-black/85 rounded-lg p-4 z-10 overflow-y-auto">
+            <div id="overlay-content" class="w-full max-w-md text-center">
+                <h2 id="overlay-title" class="text-3xl font-bold mb-4 text-center text-white">Wybierz tryb gry!</h2>
+                <div id="overlay-stats" class="text-left text-lg text-gray-200 mb-6 bg-gray-800 p-4 rounded-lg hidden"></div>
+                <p id="overlay-desc" class="text-yellow-300 mb-6 font-bold text-xl min-h-[3rem]"></p>
+
+                <div id="mode-selection" class="flex flex-col sm:flex-row gap-4 w-full justify-center mt-4">
+                    <button id="btn-child" class="flex-1 bg-green-600 hover:bg-green-500 p-4 rounded-xl text-xl font-bold transition-all shadow-lg border border-green-400/30 flex flex-col items-center justify-center gap-2">
+                        <img src="../pic/kid.jpg" alt="Dziecko" class="w-32 h-32 rounded-full object-cover border-2 border-green-300"> Dziecko
+                        <span class="text-sm font-normal text-green-100">4 poziomy · 10 sekund</span>
+                    </button>
+                    <button id="btn-adult" class="flex-1 bg-blue-600 hover:bg-blue-500 p-4 rounded-xl text-xl font-bold transition-all shadow-lg border border-blue-400/30 flex flex-col items-center justify-center gap-2">
+                        <img src="../pic/adult.jpg" alt="Dorosły" class="w-32 h-32 rounded-full object-cover border-2 border-blue-300"> Dorosły
+                        <span class="text-sm font-normal text-blue-100">4 poziomy · 17 sekund</span>
+                    </button>
+                </div>
+
+                <button id="main-btn" class="hidden bg-blue-600 hover:bg-blue-500 px-8 py-4 rounded-xl text-xl font-bold transition-all shadow-lg border border-blue-400/30 w-full mt-4">
+                    Rozpocznij
+                </button>
+
+                <div id="save-section" class="hidden mt-4 pt-4 border-t border-gray-600 w-full">
+                    <p class="text-gray-300 text-sm mb-2">Zapisz wynik do tabeli rekordów:</p>
+                    <div class="flex gap-2 mb-1">
+                        <input id="player-name-input" type="text" placeholder="Twoje imię" maxlength="20"
+                               class="flex-1 bg-gray-700 text-white px-3 py-2 rounded-lg border border-gray-500 focus:outline-none focus:border-blue-400 text-sm">
+                        <button id="save-record-btn" class="bg-green-600 hover:bg-green-500 px-4 py-2 rounded-lg font-bold text-sm transition-colors">Zapisz</button>
+                    </div>
+                    <p id="save-info" class="text-green-400 text-xs hidden mb-1">✓ Wynik zapisany!</p>
+                    <button id="show-records-end-btn" class="text-blue-400 text-xs underline hover:text-blue-300 mt-1">Pokaż tabelę rekordów →</button>
+                </div>
+
+                <button id="show-records-start-btn" class="hidden text-blue-400 text-sm mt-3 underline hover:text-blue-300">Tabela rekordów</button>
+            </div>
+
+            <div id="records-view" class="hidden w-full max-w-xl text-center">
+                <h2 class="text-2xl font-bold mb-3 text-white">Tabela rekordów</h2>
+                <div class="flex gap-2 justify-center mb-2 flex-wrap">
+                    <button class="records-mode-tab px-3 py-1 rounded-lg text-sm font-bold transition-colors bg-blue-600 text-white" data-mode="adult">Dorosły</button>
+                    <button class="records-mode-tab px-3 py-1 rounded-lg text-sm font-bold transition-colors bg-gray-700 text-gray-300" data-mode="child">Dziecko</button>
+                </div>
+                <div id="records-player-filter" class="flex items-center gap-2 justify-center mb-2 flex-wrap">
+                    <span class="text-gray-400 text-xs">Osoba:</span>
+                    <select id="records-player-select" class="bg-gray-700 text-white text-xs px-2 py-1 rounded-lg border border-gray-600 focus:outline-none focus:border-blue-400">
+                        <option value="">Wszyscy</option>
+                    </select>
+                </div>
+                <div id="records-level-tabs" class="flex gap-2 justify-center mb-3 flex-wrap"></div>
+                <div id="records-table-wrapper" class="text-left bg-gray-800 rounded-lg p-3 overflow-y-auto" style="max-height: 50vh"></div>
+                <button id="close-records-btn" class="mt-4 bg-blue-600 hover:bg-blue-500 px-6 py-2 rounded-xl font-bold text-sm transition-colors">Zamknij</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const levelDisplayEl = document.getElementById('current-level-display');
+    const maxLevelDisplayEl = document.getElementById('max-level-display');
+    const scoreDisplayEl = document.getElementById('score-display');
+    const timeEl = document.getElementById('timer');
+    const overlay = document.getElementById('overlay');
+    const overlayTitle = document.getElementById('overlay-title');
+    const overlayStats = document.getElementById('overlay-stats');
+    const overlayDesc = document.getElementById('overlay-desc');
+    const mainBtn = document.getElementById('main-btn');
+    const modeSelection = document.getElementById('mode-selection');
+    const btnChild = document.getElementById('btn-child');
+    const btnAdult = document.getElementById('btn-adult');
+    const overlayContent = document.getElementById('overlay-content');
+    const saveSection = document.getElementById('save-section');
+    const playerNameInput = document.getElementById('player-name-input');
+    const saveRecordBtn = document.getElementById('save-record-btn');
+    const saveInfo = document.getElementById('save-info');
+    const showRecordsEndBtn = document.getElementById('show-records-end-btn');
+    const showRecordsStartBtn = document.getElementById('show-records-start-btn');
+    const recordsView = document.getElementById('records-view');
+    const recordsLevelTabs = document.getElementById('records-level-tabs');
+    const recordsTableWrapper = document.getElementById('records-table-wrapper');
+    const closeRecordsBtn = document.getElementById('close-records-btn');
+    const recordsPlayerSelect = document.getElementById('records-player-select');
+
+    // ─── Colors ──────────────────────────────────────────────────────────────────
+    const COLORS = [
+        '#ef4444','#3b82f6','#22c55e','#eab308','#a855f7',
+        '#f97316','#ec4899','#14b8a6','#6366f1','#b45309',
+    ];
+
+    // ─── Level config ─────────────────────────────────────────────────────────────
+    // disappearTime: ms before unclicked ball vanishes (null = never)
+    // extraInterval: ms between extra ball spawns (null = none)
+    // Lvl 2: comfortable — all balls clickable with focus
+    // Lvl 3: very hard — barely possible if fast
+    // Lvl 4: impossible — balls vanish faster than reaction time
+    const LEVEL_CONFIG = {
+        1: { disappearTime: null, extraInterval: null },
+        2: { disappearTime: 4000, extraInterval: 5000 },
+        3: { disappearTime: 1800, extraInterval: 2500 },
+        4: { disappearTime: 1000, extraInterval: 1200 },
+    };
+
+    function getRadius() {
+        const isMobile = window.matchMedia('(pointer: coarse)').matches;
+        const shortSide = Math.min(window.innerWidth, window.innerHeight);
+        if (isMobile) return Math.round(Math.min(36, Math.max(24, shortSide * 0.045)));
+        return Math.round(Math.min(36, Math.max(28, shortSide * 0.04)));
+    }
+
+    let RADIUS = getRadius();
+
+    // ─── State ────────────────────────────────────────────────────────────────────
+    let balls = [];          // { x, y, colorIdx, spawnedAt, id }
+    let score = 0;
+    let lastSpawnedColor = -1;
+    let isRunning = false;
+    let currentLevel = 1, gameMode = 'adult';
+    let gameSeconds = 30;
+    let timeLeft = 30;
+    let mainBtnAction = null, recordsSaved = false;
+    let nextBallId = 0;
+
+    // timers
+    let countdownInterval = null;
+    let extraBallInterval = null;
+    let animFrameId = null;
+    let disappearCheckerInterval = null;
+
+    // per-level results
+    let results = {};
+
+    // ─── Records ─────────────────────────────────────────────────────────────────
+    const RECORDS_KEY = 'reflexKulkiRecords';
+    const NAME_KEY    = 'reflexLastName';
+    const MAX_PER_PLAYER = 10;
+
+    function normalizeName(n) { return n.trim().toLowerCase(); }
+    function loadRecords() { try { return JSON.parse(localStorage.getItem(RECORDS_KEY)) || {}; } catch { return {}; } }
+    function saveRecordsToStorage(r) { localStorage.setItem(RECORDS_KEY, JSON.stringify(r)); }
+
+    function addRecord(mode, levelKey, name, scoreVal) {
+        const records = loadRecords();
+        if (!records[mode]) records[mode] = {};
+        if (!records[mode][levelKey]) records[mode][levelKey] = [];
+        records[mode][levelKey].push({ name: name.trim(), score: scoreVal, date: new Date().toLocaleDateString('pl-PL') });
+        records[mode][levelKey].sort((a, b) => b.score - a.score);
+        const seen = {};
+        records[mode][levelKey] = records[mode][levelKey].filter(r => {
+            const key = normalizeName(r.name);
+            seen[key] = (seen[key] || 0) + 1;
+            return seen[key] <= MAX_PER_PLAYER;
+        });
+        saveRecordsToStorage(records);
+    }
+
+    function savePlayerRecord(name) {
+        if (!name.trim()) return;
+        localStorage.setItem(NAME_KEY, name.trim());
+        for (let lvl = 1; lvl <= 4; lvl++) {
+            if (results[lvl]) {
+                addRecord(gameMode, `level${lvl}`, name, results[lvl].score);
+            }
+        }
+        const totalScore = Object.values(results).reduce((s, r) => s + r.score, 0);
+        addRecord(gameMode, 'total', name, totalScore);
+    }
+
+    // ─── Records view ─────────────────────────────────────────────────────────────
+    let recordsViewMode = 'adult', recordsViewLevel = 'total', recordsViewPlayer = '', recordsReturnFn = null;
+
+    function renderRecordsTable(mode, levelKey, filterPlayer) {
+        const records = loadRecords();
+        let data = (records[mode] && records[mode][levelKey]) || [];
+        if (filterPlayer) {
+            const norm = normalizeName(filterPlayer);
+            data = data.filter(r => normalizeName(r.name) === norm);
+        }
+        if (!data.length) return '<p class="text-gray-400 text-sm py-4 text-center">Brak rekordów</p>';
+        const medals = ['🥇', '🥈', '🥉'];
+        let html = '<table class="w-full text-sm border-collapse"><thead><tr class="text-gray-400 text-xs uppercase">';
+        html += '<th class="py-1 px-2 text-left">#</th><th class="py-1 px-2 text-left">Imię</th>';
+        html += '<th class="py-1 px-2 text-right">Trafione</th>';
+        html += '<th class="py-1 px-2 text-right">Data</th></tr></thead><tbody>';
+        data.forEach((r, i) => {
+            const cls = i === 0 ? 'text-yellow-300' : i === 1 ? 'text-gray-300' : i === 2 ? 'text-orange-400' : 'text-white';
+            html += `<tr class="${cls} border-t border-gray-700/50">`;
+            html += `<td class="py-1 px-2">${medals[i] || (i+1)+'.'}</td>`;
+            html += `<td class="py-1 px-2">${r.name}</td>`;
+            html += `<td class="py-1 px-2 text-right font-mono text-green-400">${r.score}</td>`;
+            html += `<td class="py-1 px-2 text-right text-gray-400 text-xs">${r.date}</td></tr>`;
+        });
+        html += '</tbody></table>';
+        return html;
+    }
+
+    function getAllPlayersForMode(mode) {
+        const records = loadRecords();
+        const modeData = records[mode] || {};
+        const nameMap = new Map();
+        for (const levelData of Object.values(modeData)) {
+            for (const r of levelData) {
+                const key = normalizeName(r.name);
+                if (!nameMap.has(key)) nameMap.set(key, r.name);
+            }
+        }
+        return [...nameMap.values()].sort((a, b) => a.localeCompare(b, 'pl'));
+    }
+
+    function buildPlayerFilter(mode) {
+        const players = getAllPlayersForMode(mode);
+        recordsPlayerSelect.innerHTML = '<option value="">Wszyscy</option>' +
+            players.map(p => `<option value="${p}" ${normalizeName(p) === normalizeName(recordsViewPlayer) ? 'selected' : ''}>${p}</option>`).join('');
+    }
+
+    function buildRecordsLevelTabs(mode) {
+        const levels = [['level1','Poziom 1'],['level2','Poziom 2'],['level3','Poziom 3'],['level4','Poziom 4'],['total','Łącznie']];
+        recordsLevelTabs.innerHTML = levels.map(([key, label]) =>
+            `<button class="records-level-tab px-3 py-1 rounded-lg text-xs font-bold transition-colors ${recordsViewLevel === key ? 'bg-green-600 text-white' : 'bg-gray-700 text-gray-300'}" data-level="${key}">${label}</button>`
+        ).join('');
+        recordsLevelTabs.querySelectorAll('.records-level-tab').forEach(btn => {
+            btn.addEventListener('click', () => {
+                recordsViewLevel = btn.dataset.level;
+                buildRecordsLevelTabs(recordsViewMode);
+                recordsTableWrapper.innerHTML = renderRecordsTable(recordsViewMode, recordsViewLevel, recordsViewPlayer);
+            });
+        });
+    }
+
+    function showRecordsView(returnFn, preferMode, preferPlayer) {
+        recordsReturnFn = returnFn;
+        recordsViewMode = preferMode || gameMode || 'adult';
+        recordsViewLevel = 'total';
+        recordsViewPlayer = preferPlayer || '';
+        overlayContent.classList.add('hidden');
+        recordsView.classList.remove('hidden');
+        document.querySelectorAll('.records-mode-tab').forEach(btn => {
+            btn.classList.toggle('bg-blue-600', btn.dataset.mode === recordsViewMode);
+            btn.classList.toggle('text-white', btn.dataset.mode === recordsViewMode);
+            btn.classList.toggle('bg-gray-700', btn.dataset.mode !== recordsViewMode);
+            btn.classList.toggle('text-gray-300', btn.dataset.mode !== recordsViewMode);
+        });
+        buildPlayerFilter(recordsViewMode);
+        buildRecordsLevelTabs(recordsViewMode);
+        recordsTableWrapper.innerHTML = renderRecordsTable(recordsViewMode, recordsViewLevel, recordsViewPlayer);
+    }
+
+    document.querySelectorAll('.records-mode-tab').forEach(btn => {
+        btn.addEventListener('click', () => { recordsViewMode = btn.dataset.mode; recordsViewPlayer = ''; showRecordsView(recordsReturnFn, recordsViewMode); });
+    });
+    recordsPlayerSelect.addEventListener('change', () => {
+        recordsViewPlayer = recordsPlayerSelect.value;
+        buildRecordsLevelTabs(recordsViewMode);
+        recordsTableWrapper.innerHTML = renderRecordsTable(recordsViewMode, recordsViewLevel, recordsViewPlayer);
+    });
+    closeRecordsBtn.addEventListener('click', () => {
+        recordsView.classList.add('hidden');
+        overlayContent.classList.remove('hidden');
+        if (recordsReturnFn) recordsReturnFn();
+    });
+
+    saveRecordBtn.addEventListener('click', () => {
+        if (recordsSaved) return;
+        const name = playerNameInput.value.trim();
+        if (!name) { playerNameInput.focus(); return; }
+        savePlayerRecord(name);
+        recordsSaved = true;
+        saveRecordBtn.disabled = true;
+        saveRecordBtn.classList.replace('bg-green-600', 'bg-gray-600');
+        saveInfo.classList.remove('hidden');
+        showRecordsView(() => {}, gameMode, name);
+    });
+    playerNameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') saveRecordBtn.click(); });
+    showRecordsEndBtn.addEventListener('click', () => showRecordsView(() => {}));
+    showRecordsStartBtn.addEventListener('click', () => showRecordsView(() => {}));
+    mainBtn.addEventListener('click', () => { if (mainBtnAction) mainBtnAction(); });
+
+    // ─── Mode selection ───────────────────────────────────────────────────────────
+    function setMode(mode) {
+        gameMode = mode;
+        gameSeconds = mode === 'child' ? 10 : 17;
+        maxLevelDisplayEl.textContent = '4';
+    }
+    btnChild.addEventListener('click', () => { setMode('child'); startCampaign(); });
+    btnAdult.addEventListener('click', () => { setMode('adult'); startCampaign(); });
+
+    // ─── Canvas resize ────────────────────────────────────────────────────────────
+    function resize() { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; RADIUS = getRadius(); }
+    window.addEventListener('resize', () => { resize(); });
+    resize();
+
+    // ─── Ball helpers ─────────────────────────────────────────────────────────────
+    function randomPos() {
+        const margin = RADIUS + 8;
+        let x, y, attempts = 0, valid = false;
+        while (!valid && attempts < 200) {
+            x = margin + Math.random() * (canvas.width - margin * 2);
+            y = margin + Math.random() * (canvas.height - margin * 2);
+            valid = balls.every(b => Math.hypot(x - b.x, y - b.y) > RADIUS * 3.2);
+            attempts++;
+        }
+        return { x, y };
+    }
+
+    function spawnBall() {
+        const pos = randomPos();
+        let colorIdx;
+        do { colorIdx = Math.floor(Math.random() * COLORS.length); } while (colorIdx === lastSpawnedColor);
+        lastSpawnedColor = colorIdx;
+        balls.push({ x: pos.x, y: pos.y, colorIdx, spawnedAt: Date.now(), id: nextBallId++ });
+    }
+
+    function removeBall(id) {
+        balls = balls.filter(b => b.id !== id);
+    }
+
+    // ─── Drawing ──────────────────────────────────────────────────────────────────
+    function drawBall(b) {
+        const color = COLORS[b.colorIdx];
+        const cfg = LEVEL_CONFIG[currentLevel];
+        const age = Date.now() - b.spawnedAt;
+
+        // Fading ring when ball is about to disappear
+        let alpha = 1;
+        if (cfg.disappearTime) {
+            const ratio = age / cfg.disappearTime;
+            if (ratio > 0.6) {
+                alpha = 1 - (ratio - 0.6) / 0.4; // fade out last 40%
+                alpha = Math.max(0.15, alpha);
+            }
+        }
+
+        ctx.globalAlpha = alpha;
+        ctx.shadowColor = color;
+        ctx.shadowBlur = 14;
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, RADIUS, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+    }
+
+    function draw() {
+        if (!isRunning) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        balls.forEach(drawBall);
+        animFrameId = requestAnimationFrame(draw);
+    }
+
+    // ─── Click handling ───────────────────────────────────────────────────────────
+    canvas.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        if (!isRunning) return;
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+        const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+
+        for (let i = balls.length - 1; i >= 0; i--) {
+            const b = balls[i];
+            if (Math.hypot(x - b.x, y - b.y) <= RADIUS) {
+                removeBall(b.id);
+                score++;
+                scoreDisplayEl.textContent = score;
+                // Replace clicked ball with a new one (1:1 swap)
+                spawnBall();
+                return;
+            }
+        }
+    });
+
+    // ─── Disappear checker ────────────────────────────────────────────────────────
+    function startDisappearChecker() {
+        const cfg = LEVEL_CONFIG[currentLevel];
+        if (!cfg.disappearTime) return;
+        disappearCheckerInterval = setInterval(() => {
+            const now = Date.now();
+            const expired = balls.filter(b => now - b.spawnedAt >= cfg.disappearTime);
+            expired.forEach(b => {
+                removeBall(b.id);
+                // Do NOT spawn replacement — ball count drops naturally
+            });
+        }, 100);
+    }
+
+    // ─── Game flow ────────────────────────────────────────────────────────────────
+    function clearAllTimers() {
+        if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+        if (extraBallInterval) { clearInterval(extraBallInterval); extraBallInterval = null; }
+        if (disappearCheckerInterval) { clearInterval(disappearCheckerInterval); disappearCheckerInterval = null; }
+        if (animFrameId) { cancelAnimationFrame(animFrameId); animFrameId = null; }
+    }
+
+    function startGame(level) {
+        currentLevel = level;
+        levelDisplayEl.textContent = level;
+        RADIUS = getRadius();
+        score = 0;
+        balls = [];
+        lastSpawnedColor = -1;
+        scoreDisplayEl.textContent = '0';
+        timeLeft = gameSeconds;
+        timeEl.textContent = timeLeft;
+        overlay.classList.add('hidden');
+        document.getElementById('game-title').style.display = 'none';
+        resize();
+        isRunning = true;
+
+        // First ball
+        spawnBall();
+
+        // Countdown
+        countdownInterval = setInterval(() => {
+            timeLeft--;
+            timeEl.textContent = timeLeft;
+            if (timeLeft <= 0) {
+                clearAllTimers();
+                isRunning = false;
+                results[level] = { score };
+                gameOver(level);
+            }
+        }, 1000);
+
+        // Extra balls (level 2+)
+        const cfg = LEVEL_CONFIG[level];
+        if (cfg.extraInterval) {
+            extraBallInterval = setInterval(() => {
+                if (isRunning) spawnBall();
+            }, cfg.extraInterval);
+        }
+
+        // Disappear checker
+        startDisappearChecker();
+
+        draw();
+    }
+
+    function gameOver(level) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (level < 4) {
+            showNextLevelScreen(level);
+        } else {
+            showEndScreen();
+        }
+    }
+
+    function startCampaign() {
+        results = {};
+        startGame(1);
+    }
+
+    function updateInstructions(level) {
+        const desc = {
+            1: 'Klikaj kulki jak najszybciej! Nowa kulka pojawia się po kliknięciu.',
+            2: 'Kulki znikają po 4 sekundach. Co 5s pojawia się dodatkowa — dasz radę kliknąć wszystkie!',
+            3: 'Kulki znikają po 1.8 sekundy. Dodatkowa co 2.5s — bardzo trudne!',
+            4: 'Finał! Kulki znikają po 1 sekundzie. Dodatkowa co 1.2s — niemożliwe!',
+        };
+        overlayDesc.textContent = desc[level] || '';
+    }
+
+    function hideModeAndShowMain() { modeSelection.classList.add('hidden'); mainBtn.classList.remove('hidden'); }
+    function hideSaveSection() { saveSection.classList.add('hidden'); showRecordsStartBtn.classList.add('hidden'); saveInfo.classList.add('hidden'); }
+
+    function showStartScreen() {
+        document.getElementById('game-title').style.display = '';
+        overlayTitle.innerHTML = 'Wybierz tryb gry!';
+        overlayStats.classList.add('hidden');
+        hideSaveSection();
+        updateInstructions(1);
+        modeSelection.classList.remove('hidden');
+        mainBtn.classList.add('hidden');
+        showRecordsStartBtn.classList.remove('hidden');
+        overlay.classList.remove('hidden');
+    }
+
+    function showNextLevelScreen(level) {
+        hideModeAndShowMain();
+        hideSaveSection();
+        overlayTitle.innerHTML = `Poziom ${level} Ukończony! 🎉`;
+        overlayStats.innerHTML =
+            `<p>Trafione: <span class="text-green-400 font-bold">${results[level].score}</span></p>`;
+        overlayStats.classList.remove('hidden');
+        updateInstructions(level + 1);
+        mainBtn.innerHTML = `Start: Poziom ${level + 1}`;
+        mainBtnAction = () => startGame(level + 1);
+        overlay.classList.remove('hidden');
+        mainBtn.disabled = true;
+        setTimeout(() => { mainBtn.disabled = false; }, 1500);
+    }
+
+    function showEndScreen() {
+        hideModeAndShowMain();
+        overlayTitle.innerHTML = 'Wyzwanie Ukończone! 🏆';
+        const totalScore = Object.values(results).reduce((s, r) => s + r.score, 0);
+        let statsHtml = '';
+        for (let lvl = 1; lvl <= 4; lvl++) {
+            if (results[lvl]) {
+                statsHtml += `<p>Poziom ${lvl}: <span class="text-green-400">${results[lvl].score}</span> traf.</p>`;
+            }
+        }
+        statsHtml += `<p class="mt-2 border-t border-gray-600 pt-2">Łącznie: <span class="text-green-400 font-bold">${totalScore}</span> traf.</p>`;
+        overlayStats.innerHTML = statsHtml;
+        overlayStats.classList.remove('hidden');
+        overlayDesc.textContent = '';
+        mainBtn.innerHTML = 'Zagraj ponownie';
+        mainBtnAction = showStartScreen;
+        recordsSaved = false;
+        saveRecordBtn.disabled = false;
+        saveRecordBtn.classList.replace('bg-gray-600', 'bg-green-600');
+        saveInfo.classList.add('hidden');
+        playerNameInput.value = localStorage.getItem(NAME_KEY) || '';
+        saveSection.classList.remove('hidden');
+        showRecordsStartBtn.classList.add('hidden');
+        overlay.classList.remove('hidden');
+    }
+
+    showStartScreen();
+</script>
+  <script src="../../shared/auth.js"></script>
+</body>
+</html>

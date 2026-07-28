@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kulki</title>
+  <!-- Tailwind CSS dla sprawnego ułożenia kontenerów -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Czcionka stylizowana na retro systemowe fonty -->
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="flex flex-col items-center justify-start min-h-screen pb-14 pt-4 md:pt-10 px-2">
+  <a class="back-link" href="../">← Wróć</a>
+
+  <!-- Główny Kontener Okna Gry -->
+  <div class="w-full max-w-lg outset-border-double bg-[#c0c0c0] p-[2px] shadow-2xl">
+    
+    <!-- Pasek tytułowy -->
+    <div class="title-bar">
+      <div class="flex items-center gap-1">
+        <!-- Ikona stylizowana SVG -->
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="7" cy="7" r="5" fill="#ff0000" />
+          <circle cx="17" cy="17" r="5" fill="#0000ff" />
+          <circle cx="17" cy="7" r="5" fill="#00cc00" />
+        </svg>
+        <span>Kulki</span>
+      </div>
+      <div class="flex items-center gap-1">
+        <div class="title-bar-btn" onclick="toggleAbout(true)">?</div>
+        <div class="title-bar-btn" onclick="resetGame()">X</div>
+      </div>
+    </div>
+
+    <!-- Pasek Menu -->
+    <div class="menu-bar">
+      <div class="menu-item" onclick="toggleMenu('game-menu')">Gra</div>
+      <div class="menu-item" onclick="toggleAbout(true)">Pomoc</div>
+      
+      <!-- Rozwijane menu Gra -->
+      <div id="game-menu" class="menu-dropdown text-black">
+        <div class="menu-dropdown-item" onclick="resetGame()">Nowa Gra</div>
+        <hr class="border-[#808080] my-1">
+        <div class="menu-dropdown-item" onclick="changeDifficulty('easy')">Poziom: Łatwy</div>
+        <div class="menu-dropdown-item" onclick="changeDifficulty('medium')">Poziom: Średni</div>
+        <div class="menu-dropdown-item" onclick="changeDifficulty('hard')">Poziom: Trudny</div>
+        <div class="menu-dropdown-item" onclick="changeDifficulty('extreme')">Poziom: Extreme</div>
+        <hr class="border-[#808080] my-1">
+        <div class="menu-dropdown-item" onclick="toggleSound()">Dźwięk: <span id="sound-status">Wyłączony</span></div>
+      </div>
+    </div>
+
+    <!-- Panel Sterowania i Pulpit (Dashboard) -->
+    <div class="p-2.5 bg-[#c0c0c0] flex flex-col gap-2.5">
+      
+      <!-- Górny Dashboard LED i podgląd NEXT w JEDNEJ linii -->
+      <div class="inset-border bg-[#c0c0c0] p-1.5 flex flex-row items-center justify-between gap-1 w-full text-[11px] md:text-xs">
+        
+        <!-- Wybór Poziomu (Zmniejszony) -->
+        <div class="flex flex-col gap-0.5">
+          <span class="font-bold text-[#404040]">Poziom:</span>
+          <select id="difficulty-select" class="win-select w-[75px]" onchange="handleDifficultySelect(this.value)">
+            <option value="easy">Łatwy</option>
+            <option value="medium" selected>Średni</option>
+            <option value="hard">Trudny</option>
+            <option value="extreme">Extreme</option>
+          </select>
+        </div>
+
+        <!-- Podgląd następnych kulek -->
+        <div class="flex flex-col items-center">
+          <span class="font-bold text-[#404040] mb-0.5">Następne:</span>
+          <div class="inset-border bg-[#7b7b7b] p-0.5 flex items-center gap-1.5 h-7 min-w-[75px] justify-center">
+            <div id="next-0" class="next-preview-ball"></div>
+            <div id="next-1" class="next-preview-ball"></div>
+            <div id="next-2" class="next-preview-ball"></div>
+            <div id="next-3" class="next-preview-ball hidden"></div>
+          </div>
+        </div>
+
+        <div class="flex items-end self-end pb-0.5">
+          <button id="hud-sound-btn" type="button" class="w-7 h-7 flex items-center justify-center text-sm text-[#404040] inset-border bg-[#c0c0c0] hover:bg-[#d4d0c8] active:translate-y-[1px]" onclick="toggleSound()" title="Dźwięk wyłączony" aria-label="Dźwięk wyłączony">🔇</button>
+        </div>
+
+        <!-- Wynik -->
+        <div class="flex flex-col items-end">
+          <span class="font-bold text-[#404040]">Wynik:</span>
+          <div id="score-display" class="led-display min-w-[50px] md:min-w-[60px]">0000</div>
+        </div>
+
+        <!-- Rekord -->
+        <div class="flex flex-col items-end">
+          <span class="font-bold text-[#404040]">Rekord:</span>
+          <div id="highscore-display" class="led-display min-w-[50px] md:min-w-[60px]">0000</div>
+        </div>
+      </div>
+
+      <!-- Kontener Planszy Gry -->
+      <div class="relative w-full aspect-square bg-[#808080] inset-border p-[3px]">
+        <div id="game-board" class="grid grid-cols-9 grid-rows-9 gap-[2px] w-full h-full bg-[#404040]">
+          <!-- Dynamicznie generowane komórki 9x9 -->
+        </div>
+        <!-- Ruchomy element do animacji kulek -->
+        <div id="animating-ball" class="ball"></div>
+      </div>
+
+      <!-- Dolny pasek stanu i przycisk resetowania -->
+      <div class="flex items-center justify-between mt-1">
+        <div class="inset-border bg-[#c0c0c0] px-2 py-1 text-xs font-bold text-[#404040] flex-grow mr-3 overflow-hidden text-ellipsis whitespace-nowrap" id="status-bar">
+          Powodzenia! Ułóż linie jednego koloru.
+        </div>
+        <button class="win-btn" onclick="resetGame()">Reset</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL: GAME OVER -->
+  <div id="game-over-overlay" class="modal-overlay"></div>
+  <div id="game-over-modal" class="win-modal outset-border-double">
+    <div class="title-bar">
+      <span>Koniec Gry!</span>
+      <div class="title-bar-btn" onclick="closeGameOver()">X</div>
+    </div>
+    <div class="p-4 flex flex-col items-center gap-4 text-center">
+      <div class="flex items-center gap-3">
+        <!-- Ikona Retro błędu -->
+        <div class="w-10 h-10 flex items-center justify-center rounded-full bg-red-600 border-2 border-white text-white font-bold text-2xl">X</div>
+        <div class="text-left">
+          <p class="font-bold text-sm">Brak wolnych miejsc na planszy!</p>
+          <p class="text-xs mt-1">Twój końcowy wynik to:</p>
+        </div>
+      </div>
+      <div id="modal-final-score" class="led-display my-2 text-xl py-1 px-3">0000</div>
+      <button class="win-btn px-6" onclick="resetGame(); closeGameOver();">Nowa Gra</button>
+    </div>
+  </div>
+
+  <!-- MODAL: POMOC / O AUTORZE -->
+  <div id="about-overlay" class="modal-overlay" onclick="toggleAbout(false)"></div>
+  <div id="about-modal" class="win-modal outset-border-double" style="width: 360px;">
+    <div class="title-bar">
+      <span>Pomoc - Kulki</span>
+      <div class="title-bar-btn" onclick="toggleAbout(false)">X</div>
+    </div>
+    <div class="p-4 flex flex-col gap-3 text-sm text-black">
+      <h3 class="font-bold text-base border-b-2 border-white pb-1 flex items-center gap-2">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="10" fill="#000080" />
+          <path d="M12 16V12M12 8H12.01" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        Zasady Gry:
+      </h3>
+      <p class="text-xs leading-relaxed">
+        Celem gry jest usuwanie kulek z planszy poprzez układanie ich w linie (pionowo, poziomo lub po przekątnej). 
+        Kliknij na kulkę, by ją zaznaczyć (zacznie pulsować), a potem kliknij wolne pole. Kulka przemieści się tam, 
+        o ile droga nie jest zablokowana przez inne elementy.
+      </p>
+      <div class="text-xs bg-[#e0e0e0] p-2 inset-border">
+        <strong>Poziomy trudności:</strong><br>
+        • <strong>Łatwy:</strong> 5 kolorów, linia z 5 kulek.<br>
+        • <strong>Średni:</strong> 6 kolorów, linia z 5 kulek.<br>
+        • <strong>Trudny:</strong> 7 kolorów, linia z 5 kulek.<br>
+        • <strong>Extreme:</strong> 7 kolorów, linia z 5 kulek, brak podglądu, ale dodatkowe +2 punkty za każdy wykonany ruch!
+      </div>
+      <p class="text-xs text-gray-700 text-center mt-2 border-t border-[#808080] pt-2">
+        Inspirowane kultową grą "Color Lines" z ery Windows 98.<br>
+        Retro Audio Synthesizer Enabled. 🔊
+      </p>
+      <div class="flex justify-center mt-2">
+        <button class="win-btn" onclick="toggleAbout(false)">Zamknij</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dolny Pasek zadań Windows 98 -->
+  <div class="taskbar inset-border">
+    <div class="flex items-center gap-1 h-full">
+      <button class="win-btn h-[30px] flex items-center gap-1 font-bold" style="padding: 2px 8px;" onclick="toggleAbout(true)">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="2" width="20" height="20" rx="3" fill="#00125c" />
+          <path d="M7 7h10M7 12h10M7 17h6" stroke="white" stroke-width="2" stroke-linecap="round" />
+        </svg>
+        Start
+      </button>
+      <div class="inset-border bg-gray-400 w-[2px] h-full mx-1"></div>
+      <div class="text-xs font-semibold px-2 text-[#404040]">Active Task: Kulki</div>
+    </div>
+    <div class="inset-border bg-[#c0c0c0] h-[30px] flex items-center px-3 gap-2 text-xs font-bold text-[#404040]">
+      <span id="win-clock">17:00</span>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script src="../shared/auth.js"></script>
+</body>
+</html>

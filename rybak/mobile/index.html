@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Rybak Mobile 🎣</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<a id="back-btn" href="../">← Menu</a>
+
+<!-- iOS gyroscope permission -->
+<div id="permission-screen">
+    <h2>🎣 Rybak Mobile</h2>
+    <p>Gra używa żyroskopu do sterowania łódką.<br>Pochyl telefon w lewo/prawo, żeby się poruszać.<br>Dotknij ekranu, żeby opuścić wędkę!</p>
+    <button id="start-btn">Zagraj!</button>
+</div>
+
+<div id="ui">
+    <div>🐟 <span id="score">0</span>/<span id="target">10</span><br><span id="hi-score-hud">Rekord: 0</span></div>
+    <div id="lvl-display" style="color:#FFD700;">Poziom 1</div>
+    <div>⏱ <span id="timer">60</span>s</div>
+</div>
+
+<div id="warning-msg">UCIEKAJ!!!</div>
+<div id="level-msg">LEVEL UP!</div>
+
+<div id="touch-hint">📱 Pochyl ← → &nbsp;|&nbsp; Dotknij = wędka ↓</div>
+
+<div id="tilt-indicator"><div id="tilt-bar"></div></div>
+
+<div id="time-up" class="screen">
+    <h1>Koniec Połowu! 🎣</h1>
+    <p>Łącznie ryb: <span id="total-score-time">0</span></p>
+    <p>Osiągnięty poziom: <span id="final-lvl-time">1</span></p>
+    <p id="new-record-time" style="color:#FFD700;display:none;font-weight:bold;">🏆 NOWY REKORD!</p>
+    <p>Rekord: <span id="hi-score-time">0</span></p>
+    <button onclick="location.reload()">Zagraj ponownie</button>
+    <button class="btn-reset" onclick="resetHiScore()">Resetuj rekord</button>
+</div>
+
+<div id="game-over" class="screen">
+    <h1 style="color:#ff4444;">TRAFIONY! 💩</h1>
+    <p>Łącznie ryb: <span id="total-score-bird">0</span></p>
+    <p id="new-record-bird" style="color:#FFD700;display:none;font-weight:bold;">🏆 NOWY REKORD!</p>
+    <p>Rekord: <span id="hi-score-bird">0</span></p>
+    <button onclick="location.reload()">Spróbuj ponownie</button>
+    <button class="btn-reset" onclick="resetHiScore()">Resetuj rekord</button>
+</div>
+
+<canvas id="gameCanvas"></canvas>
+
+<script src="script.js"></script>
+  <script src="../../shared/auth.js"></script>
+</body>
+</html>

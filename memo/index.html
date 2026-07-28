@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Memo 🧩</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<a class="back-link" href="../">← <span id="back-label">Menu</span></a>
+
+<div id="lang-switcher">
+    <button id="lang-pl" onclick="setLang('pl')" title="Polski" aria-label="Polski">
+        <img src="https://flagcdn.com/24x18/pl.png" width="24" height="18" alt="Polski" style="display:block;border-radius:3px;">
+    </button>
+    <button id="lang-en" onclick="setLang('en')" title="English" aria-label="English">
+        <img src="https://flagcdn.com/24x18/gb.png" width="24" height="18" alt="English" style="display:block;border-radius:3px;">
+    </button>
+</div>
+
+<!-- ══════════ SETUP SCREEN ══════════ -->
+<div id="screen-setup" class="screen active">
+    <div class="game-title">🧩 Memo</div>
+
+    <div class="setup-card">
+        <div class="section-label" id="lbl-imgtype">Rodzaj obrazków</div>
+        <div class="type-grid">
+            <button class="type-btn selected" id="type-pisanie" onclick="selectType('pisanie')">
+                🖊️ <span id="lbl-type-pisanie">Pisanie</span>
+            </button>
+            <button class="type-btn" id="type-kraje" onclick="selectType('kraje')">
+                🌍 <span id="lbl-type-kraje">Kraje</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="setup-card">
+        <div class="section-label" id="lbl-boardsize">Rozmiar planszy</div>
+        <div class="size-grid" id="size-grid"></div>
+    </div>
+
+    <button class="start-btn" onclick="startGame()">
+        <span id="lbl-start">▶ Graj</span>
+    </button>
+</div>
+
+<!-- ══════════ GAME SCREEN ══════════ -->
+<div id="screen-game" class="screen">
+    <div id="hud">
+        <span id="timer-display">00:00</span>
+        <span id="pairs-counter"></span>
+        <span id="moves-counter"></span>
+    </div>
+    <div id="board"></div>
+</div>
+
+<!-- ══════════ WIN SCREEN ══════════ -->
+<div id="screen-win" class="screen">
+    <div class="win-emoji">🎉</div>
+    <div class="win-title" id="win-title">Brawo!</div>
+    <div class="win-time" id="win-time"></div>
+    <div class="win-moves" id="win-moves"></div>
+    <div class="win-record" id="win-record"></div>
+    <div class="win-btns">
+        <button class="btn btn-primary" id="win-again-btn" onclick="startGame()">🔄 Jeszcze raz</button>
+        <button class="btn btn-secondary" id="win-menu-btn" onclick="showSetup()">🏠 Menu</button>
+    </div>
+</div>
+
+<script src="script.js"></script>
+  <script src="../shared/auth.js"></script>
+</body>
+</html>

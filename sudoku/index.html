@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Sudoku — Łatwy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a id="backLink" href="../" style="position:fixed;top:10px;left:10px;z-index:999;background:#1C2B36;color:#E9EDF0;border:1px solid #5A6B78;border-radius:8px;padding:7px 13px;text-decoration:none;font-size:13px;font-family:'Space Grotesk',sans-serif;">← Wróć</a>
+<button id="themeBtn">🌙 Ciemny</button>
+<div class="wrap">
+  <header>
+    <div class="title">
+      <h1>Sudoku</h1>
+      <p>Każdy wiersz, kolumna i kwadrat 3×3 — cyfry 1–9.</p>
+      <span class="print-level" id="printLevel"></span>
+    </div>
+    <label class="level-pick">
+      <span>Poziom</span>
+      <select id="levelSel" aria-label="Poziom trudności">
+        <option value="child">Dziecko</option>
+        <option value="easy" selected>Łatwy</option>
+        <option value="medium">Średni</option>
+        <option value="normal">Normalny</option>
+        <option value="hard">Trudny</option>
+        <option value="vhard">Bardzo trudny</option>
+        <option value="extreme">Ekstremalny</option>
+      </select>
+    </label>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><div class="k">Czas</div><div class="v" id="timer">0:00</div></div>
+    <div class="stat"><div class="k">Wypełnione</div><div class="v" id="filled">0/81</div></div>
+  </div>
+
+  <div class="board-shell">
+    <div class="board" id="board" aria-label="Plansza Sudoku"></div>
+    <div class="loading" id="loading"><span>Generowanie…</span></div>
+    <div class="pause-mask" id="pauseMask" onclick="resume()">
+      <div class="pm-icon">⏸</div>
+      <p>Kliknij aby wznowić</p>
+    </div>
+    <div class="pause-mask" id="errorMask" style="cursor:default;gap:6px;">
+      <div class="pm-icon">❌</div>
+      <p style="font-weight:700;color:var(--error)">Nieprawidłowy kod układanki</p>
+      <p>Generuję nową grę…</p>
+    </div>
+  </div>
+
+  <div class="pad" id="pad"></div>
+
+  <div class="controls">
+    <button class="btn ghost" id="noteBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/></svg>
+      Notatki
+    </button>
+    <button class="btn ghost" id="undoBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M3 13a9 9 0 1 0 1.598-5.172"/></svg>
+      Cofnij
+    </button>
+    <button class="btn ghost" id="pauseBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+      Pauza
+    </button>
+    <button class="btn ghost" id="eraseBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 21h10"/><path d="m5 14 7-7 6 6-7 7H8z"/></svg>
+      Wymaż
+    </button>
+    <button class="btn ghost" id="hintBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.5.4.8 1 .8 1.6V17h6.4v-.7c0-.6.3-1.2.8-1.6A7 7 0 0 0 12 2z"/></svg>
+      Podpowiedź <span id="hintCount">(3)</span>
+    </button>
+    <button class="btn ghost" id="recordsBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+      Rekordy
+    </button>
+    <button class="btn ghost" id="shareBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      Udostępnij
+    </button>
+    <button class="btn ghost" id="printBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Drukuj
+    </button>
+    <button class="btn primary" id="newBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9 9 0 0 0-6.4 2.6L3 8"/><path d="M3 3v5h5"/></svg>
+      Nowa gra
+    </button>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="card">
+    <h2>Brawo! 🎉</h2>
+    <div class="win-stats">
+      <div class="win-stat"><div class="ws-val" id="winTime">0:00</div><div class="ws-lbl">Czas</div></div>
+      <div class="win-stat"><div class="ws-val" id="winMistakes">0</div><div class="ws-lbl">Błędy</div></div>
+    </div>
+    <div class="name-row">
+      <input type="text" id="playerName" placeholder="Twoje imię…" maxlength="20" autocomplete="off">
+      <button id="saveBtn">Zapisz</button>
+    </div>
+    <p class="save-info" id="saveInfo">✓ Wynik zapisany!</p>
+    <div style="display:flex;gap:8px;">
+      <button class="btn ghost" id="showRecordsFromWin" style="flex:1">Rekordy</button>
+      <button class="btn primary" id="againBtn" style="flex:1">Nowa gra</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="rec-panel" id="recPanel">
+  <div class="rec-card">
+    <h3>🏆 Rekordy</h3>
+    <div class="rec-tabs" id="recTabs"></div>
+    <div id="recTable"></div>
+    <button class="rec-close" id="recCloseBtn">Zamknij</button>
+  </div>
+</div>
+
+<script src="script.js"></script>
+  <script src="../shared/auth.js"></script>
+</body>
+</html>

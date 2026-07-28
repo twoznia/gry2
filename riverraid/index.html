@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>River Raid</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <a class="back-link" href="../">← Wróć</a>
+
+    <div id="ui">
+        <div class="ui-col">SCORE: <span id="score">00000</span></div>
+        <div class="ui-col ui-center">LIVES: <span id="lives">3</span></div>
+        <div class="ui-col ui-right">FUEL: <div class="fuel-bar"><div id="fuelFill"></div></div></div>
+        <div id="mobile-hud-extra">
+            <span>HI:<span id="hiScoreMob">00000</span></span>
+            <span id="comboDisplayMob" style="color:#fa0">x1</span>
+            <span style="color:#ff0">LVL:<span id="levelMob">1</span></span>
+        </div>
+    </div>
+    <div class="ui-row">
+        <div>HI: <span id="hiScore">00000</span></div>
+        <div id="comboDisplay">COMBO: x1</div>
+        <div style="color: #ff0; font-weight:bold;">LEVEL: <span id="level">1</span></div>
+    </div>
+
+    <div id="ios-permission">
+        <div style="font-size:48px;">✈️</div>
+        <h2>RIVER RAID</h2>
+        <p>Gra używa żyroskopu iPhone'a do sterowania.<br>Przechyl telefon lewo/prawo, aby kierować samolotem.</p>
+        <button id="btn-ios-allow">ZEZWÓL I GRAJ</button>
+        <button id="btn-ios-skip">Graj bez żyroskopu</button>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+    
+    <div class="controls" id="controls-desktop">
+        <span class="hl">RUCH:</span> Strzałki Lewo/Prawo | <span class="hl">PRĘDKOŚĆ:</span> Strzałki Góra/Dół<br>
+        <span class="hl">STRZAŁ:</span> Automatyczny | <span class="hl">START:</span> Spacja
+    </div>
+    <div class="controls" id="controls-mobile">
+        <span class="hl">STEROWANIE:</span> Przechyl telefon lewo/prawo | <span class="hl">PRĘDKOŚĆ:</span> Przechyl w przód/tył<br>
+        <span class="hl">STRZAŁ:</span> Automatyczny | <span class="hl">START:</span> Dotknij ekranu
+    </div>
+    <div id="gyroIndicator"><div id="gyroBar"></div></div>
+
+    <div id="mobile-dpad">
+        <button id="btn-left" class="dpad-btn">◀</button>
+        <button id="btn-right" class="dpad-btn">▶</button>
+    </div>
+
+<script src="script.js"></script>
+  <script src="../shared/auth.js"></script>
+</body>
+</html>

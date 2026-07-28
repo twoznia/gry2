@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>IMMUNO — Obrona Organizmu 🦠</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<a class="back-link" href="../">← Wróć</a>
+
+<div id="game">
+  <!-- HUD -->
+  <div id="hud">
+    <div class="hud-cell">
+      <div class="hud-label">Narząd</div>
+      <div id="organ-name" class="hud-value">—</div>
+    </div>
+    <div class="hud-cell">
+      <div class="hud-label">Poziom</div>
+      <div id="level-display" class="hud-value">1</div>
+    </div>
+    <div class="hud-cell">
+      <div class="hud-label">Fala</div>
+      <div id="wave-display" class="hud-value">0 / 0</div>
+    </div>
+    <div class="hud-cell">
+      <div class="hud-label">⚡ Energia</div>
+      <div id="money-display" class="hud-value money">120</div>
+    </div>
+    <div class="hud-cell">
+      <div class="hud-label">❤ Integralność</div>
+      <div id="lives-display" class="hud-value lives">20</div>
+    </div>
+    <div class="hud-cell">
+      <div class="hud-label">🏆 Rekord</div>
+      <div id="best-display" class="hud-value">1</div>
+    </div>
+  </div>
+
+  <!-- Plansza -->
+  <div id="board-wrap">
+    <canvas id="board"></canvas>
+    <div id="organ-banner"></div>
+  </div>
+
+  <!-- Sterowanie -->
+  <div id="controls">
+    <div id="tower-buttons"></div>
+
+    <div id="tower-panel" class="hidden">
+      <div id="panel-title">Komórka</div>
+      <div id="panel-stats"></div>
+      <div class="panel-buttons">
+        <button id="btn-upgrade" class="ctl-btn upgrade">Ulepsz</button>
+        <button id="btn-sell" class="ctl-btn sell">Sprzedaj</button>
+      </div>
+    </div>
+
+    <button id="start-wave-btn" class="ctl-btn primary">▶ Rozpocznij Falę</button>
+  </div>
+</div>
+
+<!-- Ekran startowy / fabuła -->
+<div id="overlay" class="overlay">
+  <div class="overlay-box">
+    <h1 id="ov-title">🦠 IMMUNO</h1>
+    <p id="ov-text"></p>
+    <button id="ov-btn" class="ctl-btn primary big">Rozpocznij obronę</button>
+  </div>
+</div>
+
+<script src="script.js"></script>
+  <script src="../shared/auth.js"></script>
+</body>
+</html>

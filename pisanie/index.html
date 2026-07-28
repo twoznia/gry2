@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pisanie 🖊️</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<a class="back-link" href="../">← Wróć</a>
+<a href="hasla.html" id="words-link" target="_blank" rel="noopener">hasła</a>
+
+<div id="lang-switcher" style="position:fixed;top:10px;right:10px;z-index:100;display:flex;gap:6px;">
+  <button id="lang-pl" onclick="setLang('pl')" title="Polski" aria-label="Polski" style="background:rgba(255,255,255,0.2);color:white;border:2px solid rgba(255,255,255,0.4);border-radius:20px;padding:4px 10px;font-size:1rem;cursor:pointer;line-height:0;"><img src="https://flagcdn.com/24x18/pl.png" width="24" height="18" alt="Polski" style="display:block;border-radius:3px;"></button>
+  <button id="lang-en" onclick="setLang('en')" title="English" aria-label="English" style="background:rgba(255,255,255,0.2);color:white;border:2px solid rgba(255,255,255,0.4);border-radius:20px;padding:4px 10px;font-size:1rem;cursor:pointer;line-height:0;"><img src="https://flagcdn.com/24x18/gb.png" width="24" height="18" alt="English" style="display:block;border-radius:3px;"></button>
+</div>
+
+<div id="mode-switcher">
+    <button id="mode-images" onclick="setMode('images')">🖼️ <span>Obrazki</span></button>
+    <button id="mode-listen" onclick="setMode('listen')">🔊 <span>Słuchanie</span></button>
+</div>
+
+<div id="progress">
+    <div id="level-label">Poziom 1 • słowa 3-literowe</div>
+    <div id="level-dots"></div>
+</div>
+
+<div id="game-card">
+    <div id="emoji-area"></div>
+    <div id="hint-row">
+        <button id="hint-btn" onclick="toggleHint()">💡 Podpowiedź</button>
+        <button id="speak-btn" onclick="speakWord()" aria-label="Odsłuchaj słowo" title="Odsłuchaj słowo">🔊</button>
+    </div>
+    <div id="word-hint" class="hint-hidden"></div>
+    <div id="answer-boxes"></div>
+    <button id="check-btn" onclick="checkAnswer()">Sprawdź</button>
+    <div id="letter-pool"></div>
+</div>
+
+<div id="overlay">
+    <div class="ov-card">
+        <span class="ov-emoji" id="ov-emoji">🎉</span>
+        <div class="ov-title" id="ov-title">Świetnie!</div>
+        <div class="ov-text"  id="ov-text">Brawo!</div>
+        <button class="ov-btn" id="ov-btn" onclick="advanceLevel()">Dalej →</button>
+    </div>
+</div>
+
+<script src="words-listen.js"></script>
+<script src="script.js"></script>
+  <script src="../shared/auth.js"></script>
+</body>
+</html>

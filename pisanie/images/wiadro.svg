@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Shadow -->
+  <ellipse cx="52" cy="96" rx="22" ry="4" fill="#1565C0" opacity="0.25"/>
+  <!-- Handle -->
+  <path d="M28,28 Q50,8 72,28" stroke="#1565C0" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <!-- Bucket body (trapezoid) -->
+  <path d="M18,33 L26,88 Q50,96 74,88 L82,33 Z" fill="#2196F3" stroke="#1565C0" stroke-width="2"/>
+  <!-- Bucket rim (top ellipse) -->
+  <ellipse cx="50" cy="33" rx="32" ry="9" fill="#42A5F5" stroke="#1565C0" stroke-width="2"/>
+  <!-- Shine stripe -->
+  <path d="M26,42 L29,80" stroke="white" stroke-width="3.5" stroke-linecap="round" opacity="0.35"/>
+  <!-- Horizontal band -->
+  <path d="M20,60 Q50,68 80,60" stroke="#1565C0" stroke-width="2" fill="none" opacity="0.4"/>
+  <!-- Handle attachment dots -->
+  <circle cx="28" cy="28" r="5" fill="#1565C0"/>
+  <circle cx="72" cy="28" r="5" fill="#1565C0"/>
+</svg>

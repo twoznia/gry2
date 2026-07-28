@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reflex</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="back-link" href="../">← Wróć</a>
+
+<div class="text-center px-4 w-full max-w-5xl">
+    <h1 class="text-4xl font-extrabold mb-2 text-white tracking-tight">⚡ Reflex</h1>
+    <p class="text-slate-400 text-lg mb-10">Wybierz wariant gry</p>
+
+    <div class="flex flex-wrap gap-6 justify-center">
+
+        <a href="./znikanie/" class="variant-card card-znikanie">
+            <div class="variant-icon">👻</div>
+            <h2 class="text-2xl font-bold text-white mb-1">Znikanie</h2>
+            <p class="text-slate-400 text-sm text-center">Klikaj kulki zanim znikną!</p>
+            <div class="mt-4 bg-pink-600 hover:bg-pink-500 text-white font-bold px-6 py-2 rounded-xl text-sm transition-colors">Zagraj</div>
+        </a>
+
+        <a href="./unik/" class="variant-card card-unik">
+            <div class="variant-icon">💨</div>
+            <h2 class="text-2xl font-bold text-white mb-1">Unik</h2>
+            <p class="text-slate-400 text-sm text-center">Unikaj kulek — ruszaj myszką lub palcem!</p>
+            <div class="mt-4 bg-red-600 hover:bg-red-500 text-white font-bold px-6 py-2 rounded-xl text-sm transition-colors">Zagraj</div>
+        </a>
+
+        <a href="./samuraj/" class="variant-card card-samuraj">
+            <div class="variant-icon">⚔️</div>
+            <h2 class="text-2xl font-bold text-white mb-1">Samuraj</h2>
+            <p class="text-slate-400 text-sm text-center">Przecinaj spadające kulki zanim spadną — uważaj na bomby!</p>
+            <div class="mt-4 bg-rose-600 hover:bg-rose-500 text-white font-bold px-6 py-2 rounded-xl text-sm transition-colors">Zagraj</div>
+        </a>
+
+        <a href="./liczby/" class="variant-card card-numbers">
+            <div class="variant-icon">123</div>
+            <h2 class="text-2xl font-bold text-white mb-1">Liczby</h2>
+            <p class="text-slate-400 text-sm text-center">Klikaj kółka z liczbami w odpowiedniej kolejności</p>
+            <div class="mt-4 bg-blue-600 hover:bg-blue-500 text-white font-bold px-6 py-2 rounded-xl text-sm transition-colors">Zagraj</div>
+        </a>
+
+        <a href="./litery/" class="variant-card card-letters">
+            <div class="variant-icon">ABC</div>
+            <h2 class="text-2xl font-bold text-white mb-1">Litery</h2>
+            <p class="text-slate-400 text-sm text-center">Klikaj kółka z literami w kolejności alfabetycznej</p>
+            <div class="mt-4 bg-purple-600 hover:bg-purple-500 text-white font-bold px-6 py-2 rounded-xl text-sm transition-colors">Zagraj</div>
+        </a>
+
+        <a href="./kolory/" class="variant-card card-colors">
+            <div class="variant-icon">🔴🔵🟢</div>
+            <h2 class="text-2xl font-bold text-white mb-1">Kolory</h2>
+            <p class="text-slate-400 text-sm text-center">Klikaj kółka w kolejności kolorów z listy</p>
+            <div class="mt-4 bg-orange-600 hover:bg-orange-500 text-white font-bold px-6 py-2 rounded-xl text-sm transition-colors">Zagraj</div>
+        </a>
+
+        <a href="./kolory2/" class="variant-card card-colors2">
+            <div class="variant-icon">🟢🔴🔵</div>
+            <h2 class="text-2xl font-bold text-white mb-1">Kolory 2</h2>
+            <p class="text-slate-400 text-sm text-center">Klikaj kółka w kolejności kolorów – bez podpowiedzi!</p>
+            <div class="mt-4 bg-green-600 hover:bg-green-500 text-white font-bold px-6 py-2 rounded-xl text-sm transition-colors">Zagraj</div>
+        </a>
+
+        <a href="./stroop/" class="variant-card card-stroop">
+            <div class="variant-icon">🟪🟧</div>
+            <h2 class="text-2xl font-bold text-white mb-1">Stroop</h2>
+            <p class="text-slate-400 text-sm text-center">Kliknij kolor czcionki albo kolor nazwany słowem!</p>
+            <div class="mt-4 bg-purple-600 hover:bg-purple-500 text-white font-bold px-6 py-2 rounded-xl text-sm transition-colors">Zagraj</div>
+        </a>
+
+        <a href="./sekwencja/" class="variant-card card-sekwencja">
+            <div class="variant-icon">🧠</div>
+            <h2 class="text-2xl font-bold text-white mb-1">Sekwencja</h2>
+            <p class="text-slate-400 text-sm text-center">Zapamiętaj kolejność kulek i klikaj z pamięci!</p>
+            <div class="mt-4 bg-purple-600 hover:bg-purple-500 text-white font-bold px-6 py-2 rounded-xl text-sm transition-colors">Zagraj</div>
+        </a>
+
+        <a href="./snajper/" class="variant-card card-snajper">
+            <div class="variant-icon">🎯</div>
+            <h2 class="text-2xl font-bold text-white mb-1">Snajper</h2>
+            <p class="text-slate-400 text-sm text-center">Klikaj tylko kulki w wybranym kolorze!</p>
+            <div class="mt-4 bg-green-600 hover:bg-green-500 text-white font-bold px-6 py-2 rounded-xl text-sm transition-colors">Zagraj</div>
+        </a>
+
+        <a href="./lancuch/" class="variant-card card-lancuch">
+            <div class="variant-icon">🔗</div>
+            <h2 class="text-2xl font-bold text-white mb-1">Łańcuch</h2>
+            <p class="text-slate-400 text-sm text-center">Łącz kulki tego samego koloru — dłuższy łańcuch = więcej punktów!</p>
+            <div class="mt-4 bg-sky-600 hover:bg-sky-500 text-white font-bold px-6 py-2 rounded-xl text-sm transition-colors">Zagraj</div>
+        </a>
+
+    </div>
+</div>
+
+  <script src="../shared/auth.js"></script>
+</body>
+</html>

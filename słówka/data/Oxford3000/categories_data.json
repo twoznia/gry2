@@ -1,0 +1,101 @@
+{
+  "categories": [
+    {
+      "id": 1,
+      "title": "Człowiek, Życie Codzienne i Dom",
+      "subcategories": [
+        "Dane osobowe i etapy życia",
+        "Rodzina i relacje",
+        "Ciało i wygląd",
+        "Dom, budynek i wyposażenie",
+        "Czynności rutynowe i ubiór"
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Praca, Edukacja i Gospodarka",
+      "subcategories": [
+        "Edukacja i nauka",
+        "Praca i zawody",
+        "Biznes i finanse",
+        "Przemysł i marketing"
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Czas, Miejsce i Ruch",
+      "subcategories": [
+        "Czas, dni i miesiące",
+        "Lokalizacja i kierunki",
+        "Ruch, transport i podróże"
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Natura, Środowisko i Świat",
+      "subcategories": [
+        "Zwierzęta i rośliny",
+        "Pogoda i zjawiska",
+        "Geografia i kosmos",
+        "Ekologia i materiały"
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Zdrowie, Jedzenie i Styl Życia",
+      "subcategories": [
+        "Jedzenie i picie",
+        "Gotowanie i posiłki",
+        "Zdrowie i medycyna",
+        "Sport i rekreacja"
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Komunikacja, Media i Technologia",
+      "subcategories": [
+        "Mówienie i język",
+        "Internet i IT",
+        "Media i urządzenia",
+        "Pisanie i publikacje",
+        "Telefon i wiadomości",
+        "Komputery i oprogramowanie"
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Społeczeństwo, Prawo i Kultura",
+      "subcategories": [
+        "Polityka i państwo",
+        "Prawo i przestępczość",
+        "Sztuka i rozrywka",
+        "Religia i tradycja",
+        "Konflikt i przemoc",
+        "Życie społeczne"
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Opis Świata, Cechy i Relacje",
+      "subcategories": [
+        "Rozmiar, ilość i stopień",
+        "Cechy fizyczne i jakość",
+        "Porównania i relacje",
+        "Czasowniki pomocnicze i funkcje językowe"
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Abstrakcyjne Koncepcje, Uczucia i Logika",
+      "subcategories": [
+        "Uczucia i emocje",
+        "Procesy myślowe i opinia",
+        "Logika i argumentacja",
+        "Wartości i zachowanie",
+        "Cele i osiągnięcia",
+        "Przyczyna i skutek",
+        "Prawda i pewność"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Neon Jumper</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <a class="back-link" href="../">← Wróć</a>
+
+    <div id="game-container">
+        <div class="ui-header text-sm sm:text-base">
+            <div>WYNIK: <span id="score-display" class="stat-value">0</span></div>
+            <div>POZIOM: <span id="level-display" class="stat-value">1</span></div>
+            <div>ŻYCIA: <span id="lives-display" class="stat-value text-red-500">❤️❤️❤️</span></div>
+            <div class="hidden sm:block">REKORD: <span id="highscore-display" class="stat-value">0</span></div>
+        </div>
+
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+        <div id="overlay" class="active">
+            <div class="title" id="overlay-title">NEON<br>JUMPER</div>
+            <p id="overlay-desc" class="text-slate-300 mb-8 text-center max-w-md px-4 text-sm leading-relaxed">
+                Zbierz wszystkie rdzenie.<br>
+                Czerwony rdzeń daje 5x więcej punktów.<br>
+                Przytrzymaj skok podczas opadania, aby szybować!
+            </p>
+            <button id="start-btn" class="action-btn">ZAGRAJ</button>
+        </div>
+    </div>
+
+    <div id="mobile-controls">
+        <div class="dir-controls">
+            <div class="control-btn" id="btn-left">◀</div>
+            <div class="control-btn" id="btn-right">▶</div>
+        </div>
+        <div class="control-btn" id="btn-jump" style="width: 80px; border-radius: 20px;">SKOK</div>
+    </div>
+
+    <script type="module" src="script.js"></script>
+  <script src="../shared/auth.js"></script>
+</body>
+</html>

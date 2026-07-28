@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moje Gry | @twoznia</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="layout-small">
+
+    <header class="page-header">
+        <div>
+            <h1>🎮 Centrum Rozrywki</h1>
+            <p class="subtitle">Wybierz grę i pobij rekord!</p>
+        </div>
+        <button id="layout-toggle" class="layout-toggle" type="button" aria-pressed="true" aria-label="Przełącz na duże karty">
+            <span class="layout-toggle-label">Duże karty</span>
+        </button>
+    </header>
+
+    <main class="game-container">
+
+        <a href="./pytania/" class="game-card">
+            <span class="icon">🧠</span>
+            <h2>Pytania</h2>
+            <p style="color: #94a3b8; font-size: 0.9rem;">Quiz wiedzy ogólnej – historia, nauka, kultura i wiele więcej!</p>
+            <div class="play-btn">Zagraj</div>
+        </a>
+
+        <a href="./pytanka/" class="game-card">
+            <span class="icon">💡</span>
+            <h2>Pytanka</h2>
+            <p style="color: #94a3b8; font-size: 0.9rem;">Quiz dla dzieci z 3 odpowiedziami do wyboru.</p>
+            <div class="play-btn">Zagraj</div>
+        </a>
+
+        <a href="./kulki/" class="game-card">
+            <span class="icon">🔵</span>
+            <h2>Kulki</h2>
+            <p style="color: #94a3b8; font-size: 0.9rem;">Układaj linie kolorowych kulek w stylu klasycznego Color Lines.</p>
+            <div class="play-btn">Zagraj</div>
+        </a>
+
+        <a href="./soltaire/" class="game-card">
+            <span class="icon">♥️</span>
+            <h2>Soltaire</h2>
+            <p style="color: #94a3b8; font-size: 0.9rem;">Klasyczny pasjans w stylu Piatnik.</p>
+            <div class="play-btn">Zagraj</div>
+        </a>
+
+        <a href="./mahjong/" class="game-card">
+            <span class="icon">🀄</span>
+            <h2>Mahjong</h2>
+            <p style="color: #94a3b8; font-size: 0.9rem;">Mahjong Solitaire w średniowiecznym stylu z rankingiem i podpowiedziami.</p>
+            <div class="play-btn">Zagraj</div>
+        </a>
+
+        <a href="./auta/" class="game-card">
+            <span class="icon">🏎️</span>
+            <h2>Wyścigi Aut</h2>
+            <p style="color: #94a3b8; font-size: 0.9rem;">Szybka jazda i omijanie przeszkód.</p>
+            <div class="play-btn">Zagraj</div>
+        </a>
+
+        <a href="./riverraid/" class="game-card">
+            <span class="icon">✈️</span>
+            <h2>River Raid</h2>
+            <p style="color: #94a3b8; font-size: 0.9rem;">Arcadowy lot bojowy nad rzeką z paliwem, mostami i wrogami.</p>
+            <div class="play-btn">Zagraj</div>
+        </a>
+
+        <a href="./mat-jaja/" class="game-card">
+            <span class="icon">🥚</span>
+            <h2>Mat-Jaja</h2>
+            <p style="color: #94a3b8; font-size: 0.9rem;">Matematyczna zabawa z jajkami w roli głównej.</p>
+            <div class="play-btn">Zagraj</div>
+        </a>
+
+        <a href="./rybak/" class="game-card" id="rybak-card">
+            <span class="icon">🚣</span>
+            <h2>Rybak</h2>
+            <p style="color: #94a3b8; font-size: 0.9rem;">Spokojny połów na pełnym jeziorze.</p>
+            <div class="play-btn">Zagraj</div>
+        </a>
+
+        <a href="./pisanie/" class="game-card">
+            <span class="icon">🖊️</span>
+            <h2>Pisanie</h2>
+            <p style="color: #94a3b8; font-size: 0.9rem;">Naucz się pisać polskie słowa, literka po literce.</p>
+            <div class="play-btn">Zagraj</div>
+        </a>
+
+        <a href="./słówka/" class="game-card">
+            <span class="icon"><img src="./shared/icons/flag-uk.svg" alt="Flaga Wielkiej Brytanii"></span>
+            <h2>Słówka</h2>
+            <p style="color: #94a3b8; font-size: 0.9rem;">Trener słówek z nauką polski ↔ angielski.</p>
+            <div class="play-btn">Zagraj</div>
+        </a>
+
+        <a href="./kraje/" class="game-card">
+            <span class="icon">🌍</span>
+            <h2>Kraje</h2>
+            <p style="color: #94a3b8; font-size: 0.9rem;">Sprawdź swoją wiedzę o krajach, stolicach i flagach!</p>
+            <div class="play-btn">Zagraj</div>
+        </a>
+
+        <a href="./memo/" class="game-card">
+            <span class="icon">🃏</span>
+            <h2>Memo</h2>
+            <p style="color: #94a3b8; font-size: 0.9rem;">Znajdź wszystkie pary ukrytych obrazków!</p>
+            <div class="play-btn">Zagraj</div>
+        </a>
+
+        <a href="./reflex/" class="game-card">
+            <span class="icon">⚡</span>
+            <h2>Reflex</h2>
+            <p style="color: #94a3b8; font-size: 0.9rem;">Testuj refleks – klikaj kolorowe cele na czas, w odpowiedniej kolejności!</p>
+            <div class="play-btn">Zagraj</div>
+        </a>
+
+        <a href="./puzzle/" class="game-card">
+            <span class="icon">🧩</span>
+            <h2>Puzzle</h2>
+            <p style="color: #94a3b8; font-size: 0.9rem;">Składaj obrazki z puzzli, kawałek po kawałku.</p>
+            <div class="play-btn">Zagraj</div>
+        </a>
+
+        <a href="./tetris/" class="game-card">
+            <span class="icon">🟦</span>
+            <h2>Tetris</h2>
+            <p style="color: #94a3b8; font-size: 0.9rem;">Klasyczny Tetris z neonową grafiką, systemem hold i podglądem następnych klocków.</p>
+            <div class="play-btn">Zagraj</div>
+        </a>
+
+        <a href="./tictactoe/" class="game-card">
+            <span class="icon">⭕</span>
+            <h2>Kółko i Krzyżyk</h2>
+            <p style="color: #94a3b8; font-size: 0.9rem;">Klasyczna gra kółko i krzyżyk z AI na trzech poziomach trudności i różnych rozmiarach planszy.</p>
+            <div class="play-btn">Zagraj</div>
+        </a>
+
+        <a href="./obrona/" class="game-card">
+            <span class="icon">🏰</span>
+            <h2>Tower Defense</h2>
+            <p style="color: #94a3b8; font-size: 0.9rem;">Broń swojej bazy przed falami wrogów – stawiaj wieże i przetrwaj jak najdłużej!</p>
+            <div class="play-btn">Zagraj</div>
+        </a>
+
+        <a href="./imuno/" class="game-card">
+            <span class="icon">🦠</span>
+            <h2>Immuno</h2>
+            <p style="color: #94a3b8; font-size: 0.9rem;">Tower defense w roli układu odpornościowego – broń narządów przed patogenami przez kolejne poziomy.</p>
+            <div class="play-btn">Zagraj</div>
+        </a>
+
+        <a href="./anatomia/" class="game-card">
+            <span class="icon">🫀</span>
+            <h2>Anatom</h2>
+            <p style="color: #94a3b8; font-size: 0.9rem;">Ucz się anatomii człowieka – wskazuj i nazywaj struktury ciała na 4 poziomach: od przedszkola po fizjoterapię.</p>
+            <div class="play-btn">Zagraj</div>
+        </a>
+
+        <a href="./ptak/" class="game-card">
+            <span class="icon">🐦</span>
+            <h2>Ptak</h2>
+            <p style="color: #94a3b8; font-size: 0.9rem;">Leć i omijaj przeszkody – klasyczna zabawa w stylu Flappy Bird!</p>
+            <div class="play-btn">Zagraj</div>
+        </a>
+
+        <a href="./saper/" class="game-card">
+            <span class="icon">💣</span>
+            <h2>Saper</h2>
+            <p style="color: #94a3b8; font-size: 0.9rem;">Odkryj wszystkie pola nie trafiając na minę – klasyczny Saper.</p>
+            <div class="play-btn">Zagraj</div>
+        </a>
+
+        <a href="./jumper/" class="game-card">
+            <span class="icon">🤖</span>
+            <h2>Skoczek</h2>
+            <p style="color: #94a3b8; font-size: 0.9rem;">Skacz po platformach i zbieraj punkty – neonowy platformer!</p>
+            <div class="play-btn">Zagraj</div>
+        </a>
+
+        <a href="./snake/" class="game-card">
+            <span class="icon">🐍</span>
+            <h2>Neonowy Wąż</h2>
+            <p style="color: #94a3b8; font-size: 0.9rem;">Klasyczny Snake w neonowym stylu – rośnij i unikaj zderzeń.</p>
+            <div class="play-btn">Zagraj</div>
+        </a>
+
+        <a href="./sudoku/" class="game-card">
+            <span class="icon">🔢</span>
+            <h2>Sudoku</h2>
+            <p style="color: #94a3b8; font-size: 0.9rem;">Klasyczne sudoku – wypełnij siatkę cyframi bez powtórzeń w wierszach, kolumnach i kwadratach.</p>
+            <div class="play-btn">Zagraj</div>
+        </a>
+
+        <a href="./koloruj/" class="game-card">
+            <span class="icon">🎨</span>
+            <h2>Koloruję Zwierzątka</h2>
+            <p style="color: #94a3b8; font-size: 0.9rem;">Pokoloruj zwierzątko — kotka, pieska lub papugę. Po pomalowaniu ożywa i wraca na miejsce!</p>
+            <div class="play-btn">Zagraj</div>
+        </a>
+
+        <a href="./piramidy/" class="game-card">
+            <span class="icon">🔺</span>
+            <h2>Piramidy</h2>
+            <p style="color: #94a3b8; font-size: 0.9rem;">Ustaw wysokości piramid tak, by liczba widocznych zgadzała się z podpowiedziami na brzegach planszy.</p>
+            <div class="play-btn">Zagraj</div>
+        </a>
+
+        <a href="./binairo/" class="game-card">
+            <span class="icon">☀️🌙</span>
+            <h2>Binairo</h2>
+            <p style="color: #94a3b8; font-size: 0.9rem;">Wypełnij planszę słońcami i księżycami — po równo w każdym wierszu i kolumnie, nigdy trzy takie same obok siebie.</p>
+            <div class="play-btn">Zagraj</div>
+        </a>
+
+        <a href="./calcudoku/" class="game-card">
+            <span class="icon">🧮</span>
+            <h2>Calcudoku</h2>
+            <p style="color: #94a3b8; font-size: 0.9rem;">Wypełnij siatkę liczbami 1–n bez powtórzeń w wierszach i kolumnach tak, by każda klatka dawała swój wynik.</p>
+            <div class="play-btn">Zagraj</div>
+        </a>
+
+        <a href="./nonogram/" class="game-card">
+            <span class="icon">🖼️</span>
+            <h2>Nonogram</h2>
+            <p style="color: #94a3b8; font-size: 0.9rem;">Zamaluj pola tak, by ciągi zamalowanych pól w każdym wierszu i kolumnie zgadzały się z liczbami na brzegach.</p>
+            <div class="play-btn">Zagraj</div>
+        </a>
+
+    </main>
+
+    <footer>
+        Ostatnia aktualizacja: 2026 | @twoznia
+    </footer>
+
+    <script src="script.js"></script>
+
+  <script src="shared/auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,180 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0a0f14;
+  --panel: #131c24;
+  --panel2: #1b2731;
+  --border: #2a3a47;
+  --text: #e8f1f5;
+  --muted: #8aa0ad;
+  --teal: #2dd4bf;
+  --cyan: #38bdf8;
+  --violet: #a78bfa;
+  --red: #ef4444;
+  --green: #22c55e;
+  --gold: #fbbf24;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: radial-gradient(circle at 50% 0%, #142029 0%, var(--bg) 70%);
+  color: var(--text);
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px;
+  touch-action: manipulation;
+  user-select: none;
+  overflow-x: hidden;
+}
+
+a.back-link {
+  position: fixed;
+  top: 10px; left: 10px;
+  z-index: 100;
+  background: #334155;
+  color: #fff;
+  border: 1px solid #475569;
+  border-radius: 8px;
+  padding: 8px 14px;
+  text-decoration: none;
+  font-size: 13px;
+}
+a.back-link:hover { background: #475569; }
+
+#game {
+  width: 100%;
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 44px;
+}
+
+/* ── HUD ─────────────────────────────────────────────── */
+#hud {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 8px 6px;
+}
+.hud-cell { text-align: center; min-width: 0; }
+.hud-label { font-size: 0.62rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; white-space: nowrap; }
+.hud-value { font-size: 1.05rem; font-weight: 800; margin-top: 2px; white-space: nowrap; }
+.hud-value.money { color: var(--gold); }
+.hud-value.lives { color: var(--green); }
+#organ-name { font-size: 0.8rem; color: var(--teal); }
+
+/* ── Plansza ─────────────────────────────────────────── */
+#board-wrap {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: 0 14px 40px rgba(0,0,0,0.55);
+  line-height: 0;
+}
+#board { display: block; width: 100%; height: auto; cursor: pointer; }
+
+#organ-banner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: rgba(7,12,16,0.82);
+  color: var(--text);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+  padding: 20px;
+}
+#organ-banner.show { opacity: 1; }
+#organ-banner h2 { font-size: 1.8rem; color: var(--teal); margin-bottom: 8px; }
+#organ-banner p { color: var(--muted); font-size: 0.95rem; max-width: 460px; line-height: 1.5; }
+
+/* ── Sterowanie ──────────────────────────────────────── */
+#controls { display: flex; flex-direction: column; gap: 8px; }
+
+#tower-buttons { display: flex; gap: 6px; }
+.tower-btn {
+  flex: 1;
+  background: var(--panel);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 6px;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.15s, background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.tower-btn:hover { background: var(--panel2); }
+.tower-btn.selected { border-color: var(--teal); background: var(--panel2); }
+.tower-btn.cant { opacity: 0.5; }
+.tb-icon { font-size: 1.3rem; line-height: 1; }
+.tb-name { font-size: 0.72rem; font-weight: 700; margin-top: 3px; }
+.tb-cost { font-size: 0.72rem; color: var(--gold); margin-top: 2px; }
+.tb-desc { font-size: 0.6rem; color: var(--muted); margin-top: 3px; line-height: 1.25; }
+
+#tower-panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px;
+}
+#tower-panel.hidden { display: none; }
+#panel-title { font-weight: 800; margin-bottom: 4px; }
+#panel-stats { font-size: 0.78rem; color: var(--muted); line-height: 1.5; margin-bottom: 8px; }
+.panel-buttons { display: flex; gap: 8px; }
+
+.ctl-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 11px 14px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  cursor: pointer;
+  color: #06121a;
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+  flex: 1;
+}
+.ctl-btn.primary { background: var(--teal); }
+.ctl-btn.primary:hover { background: #5eead4; }
+.ctl-btn.primary:disabled { background: #2a3a47; color: var(--muted); cursor: default; }
+.ctl-btn.upgrade { background: var(--cyan); }
+.ctl-btn.upgrade:disabled { background: #2a3a47; color: var(--muted); cursor: default; }
+.ctl-btn.sell { background: var(--gold); }
+.ctl-btn.big { font-size: 1.1rem; padding: 14px 22px; flex: none; }
+
+/* ── Overlay ─────────────────────────────────────────── */
+.overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(6,10,14,0.9);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.overlay.hidden { display: none; }
+.overlay-box {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 30px 28px;
+  text-align: center;
+  max-width: 460px;
+  box-shadow: 0 30px 70px rgba(0,0,0,0.6);
+}
+.overlay-box h1 { font-size: 2rem; margin-bottom: 14px; }
+.overlay-box p { color: var(--muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 22px; white-space: pre-line; }
+
+@media (max-width: 520px) {
+  .hud-value { font-size: 0.9rem; }
+  .hud-label { font-size: 0.55rem; }
+  #game { margin-top: 40px; }
+}

@@ -1,0 +1,167 @@
+        .back-link {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 100;
+            background: #334155;
+            color: #fff;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 8px 14px;
+            text-decoration: none;
+            font-size: 13px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .back-link:hover { background: #475569; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+
+            overflow: hidden;
+            user-select: none;
+            background: radial-gradient(circle, #0f4024 0%, #061f10 100%);
+            height: 100dvh;
+            margin: 0;
+        }
+
+        /* Precyzyjne proporcje pasjansowe z zachowaniem zasady 12% widoczności */
+        :root {
+            --card-scale: 1.2;
+            --card-width: calc(clamp(55px, min(8.2vw, 11.2vh), 115px) * var(--card-scale));
+            --card-height: calc(var(--card-width) * 1.45);
+            /* Odstęp między kartami na stole wynosi dokładnie 12% szerokości karty */
+            --card-gap: calc(var(--card-width) * 0.12);
+            /* Odstęp kaskady wynosi dokładnie 12% wysokości karty (kolejna karta zakrywa 88% poprzedniej) */
+            --tableau-offset-y: calc(var(--card-height) * 0.12);
+            --card-corner-band: calc(var(--card-height) * 0.12);
+            --card-corner-pad-x: calc(var(--card-width) * 0.08);
+            --card-corner-pad-y: calc(var(--card-height) * 0.025);
+            --card-corner-rank-size: calc(var(--card-width) * 0.18);
+            --card-corner-suit-size: calc(var(--card-width) * 0.16);
+            --card-face-inset-x: calc(var(--card-width) * 0.09);
+            --card-face-pad-y: calc(var(--card-height) * 0.12);
+            --card-figure-corner-suit-size: calc(var(--card-width) * 0.18);
+            --card-pip-size: calc(var(--card-width) * 0.21);
+        }
+
+        .game-container {
+            max-width: 1300px;
+            margin: 0 auto;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            justify-content: space-between;
+        }
+
+        /* Stylizacja kart */
+        .card {
+            width: var(--card-width);
+            height: var(--card-height);
+            border-radius: 8px;
+            position: absolute;
+            transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.35), 0 1px 3px rgba(0,0,0,0.2);
+            transform-style: preserve-3d;
+            background: white;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.45);
+        }
+
+        .card.dragging {
+            transition: none !important;
+            z-index: 1000 !important;
+            box-shadow: 0 25px 30px rgba(0, 0, 0, 0.5) !important;
+            transform: scale(1.04) !important;
+        }
+
+        /* Rewers karty Piatnik Style - naprawiony brak position: relative, karta dziedziczy position: absolute */
+        .card.back {
+            background: #a81a1a;
+            border: 3px solid #ffffff;
+        }
+
+        /* Pola na karty (Puste gniazda) */
+        .pile-holder {
+            width: var(--card-width);
+            height: var(--card-height);
+            border-radius: 8px;
+            border: 2px dashed rgba(255, 255, 255, 0.18);
+            background: rgba(0, 0, 0, 0.22);
+            position: relative;
+            box-sizing: border-box;
+            transition: border-color 0.2s, background-color 0.2s;
+        }
+
+        .pile-holder::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 6px;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.4);
+            pointer-events: none;
+        }
+
+        /* Symbole koloru na pustych polach bazowych */
+        .foundation-holder::before {
+            content: attr(data-suit);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2.2rem;
+            opacity: 0.12;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* Klasyczny zielony stół pasjansowy - zoptymalizowany pod kątem wyrównania do prawej strony */
+        .table-grid {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            gap: 1.2rem;
+            padding-top: 0.5rem;
+            /* Dokładna szerokość 7 kolumn wraz z odstępami 12% szerokości karty */
+            width: calc(7 * var(--card-width) + 6 * var(--card-gap));
+            /* Wyrównanie całego stołu gry od prawej strony ekranu */
+            margin-left: auto;
+            margin-right: 0;
+            max-width: 100%;
+        }
+
+        /* Pozycjonowanie kart w kolumnach */
+        .tableau-column {
+            position: relative;
+            width: var(--card-width);
+            height: 100%;
+            min-height: calc(var(--card-height) * 3);
+        }
+
+        /* Animowany puls dla systemu podpowiedzi */
+        @keyframes pulse-hint {
+            0%, 100% { box-shadow: 0 0 0 0px rgba(52, 211, 153, 0.9); }
+            50% { box-shadow: 0 0 15px 6px rgba(52, 211, 153, 0.9); }
+        }
+
+        .hint-pulse {
+            animation: pulse-hint 1.2s infinite;
+            z-index: 500 !important;
+        }
+
+        /* Canvas do kaskady wygranej */
+        #victory-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100dvh;
+            z-index: 90;
+            pointer-events: none;
+            display: none;
+        }

@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Sky / water background hint -->
+  <rect x="0" y="60" width="100" height="40" fill="#B3E5FC" opacity="0.3" rx="2"/>
+  <!-- Water surface -->
+  <path d="M0,72 Q25,68 50,72 Q75,76 100,72 L100,100 L0,100 Z" fill="#29B6F6" opacity="0.5"/>
+  <!-- Left tower base -->
+  <rect x="8" y="42" width="12" height="30" rx="2" fill="#78909C" stroke="#546E7A" stroke-width="1.2"/>
+  <!-- Left tower top -->
+  <rect x="9" y="30" width="10" height="14" rx="2" fill="#90A4AE" stroke="#546E7A" stroke-width="1.2"/>
+  <!-- Left tower pinnacle -->
+  <polygon points="14,20 9,32 19,32" fill="#607D8B" stroke="#546E7A" stroke-width="1"/>
+  <!-- Right tower base -->
+  <rect x="80" y="42" width="12" height="30" rx="2" fill="#78909C" stroke="#546E7A" stroke-width="1.2"/>
+  <!-- Right tower top -->
+  <rect x="81" y="30" width="10" height="14" rx="2" fill="#90A4AE" stroke="#546E7A" stroke-width="1.2"/>
+  <!-- Right tower pinnacle -->
+  <polygon points="86,20 81,32 91,32" fill="#607D8B" stroke="#546E7A" stroke-width="1"/>
+  <!-- Main cables left to right -->
+  <path d="M14,28 Q50,50 86,28" stroke="#455A64" stroke-width="2.5" fill="none"/>
+  <!-- Hanger cables left side -->
+  <line x1="26" y1="36" x2="26" y2="58" stroke="#546E7A" stroke-width="1.2"/>
+  <line x1="34" y1="42" x2="34" y2="58" stroke="#546E7A" stroke-width="1.2"/>
+  <line x1="42" y1="46" x2="42" y2="58" stroke="#546E7A" stroke-width="1.2"/>
+  <!-- Hanger cables right side -->
+  <line x1="74" y1="36" x2="74" y2="58" stroke="#546E7A" stroke-width="1.2"/>
+  <line x1="66" y1="42" x2="66" y2="58" stroke="#546E7A" stroke-width="1.2"/>
+  <line x1="58" y1="46" x2="58" y2="58" stroke="#546E7A" stroke-width="1.2"/>
+  <!-- Bridge deck -->
+  <rect x="4" y="56" width="92" height="6" rx="3" fill="#8D6E63" stroke="#6D4C41" stroke-width="1.2"/>
+  <!-- Road markings -->
+  <line x1="50" y1="57" x2="50" y2="62" stroke="#FFEB3B" stroke-width="1.5" stroke-dasharray="2,3"/>
+  <!-- Left bank -->
+  <rect x="0" y="62" width="8" height="10" rx="1" fill="#8D6E63" stroke="#6D4C41" stroke-width="1"/>
+  <!-- Right bank -->
+  <rect x="92" y="62" width="8" height="10" rx="1" fill="#8D6E63" stroke="#6D4C41" stroke-width="1"/>
+</svg>

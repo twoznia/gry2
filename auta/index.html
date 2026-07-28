@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Elektronika IM-23</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<a class="back-link" href="../">← Wróć</a>
+<div id="lang-switcher" style="position:fixed;top:10px;right:10px;z-index:100;display:flex;gap:4px;">
+    <button id="btn-pl" onclick="setLang('pl')" style="background:transparent;border:1px solid #888;border-radius:20px;padding:4px 10px;line-height:0;cursor:pointer;"><img src="https://flagcdn.com/24x18/pl.png" width="24" height="18" alt="Polski" style="display:block;border-radius:3px;"></button>
+    <button id="btn-en" onclick="setLang('en')" style="background:transparent;border:1px solid #888;border-radius:20px;padding:4px 10px;line-height:0;cursor:pointer;"><img src="https://flagcdn.com/24x18/gb.png" width="24" height="18" alt="English" style="display:block;border-radius:3px;"></button>
+</div>
+
+<div id="console">
+    <div id="screen-border">
+        <div id="screen">
+            <div id="road-bg">
+                <div class="lane-line"></div>
+                <div class="lane-line"></div>
+                <div class="lane-line"></div>
+            </div>
+
+            <div id="ui">
+                <div id="hi-score">HI: 0000</div>
+                <div id="score">0000</div>
+                <div id="lives">♥♥♥</div>
+                <div id="streak"></div>
+            </div>
+
+            <div id="overlay">
+                <h1 id="status-title" style="margin:0; font-size: 32px;">AUTOSLALOM</h1>
+                <p id="final-info" style="font-size: 14px; margin: 15px 0;"></p>
+                <div id="mode-buttons">
+                    <button class="menu-btn" onclick="startGame('spokojny')" id="btn-easy">SPOKOJNY</button>
+                    <button class="menu-btn menu-btn-hard" onclick="startGame('szybki')" id="btn-hard">SZYBKI</button>
+                </div>
+                <button class="menu-btn" id="action-btn" onclick="startGame(lastMode)" style="display:none;">ZAGRAJ PONOWNIE</button>
+            </div>
+
+            <div id="player" class="car-shape player-car" style="bottom: 30px; display: none;">
+                <div class="wheel w1"></div><div class="wheel w2"></div>
+                <div class="car-body"></div>
+                <div class="wheel w3"></div><div class="wheel w4"></div>
+                <div class="exhaust" id="exhaust-l"></div>
+                <div class="exhaust" id="exhaust-r"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <div class="controls-row">
+            <button class="btn" id="btn-left" onclick="handleMove('L')">◀</button>
+            <button class="btn" id="btn-right" onclick="handleMove('P')">▶</button>
+        </div>
+        <button class="btn-reset" onclick="resetHiScore()" id="btn-reset-hi">RESETUJ REKORD</button>
+    </div>
+</div>
+
+<script src="script.js"></script>
+  <script src="../shared/auth.js"></script>
+</body>
+</html>
