@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Shadow -->
+  <ellipse cx="50" cy="84" rx="36" ry="5" fill="#b0bec5" opacity="0.4"/>
+  <!-- Car body lower -->
+  <rect x="8" y="60" width="84" height="22" rx="8" fill="#1565C0" stroke="#0D47A1" stroke-width="1.5"/>
+  <!-- Car body upper / cabin -->
+  <path d="M24,60 Q28,38 38,36 L62,36 Q72,36 76,60 Z" fill="#1976D2" stroke="#0D47A1" stroke-width="1.5"/>
+  <!-- Windshield front -->
+  <path d="M62,37 Q71,38 74,58 L60,58 Z" fill="#B3E5FC" stroke="#4FC3F7" stroke-width="1" opacity="0.9"/>
+  <!-- Windshield rear -->
+  <path d="M38,37 Q29,38 26,58 L40,58 Z" fill="#B3E5FC" stroke="#4FC3F7" stroke-width="1" opacity="0.9"/>
+  <!-- Side windows -->
+  <rect x="40" y="38" width="20" height="19" rx="2" fill="#B3E5FC" stroke="#4FC3F7" stroke-width="1" opacity="0.9"/>
+  <!-- Car body details -->
+  <line x1="8" y1="68" x2="92" y2="68" stroke="#0D47A1" stroke-width="1" opacity="0.4"/>
+  <!-- Door line -->
+  <line x1="50" y1="58" x2="50" y2="82" stroke="#0D47A1" stroke-width="1.2" opacity="0.5"/>
+  <!-- Door handle right -->
+  <rect x="57" y="68" width="9" height="3" rx="1.5" fill="#90CAF9"/>
+  <!-- Door handle left -->
+  <rect x="34" y="68" width="9" height="3" rx="1.5" fill="#90CAF9"/>
+  <!-- Wheel arch left -->
+  <circle cx="25" cy="80" r="12" fill="#212121" stroke="#424242" stroke-width="1.5"/>
+  <circle cx="25" cy="80" r="7" fill="#616161"/>
+  <circle cx="25" cy="80" r="3" fill="#9E9E9E"/>
+  <!-- Wheel arch right -->
+  <circle cx="75" cy="80" r="12" fill="#212121" stroke="#424242" stroke-width="1.5"/>
+  <circle cx="75" cy="80" r="7" fill="#616161"/>
+  <circle cx="75" cy="80" r="3" fill="#9E9E9E"/>
+  <!-- Headlight -->
+  <ellipse cx="90" cy="66" rx="5" ry="4" fill="#FFEE58" stroke="#F9A825" stroke-width="1"/>
+  <!-- Taillight -->
+  <ellipse cx="10" cy="66" rx="5" ry="4" fill="#EF5350" stroke="#C62828" stroke-width="1"/>
+</svg>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tetris | @twoznia</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<a class="back-link" href="../">← Wróć</a>
+
+<div id="wrapper">
+  <!-- Left panel -->
+  <div class="panel">
+    <div class="panel-section">
+      <h3>Hold</h3>
+      <canvas class="mini-canvas" id="holdCanvas" width="80" height="80"></canvas>
+    </div>
+    <div class="panel-section">
+      <h3>Score</h3>
+      <div class="value" id="scoreDisplay">0</div>
+    </div>
+    <div class="panel-section">
+      <h3>Level</h3>
+      <div class="value" id="levelDisplay">1</div>
+    </div>
+    <div class="panel-section">
+      <h3>Lines</h3>
+      <div class="value" id="linesDisplay">0</div>
+    </div>
+  </div>
+
+  <!-- Board -->
+  <div id="board-wrap">
+    <canvas id="board"></canvas>
+    <div id="overlay">
+      <h2 id="overlayTitle">Tetris</h2>
+      <p id="overlayMsg">Naciśnij <strong>Start</strong> aby grać.<br><span id="controlsDesc">Sterowanie strzałkami, Space = hard drop, C = hold, P = pauza.</span></p>
+      <div id="overlayScore" class="score-display" style="display:none">Wynik: <span id="finalScore">0</span></div>
+      <button class="btn" id="overlayBtn">▶ Start</button>
+    </div>
+  </div>
+
+  <!-- Right panel -->
+  <div class="panel">
+    <div class="panel-section">
+      <h3>Next</h3>
+      <canvas class="mini-canvas" id="nextCanvas" width="80" height="160"></canvas>
+    </div>
+  </div>
+</div>
+
+<div id="controls-hint">← → ruch &nbsp;|&nbsp; ↑ obrót &nbsp;|&nbsp; ↓ soft drop &nbsp;|&nbsp; Space hard drop &nbsp;|&nbsp; C hold &nbsp;|&nbsp; P pauza</div>
+
+<div id="mobile-controls">
+  <button id="mc-hold" title="Hold">HOLD</button>
+  <button id="mc-left">◀</button>
+  <button id="mc-rotate">↑</button>
+  <button id="mc-right">▶</button>
+  <button id="mc-soft">↓</button>
+  <button id="mc-drop">DROP</button>
+</div>
+
+<script src="script.js"></script>
+  <script src="../shared/auth.js"></script>
+</body>
+</html>

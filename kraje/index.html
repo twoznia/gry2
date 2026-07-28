@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kraje | @twoznia</title>
+    <script src="https://cdn.jsdelivr.net/npm/@twemoji/api@latest/dist/twemoji.min.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="../shared/style.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<a class="back-link" href="../">← Wróć</a>
+<div id="lang-switcher" style="position:fixed;top:10px;right:10px;z-index:200;display:flex;gap:6px;">
+  <button id="btn-lang-pl" style="background:#334155;color:#fff;border:1px solid #475569;border-radius:8px;padding:6px 10px;font-size:13px;cursor:pointer;line-height:0;"><img src="https://flagcdn.com/24x18/pl.png" width="24" height="18" alt="Polski" style="display:block;border-radius:3px;"></button>
+  <button id="btn-lang-en" style="background:#334155;color:#fff;border:1px solid #475569;border-radius:8px;padding:6px 10px;font-size:13px;cursor:pointer;line-height:0;"><img src="https://flagcdn.com/24x18/gb.png" width="24" height="18" alt="English" style="display:block;border-radius:3px;"></button>
+</div>
+
+<!-- ========== SETUP SCREEN ========== -->
+<section id="screen-setup" class="screen active">
+    <div class="game-title">🌍 Kraje</div>
+    <p class="game-subtitle">Quiz geograficzny – sprawdź swoją wiedzę!</p>
+
+    <div class="card">
+        <div class="form-group">
+            <label for="sel-continent">Kontynent</label>
+            <select id="sel-continent">
+                <option value="Wszystkie">🌐 Wszystkie</option>
+                <option value="Europa">🌍 Europa</option>
+                <option value="Azja">🌏 Azja</option>
+                <option value="Ameryka Północna">🌎 Ameryka Północna</option>
+                <option value="Ameryka Południowa">🌎 Ameryka Południowa</option>
+                <option value="Afryka">🌍 Afryka</option>
+                <option value="Australia i Oceania">🌏 Australia i Oceania</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="sel-top">Atrybut wyświetlany NA GÓRZE</label>
+            <select id="sel-top">
+                <option value="flaga">🏳️ Flaga</option>
+                <option value="panstwo" selected>🗺️ Państwo</option>
+                <option value="stolica">🏛️ Stolica</option>
+                <option value="ludnosc">👥 Ludność</option>
+                <option value="powierzchnia">📐 Powierzchnia</option>
+                <option value="mapa">📍 Mapa</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="sel-bottom">Atrybut do wyboru NA DOLE</label>
+            <select id="sel-bottom">
+                <option value="panstwo">🗺️ Państwo</option>
+                <option value="stolica" selected>🏛️ Stolica</option>
+                <option value="flaga">🏳️ Flaga</option>
+                <option value="ludnosc">👥 Ludność</option>
+                <option value="powierzchnia">📐 Powierzchnia</option>
+                <option value="mapa">📍 Mapa</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="sel-questions">Liczba pytań</label>
+            <select id="sel-questions">
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="15">15</option>
+                <option value="20">20</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="error-msg" id="setup-error"></div>
+    <button class="btn btn-primary" id="btn-start">Rozpocznij Quiz →</button>
+</section>
+
+<!-- ========== GAME SCREEN ========== -->
+<section id="screen-game" class="screen">
+    <div class="hud" style="width:100%;max-width:560px;">
+        <span id="q-counter">Pytanie 1 / 5</span>
+        <span><span id="score-label">Punkty</span>: <span class="score-val" id="score-display">0</span> / <span id="score-max">15</span></span>
+    </div>
+    <div class="progress-bar" id="progress-bar" style="width:100%;max-width:560px;"></div>
+
+    <div class="card pop" id="top-card">
+        <div class="q-attr-label" id="top-attr-label">Flaga</div>
+        <div class="q-value" id="top-value">🇵🇱</div>
+    </div>
+
+    <p class="q-instruction" id="q-instruction">Wybierz państwo:</p>
+
+    <div class="answers-grid" id="answers-grid"></div>
+
+    <div class="feedback" id="feedback"></div>
+
+    <button class="btn btn-primary" id="btn-next" style="display:none;">Następne Pytanie →</button>
+</section>
+
+<!-- ========== RESULTS SCREEN ========== -->
+<section id="screen-results" class="screen">
+    <div class="game-title" id="result-title">🏆 Wyniki</div>
+    <div class="result-score" id="result-score">0</div>
+    <div class="result-max" id="result-max">na 15 możliwych punktów</div>
+    <div class="result-comment" id="result-comment"></div>
+    <div class="card result-list" id="result-list"></div>
+    <div style="display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;">
+        <button class="btn btn-primary" id="btn-replay">Zagraj ponownie</button>
+    </div>
+</section>
+
+<footer>@twoznia | 2026</footer>
+
+<script src="script.js"></script>
+  <script src="../shared/auth.js"></script>
+</body>
+</html>

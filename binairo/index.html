@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Binairo | @twoznia</title>
+    <link rel="stylesheet" href="../shared/style.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<a class="back-link" href="../">← Wróć</a>
+<button id="themeBtn" type="button">☀️ Jasny</button>
+<div id="langSwitch">
+    <button id="langPl" type="button" title="Polski">🇵🇱</button>
+    <button id="langEn" type="button" title="English">🇬🇧</button>
+</div>
+
+<div class="game-title">☀️🌙 Binairo</div>
+<p class="game-subtitle">Wypełnij planszę słońcami i księżycami — po równo w każdym wierszu i kolumnie, nigdy trzy takie same obok siebie.</p>
+
+<div class="card controls">
+    <div class="control-row">
+        <span class="control-label">Rozmiar</span>
+        <div class="pill-group" id="sizeButtons"></div>
+    </div>
+    <div class="control-row">
+        <span class="control-label">Trudność</span>
+        <div class="pill-group" id="diffButtons">
+            <button class="pill" data-diff="easy">Łatwy</button>
+            <button class="pill" data-diff="hard">Trudny</button>
+        </div>
+    </div>
+    <div class="control-row">
+        <button class="btn btn-secondary" id="hintBtn" type="button">💡 Podpowiedź <span id="hintCount">(3)</span></button>
+    </div>
+    <button class="btn btn-primary" id="newGameBtn">Nowa gra</button>
+</div>
+
+<div class="hud">
+    <span>Czas: <span class="score-val" id="timer">0:00</span></span>
+    <span>Rekord: <span class="score-val" id="recordDisplay">—</span></span>
+    <button class="btn btn-secondary" id="recordsBtn" type="button">🏆 Rekordy</button>
+</div>
+
+<div id="boardWrap">
+    <div id="board"></div>
+</div>
+
+<div id="winBanner" class="card win-banner" hidden>
+    <div id="winText"></div>
+    <div class="name-row" id="nameRow">
+        <input type="text" id="playerName" placeholder="Twoje imię…" maxlength="20" autocomplete="off">
+        <button class="btn btn-secondary" id="saveBtn">Zapisz</button>
+    </div>
+    <p class="save-info" id="saveInfo"></p>
+    <button class="btn btn-primary" id="winPlayAgain">Zagraj ponownie</button>
+</div>
+
+<div class="rec-panel" id="recPanel">
+    <div class="card rec-card">
+        <h3>🏆 Rekordy</h3>
+        <div class="rec-tabs" id="recTabs"></div>
+        <div id="recTable"></div>
+        <button class="btn btn-secondary rec-close" id="recCloseBtn">Zamknij</button>
+    </div>
+</div>
+
+<details class="card rules">
+    <summary>Zasady gry</summary>
+    <p>Wypełnij każde pole słońcem ☀️ albo księżycem 🌙. Kliknięcie pola przełącza: puste → ☀️ → 🌙 → puste.</p>
+    <p>W każdym wierszu i każdej kolumnie musi być tyle samo słońc co księżyców. Trzy takie same symbole nie mogą stać obok siebie (w poziomie ani w pionie). Żadne dwa wiersze nie mogą być identyczne — i żadne dwie kolumny też.</p>
+    <p>Pola wypełnione od startu (podświetlone) są zablokowane. Naruszenia reguł podświetlają się na czerwono.</p>
+    <p>Klawiatura: strzałki wybierają pole, 1 = ☀️, 2 = 🌙, 0/Backspace czyści. Podpowiedź uzupełnia jedno pole (3 na grę). W rankingu rekordów liczy się najpierw liczba użytych podpowiedzi, a dopiero potem czas.</p>
+</details>
+
+<script src="script.js"></script>
+  <script src="../shared/auth.js"></script>
+</body>
+</html>

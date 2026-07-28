@@ -1,0 +1,136 @@
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            font-family: 'Press Start 2P', cursive; /* Retro font */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100dvh;
+            margin: 0;
+            user-select: none;
+            overflow: hidden; /* Prevent scrolling on mobile */
+        }
+
+        .game-container {
+            position: relative;
+            background: #1e293b;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #canvas-wrap {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+        }
+        canvas {
+            background: linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 100%); /* Niebo */
+            border-radius: 8px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
+            cursor: pointer;
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .ui-panel {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            padding: 10px 20px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 8px;
+            border: 2px solid #334155;
+            box-sizing: border-box;
+        }
+
+        .score-text {
+            color: #fcd34d;
+            text-shadow: 2px 2px 0px #000;
+            font-size: 1.2rem;
+        }
+        
+        .highscore-text {
+            color: #94a3b8;
+            font-size: 0.8rem;
+            align-self: flex-end;
+            text-shadow: 1px 1px 0px #000;
+        }
+
+        #overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            text-align: center;
+        }
+
+        #overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .title {
+            color: #ef4444;
+            text-shadow: 3px 3px 0px #000;
+            font-size: 2rem;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .action-btn {
+            background: #22c55e;
+            color: white;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1rem;
+            padding: 15px 25px;
+            border: 4px solid #16a34a;
+            border-radius: 0;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 4px 4px 0px #000;
+            transition: transform 0.1s;
+        }
+
+        .action-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px #000;
+        }
+        
+        .instructions {
+            margin-top: 20px;
+            font-size: 0.6rem;
+            color: #cbd5e1;
+            line-height: 1.8;
+        }
+        .back-link {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 100;
+            background: #334155;
+            color: #fff;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 8px 14px;
+            text-decoration: none;
+            font-size: 13px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .back-link:hover { background: #475569; }

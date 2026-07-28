@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nonogram | @twoznia</title>
+    <link rel="stylesheet" href="../shared/style.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<a class="back-link" href="../">← Wróć</a>
+<button id="themeBtn" type="button">☀️ Jasny</button>
+<div id="langSwitch">
+    <button id="langPl" type="button" title="Polski">🇵🇱</button>
+    <button id="langEn" type="button" title="English">🇬🇧</button>
+</div>
+
+<div class="game-title">🖼️ Nonogram</div>
+<p class="game-subtitle">Zamaluj pola tak, by ciągi zamalowanych pól w każdym wierszu i kolumnie zgadzały się z liczbami na brzegach.</p>
+
+<div class="card controls">
+    <div class="control-row">
+        <span class="control-label">Rozmiar</span>
+        <div class="pill-group" id="sizeButtons"></div>
+    </div>
+    <div class="control-row">
+        <span class="control-label">Plansza</span>
+        <div class="pill-group" id="modeButtons">
+            <button class="pill" data-mode="random">🎲 Losowa</button>
+            <button class="pill" data-mode="picture">🖼️ Obrazek</button>
+        </div>
+    </div>
+    <div class="control-row">
+        <button class="btn btn-secondary" id="hintBtn" type="button">💡 Podpowiedź <span id="hintCount">(3)</span></button>
+        <button class="btn btn-secondary" id="undoBtn" type="button" disabled>↩️ Cofnij</button>
+    </div>
+    <button class="btn btn-primary" id="newGameBtn">Nowa gra</button>
+</div>
+
+<div class="hud">
+    <span>Czas: <span class="score-val" id="timer">0:00</span></span>
+    <span>Rekord: <span class="score-val" id="recordDisplay">—</span></span>
+    <button class="btn btn-secondary" id="recordsBtn" type="button">🏆 Rekordy</button>
+</div>
+
+<div id="toolbar">
+    <button class="pill active" data-tool="1" type="button">⬛ Maluj</button>
+    <button class="pill" data-tool="2" type="button">✕ Krzyżyk</button>
+</div>
+
+<div id="boardWrap">
+    <div id="board"></div>
+</div>
+
+<div id="winBanner" class="card win-banner" hidden>
+    <div id="winText"></div>
+    <div class="name-row" id="nameRow">
+        <input type="text" id="playerName" placeholder="Twoje imię…" maxlength="20" autocomplete="off">
+        <button class="btn btn-secondary" id="saveBtn">Zapisz</button>
+    </div>
+    <p class="save-info" id="saveInfo"></p>
+    <button class="btn btn-primary" id="winPlayAgain">Zagraj ponownie</button>
+</div>
+
+<div class="rec-panel" id="recPanel">
+    <div class="card rec-card">
+        <h3>🏆 Rekordy</h3>
+        <div class="rec-tabs" id="recTabs"></div>
+        <div id="recTable"></div>
+        <button class="btn btn-secondary rec-close" id="recCloseBtn">Zamknij</button>
+    </div>
+</div>
+
+<details class="card rules">
+    <summary>Zasady gry</summary>
+    <p>Liczby przy wierszu/kolumnie opisują długości kolejnych ciągów zamalowanych pól — między ciągami jest co najmniej jedno pole przerwy. „0” oznacza pusty wiersz/kolumnę.</p>
+    <p>Plansza „Losowa” to abstrakcyjny wzór, „Obrazek” — ukryty rysunek, którego nazwę poznasz po rozwiązaniu. Każda plansza (w obu trybach) rozwiązuje się w całości samą logiką, bez zgadywania.</p>
+    <p>Na komputerze: lewy przycisk myszy maluje, prawy stawia krzyżyk (na pewno nic tu nie ma), środkowy (kliknięcie rolką) czyści. Na ekranie dotykowym wybierz narzędzie ⬛/✕ tuż nad planszą i dotykaj pól. Rozpoczęcie na polu już oznaczonym czyści.</p>
+    <p>Przeciągnij (palcem lub myszą) wzdłuż wiersza albo kolumny, by oznaczyć całą linię naraz — bez klikania pole po polu. Liczby wiersza/kolumny wygaszają się, gdy linia się zgadza, a robią się czerwone, gdy zamalowano za dużo.</p>
+    <p>Klawiatura: strzałki wybierają pole, 1 = maluj, 2 = krzyżyk, 0/Backspace czyści. „Cofnij” (Ctrl+Z) wycofuje ruchy.</p>
+    <p>Podpowiedź poprawia jedno pole (3 na grę) — w rankingu liczy się najpierw liczba podpowiedzi, potem czas. Gra zapisuje się automatycznie i wznawia po powrocie.</p>
+</details>
+
+<script src="script.js"></script>
+  <script src="../shared/auth.js"></script>
+</body>
+</html>

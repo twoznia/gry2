@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Klasyczny Pasjans Piatnik - Edycja PC</title>
+    <!-- Ładowanie Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Import czcionki Inter dla nowoczesnego interfejsu -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="text-white">
+
+    <a class="back-link" href="../">← Wróć</a>
+
+    <svg xmlns="http://www.w3.org/2000/svg" class="hidden">
+        <defs>
+            <!-- Szczegółowe, dwugłowe figury dworskie w stylu Piatnika -->
+            <!-- WALET (Jack) -->
+            <g id="figure-j">
+                <rect x="10" y="10" width="80" height="130" rx="4" fill="#fbfaf6" stroke="#d0c090" stroke-width="1.5"/>
+                <!-- Góra Waleta -->
+                <path d="M 32,55 C 32,75 68,75 68,55 Z" fill="#d32f2f" />
+                <path d="M 50,18 L 33,52 L 67,52 Z" fill="#2b4c7e" />
+                <circle cx="50" cy="42" r="9" fill="#e5b840" />
+                <path d="M 43,80 L 50,105 L 57,80" stroke="#e5b840" stroke-width="3" fill="none"/>
+                <!-- Odwrócony dół Waleta (dwugłowa kompozycja) -->
+                <g transform="rotate(180 50 75)">
+                    <path d="M 32,55 C 32,75 68,75 68,55 Z" fill="#2b4c7e" />
+                    <path d="M 50,18 L 33,52 L 67,52 Z" fill="#d32f2f" />
+                    <circle cx="50" cy="42" r="9" fill="#e5b840" />
+                    <path d="M 43,80 L 50,105 L 57,80" stroke="#e5b840" stroke-width="3" fill="none"/>
+                </g>
+                <line x1="10" y1="75" x2="90" y2="75" stroke="#e5b840" stroke-dasharray="3,3" stroke-width="1.5"/>
+            </g>
+
+            <!-- DAMA (Queen) -->
+            <g id="figure-q">
+                <rect x="10" y="10" width="80" height="130" rx="4" fill="#fbfaf6" stroke="#d0c090" stroke-width="1.5"/>
+                <!-- Góra Damy -->
+                <path d="M 35,35 L 50,14 L 65,35 L 58,45 L 42,45 Z" fill="#e5b840" />
+                <circle cx="50" cy="14" r="3" fill="#d32f2f" />
+                <circle cx="35" cy="35" r="2.5" fill="#2b4c7e" />
+                <circle cx="65" cy="35" r="2.5" fill="#2b4c7e" />
+                <path d="M 30,58 C 30,90 70,90 70,58" fill="none" stroke="#d32f2f" stroke-width="3.5"/>
+                <circle cx="50" cy="65" r="5" fill="#2b4c7e" />
+                <!-- Odwrócony dół Damy -->
+                <g transform="rotate(180 50 75)">
+                    <path d="M 35,35 L 50,14 L 65,35 L 58,45 L 42,45 Z" fill="#e5b840" />
+                    <circle cx="50" cy="14" r="3" fill="#2b4c7e" />
+                    <path d="M 30,58 C 30,90 70,90 70,58" fill="none" stroke="#2b4c7e" stroke-width="3.5"/>
+                    <circle cx="50" cy="65" r="5" fill="#d32f2f" />
+                </g>
+                <line x1="10" y1="75" x2="90" y2="75" stroke="#e5b840" stroke-dasharray="3,3" stroke-width="1.5"/>
+            </g>
+
+            <!-- KRÓL (King) -->
+            <g id="figure-k">
+                <rect x="10" y="10" width="80" height="130" rx="4" fill="#fbfaf6" stroke="#d0c090" stroke-width="1.5"/>
+                <!-- Góra Króla -->
+                <path d="M 30,28 L 38,11 L 50,21 L 62,11 L 70,28 Z" fill="#e5b840" />
+                <rect x="35" y="28" width="30" height="5" fill="#d32f2f"/>
+                <path d="M 33,45 C 33,70 67,70 67,45" fill="none" stroke="#2b4c7e" stroke-width="4.5"/>
+                <path d="M 23,40 L 23,75" stroke="#e5b840" stroke-width="3.5" stroke-linecap="round"/>
+                <circle cx="23" cy="34" r="4.5" fill="#e5b840"/>
+                <!-- Odwrócony dół Króla -->
+                <g transform="rotate(180 50 75)">
+                    <path d="M 30,28 L 38,11 L 50,21 L 62,11 L 70,28 Z" fill="#e5b840" />
+                    <rect x="35" y="28" width="30" height="5" fill="#2b4c7e"/>
+                    <path d="M 33,45 C 33,70 67,70 67,45" fill="none" stroke="#d32f2f" stroke-width="4.5"/>
+                    <path d="M 23,40 L 23,75" stroke="#e5b840" stroke-width="3.5" stroke-linecap="round"/>
+                </g>
+                <line x1="10" y1="75" x2="90" y2="75" stroke="#e5b840" stroke-dasharray="3,3" stroke-width="1.5"/>
+            </g>
+
+            <!-- Symbole kolorów -->
+            <g id="suit-spade">
+                <path d="M 50,15 C 35,45 15,55 15,70 C 15,85 30,90 50,80 C 70,90 85,85 85,70 C 85,55 65,45 50,15 Z" fill="#1b1c1e"/>
+                <path d="M 50,70 L 40,95 L 60,95 Z" fill="#1b1c1e"/>
+            </g>
+            <g id="suit-heart">
+                <path d="M 50,30 C 50,10 15,10 15,45 C 15,75 50,95 50,95 C 50,95 85,75 85,45 C 85,10 50,10 50,30 Z" fill="#c61a1a"/>
+            </g>
+            <g id="suit-diamond">
+                <path d="M 50,12 L 15,50 L 50,88 L 85,50 Z" fill="#c61a1a"/>
+            </g>
+            <g id="suit-club">
+                <circle cx="50" cy="35" r="20" fill="#1b1c1e"/>
+                <circle cx="32" cy="62" r="20" fill="#1b1c1e"/>
+                <circle cx="68" cy="62" r="20" fill="#1b1c1e"/>
+                <path d="M 50,55 L 40,95 L 60,95 Z" fill="#1b1c1e"/>
+                <circle cx="50" cy="55" r="5" fill="#ffffff"/>
+            </g>
+        </defs>
+    </svg>
+
+    <div class="game-container">
+        
+        <!-- Pasek górny (Menu i Statystyki) -->
+        <header class="bg-slate-900/90 backdrop-blur-md rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 shadow-2xl border border-white/10">
+            <div class="flex items-center gap-3">
+                <span class="text-2xl font-black tracking-wider bg-gradient-to-r from-yellow-400 to-amber-200 bg-clip-text text-transparent">PIATNIK</span>
+                <span class="text-[10px] uppercase bg-amber-500/20 text-amber-300 font-bold px-2 py-0.5 rounded-md border border-amber-500/30">Luksusowy Pasjans</span>
+            </div>
+
+            <!-- Kontrolki trybu rozdawania -->
+            <div class="flex items-center bg-slate-800 p-1 rounded-xl border border-white/5">
+                <button id="draw-1-btn" class="px-3 py-1.5 rounded-lg text-sm font-semibold transition-all duration-200">
+                    Rozdawaj po 1
+                </button>
+                <button id="draw-3-btn" class="px-3 py-1.5 rounded-lg text-sm font-semibold transition-all duration-200 bg-amber-500 text-slate-950 shadow-md">
+                    Rozdawaj po 3
+                </button>
+            </div>
+
+            <!-- Liczniki czasu i ruchów -->
+            <div class="flex items-center gap-6">
+                <div class="text-center">
+                    <div class="text-[9px] uppercase text-slate-400 font-bold tracking-widest">Czas</div>
+                    <div id="timer-display" class="text-xl font-mono font-bold text-white">00:00</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-[9px] uppercase text-slate-400 font-bold tracking-widest">Najlepszy Wynik</div>
+                    <div id="best-time-display" class="text-xl font-mono font-bold text-amber-400">--:--</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-[9px] uppercase text-slate-400 font-bold tracking-widest">Ruchy</div>
+                    <div id="moves-display" class="text-xl font-mono font-bold text-white">0</div>
+                </div>
+            </div>
+
+            <!-- Przyciski akcji -->
+            <div class="flex items-center gap-2">
+                <!-- Autouzupełnianie (ukryte domyślnie, pojawia się przy auto-solve) -->
+                <button id="autosolve-btn" class="hidden bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 active:scale-95 text-white font-bold px-4 py-2 rounded-xl text-sm transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)] animate-pulse flex items-center gap-1.5">
+                    ✨ Autouzupełnij
+                </button>
+                
+                <button id="zoom-out-btn" class="bg-slate-800 hover:bg-slate-700 active:scale-95 transition-all text-white px-3 py-2 rounded-xl text-sm font-bold flex items-center border border-white/5 disabled:opacity-40 disabled:pointer-events-none" title="Pomniejsz karty">🔍−</button>
+                <button id="zoom-in-btn" class="bg-slate-800 hover:bg-slate-700 active:scale-95 transition-all text-white px-3 py-2 rounded-xl text-sm font-bold flex items-center border border-white/5 disabled:opacity-40 disabled:pointer-events-none" title="Powiększ karty">🔍+</button>
+
+                <button id="hint-btn" class="bg-slate-800 hover:bg-slate-700 active:scale-95 transition-all text-white px-3.5 py-2 rounded-xl text-sm font-bold flex items-center gap-1.5 border border-white/5">
+                    💡 Podpowiedź
+                </button>
+
+                <button id="audio-toggle-btn" class="bg-slate-800 hover:bg-slate-700 active:scale-95 transition-all text-white px-3.5 py-2 rounded-xl text-sm font-bold flex items-center gap-1.5 border border-white/5">
+                    <span id="audio-btn-icon">🔇</span> <span id="audio-btn-text">Dźwięk: Wył.</span>
+                </button>
+
+                <button id="undo-btn" class="bg-slate-800 hover:bg-slate-700 active:scale-95 transition-all text-white px-3.5 py-2 rounded-xl text-sm font-bold flex items-center gap-1.5 border border-white/5 disabled:opacity-40 disabled:pointer-events-none" disabled>
+                    ↩ Cofnij
+                </button>
+                
+                <button id="restart-btn" class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 active:scale-95 text-slate-950 font-bold px-4 py-2 rounded-xl text-sm transition-all shadow-lg flex items-center gap-1.5">
+                    ↻ Nowa Gra
+                </button>
+            </div>
+        </header>
+
+        <!-- PLANSZA GRY -->
+        <main class="table-grid">
+            
+            <!-- Górny rząd gniazd (Talia, Odpady, Fundamenty) -->
+            <div class="flex justify-between items-start px-2">
+                <!-- Po lewej: Talia (Stock) i Odpady (Waste) -->
+                <div class="flex gap-[var(--card-gap)]">
+                    <div id="stock-pile" class="pile-holder cursor-pointer transition-transform active:scale-95 flex items-center justify-center">
+                        <div class="absolute text-white/20 text-3xl font-bold">↻</div>
+                    </div>
+                    <div id="waste-pile" class="relative" style="width: calc(var(--card-width) + 35px); height: var(--card-height);"></div>
+                </div>
+
+                <!-- Po prawej: Fundamenty (Foundations) -->
+                <div class="flex gap-[var(--card-gap)]">
+                    <div id="foundation-0" class="pile-holder foundation-holder" data-suit="♠"></div>
+                    <div id="foundation-1" class="pile-holder foundation-holder" data-suit="♥"></div>
+                    <div id="foundation-2" class="pile-holder foundation-holder" data-suit="♦"></div>
+                    <div id="foundation-3" class="pile-holder foundation-holder" data-suit="♣"></div>
+                </div>
+            </div>
+
+            <!-- Dolny rząd gniazd (Kolumny Robocze - Tableau: od 1 do 7 kart od lewej do prawej) -->
+            <div id="tableau-container" class="flex gap-[var(--card-gap)] justify-end px-2">
+                <div id="tableau-0" class="tableau-column"></div>
+                <div id="tableau-1" class="tableau-column"></div>
+                <div id="tableau-2" class="tableau-column"></div>
+                <div id="tableau-3" class="tableau-column"></div>
+                <div id="tableau-4" class="tableau-column"></div>
+                <div id="tableau-5" class="tableau-column"></div>
+                <div id="tableau-6" class="tableau-column"></div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- PANEL BRAKU MOŻLIWYCH RUCHÓW (Modal) -->
+    <div id="no-moves-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-slate-900 border border-white/10 p-8 rounded-2xl max-w-sm w-full text-center shadow-2xl mx-4 transform scale-90 transition-transform duration-300">
+            <div class="w-16 h-16 bg-red-500/20 text-red-400 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/30 animate-pulse">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            </div>
+            <h3 class="text-2xl font-extrabold text-white mb-2">Brak ruchów!</h3>
+            <p class="text-slate-400 text-sm mb-6">Gra nie wykryła żadnych poprawnych ruchów na planszy ani w talii.</p>
+            <div class="flex flex-col gap-2">
+                <button id="modal-undo-btn" class="w-full bg-slate-800 hover:bg-slate-700 active:scale-95 text-white font-bold py-3 rounded-xl transition-all">
+                    Cofnij ostatni ruch
+                </button>
+                <button id="modal-restart-btn" class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 active:scale-95 text-slate-950 font-bold py-3 rounded-xl transition-all shadow-lg">
+                    Rozpocznij od nowa
+                </button>
+                <button id="modal-close-btn" class="w-full bg-transparent hover:bg-white/5 text-slate-400 hover:text-white font-medium py-2 rounded-xl text-xs transition-all">
+                    Zostaw podgląd planszy
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANEL WYGRANEJ (Modal) -->
+    <div id="victory-modal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-gradient-to-b from-slate-900 to-slate-950 border border-amber-500/30 p-10 rounded-3xl max-w-md w-full text-center shadow-[0_0_50px_rgba(245,158,11,0.25)] mx-4 transform scale-90 transition-transform duration-300">
+            <div class="w-20 h-20 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center mx-auto mb-6 border border-amber-500/40">
+                <svg class="w-10 h-10 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+            </div>
+            <h3 class="text-4xl font-black text-amber-300 mb-2 tracking-wide uppercase">Zwycięstwo!</h3>
+            <p class="text-slate-300 text-sm mb-6">Wspaniale! Ułożyłeś klasycznego pasjansa Piatnik.</p>
+            
+            <div class="grid grid-cols-2 gap-4 bg-slate-800/50 p-4 rounded-2xl mb-6 border border-white/5">
+                <div>
+                    <div class="text-xs text-slate-400 uppercase tracking-wider mb-1">Twój Czas</div>
+                    <div id="victory-time" class="text-2xl font-mono font-bold text-white">00:00</div>
+                </div>
+                <div>
+                    <div class="text-xs text-slate-400 uppercase tracking-wider mb-1">Wykonane Ruchy</div>
+                    <div id="victory-moves" class="text-2xl font-mono font-bold text-white">0</div>
+                </div>
+            </div>
+
+            <button id="victory-restart-btn" class="w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 active:scale-95 text-slate-950 font-extrabold py-4 rounded-xl transition-all shadow-xl text-lg tracking-wide uppercase">
+                Zagraj Jeszcze Raz
+            </button>
+        </div>
+    </div>
+
+    <!-- CANVAS DLA ANIMACJI KASKADOWEJ -->
+    <canvas id="victory-canvas"></canvas>
+
+    <script src="script.js"></script>
+  <script src="../shared/auth.js"></script>
+</body>
+</html>

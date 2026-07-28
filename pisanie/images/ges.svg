@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Shadow -->
+  <ellipse cx="50" cy="94" rx="26" ry="5" fill="#b2dfdb" opacity="0.5"/>
+  <!-- Body -->
+  <ellipse cx="50" cy="70" rx="30" ry="20" fill="white" stroke="#ddd" stroke-width="1.5"/>
+  <!-- Tail -->
+  <path d="M22,66 Q10,62 12,72 Q10,80 22,76" fill="white" stroke="#ddd" stroke-width="1.5"/>
+  <!-- Wing -->
+  <ellipse cx="48" cy="66" rx="18" ry="9" fill="#eeeeee" stroke="#ddd" stroke-width="1" transform="rotate(-8 48 66)"/>
+  <!-- Neck -->
+  <path d="M63,55 Q72,44 74,34" stroke="white" stroke-width="13" stroke-linecap="round" fill="none"/>
+  <path d="M63,55 Q72,44 74,34" stroke="#ddd" stroke-width="13" stroke-linecap="round" fill="none" opacity="0.35"/>
+  <!-- Head -->
+  <circle cx="74" cy="28" r="13" fill="white" stroke="#ddd" stroke-width="1.5"/>
+  <!-- Eye -->
+  <circle cx="76" cy="23" r="3.5" fill="#222"/>
+  <circle cx="77" cy="22" r="1.2" fill="white"/>
+  <!-- Beak -->
+  <ellipse cx="85" cy="31" rx="9" ry="5.5" fill="#FF8C00" stroke="#E65100" stroke-width="1.5"/>
+  <line x1="76" y1="31" x2="94" y2="31" stroke="#E65100" stroke-width="1.2"/>
+  <!-- Feet -->
+  <line x1="42" y1="88" x2="38" y2="95" stroke="#FF8C00" stroke-width="3" stroke-linecap="round"/>
+  <path d="M32,95 L38,95 L44,93" stroke="#FF8C00" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <line x1="57" y1="88" x2="53" y2="95" stroke="#FF8C00" stroke-width="3" stroke-linecap="round"/>
+  <path d="M47,95 L53,95 L59,93" stroke="#FF8C00" stroke-width="3" stroke-linecap="round" fill="none"/>
+</svg>

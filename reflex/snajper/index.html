@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Szybka Reakcja - Snajper</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        #gameCanvas { touch-action: none; background-color: #1a1a1a; border-radius: 8px; cursor: crosshair; display: block; }
+        body { background-color: #111; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100dvh; margin: 0; font-family: 'Inter', sans-serif; }
+        .back-link { position: fixed; top: 10px; left: 10px; z-index: 100; background: #334155; color: #fff; border: 1px solid #475569; border-radius: 8px; padding: 8px 14px; text-decoration: none; font-size: 13px; }
+        .back-link:hover { background: #475569; }
+        #main-btn:disabled { opacity: 0.5; pointer-events: none; }
+        @keyframes pulse-target { 0%,100%{ transform: scale(1); } 50%{ transform: scale(1.5); } }
+        .target-flash { animation: pulse-target 0.4s ease-out; }
+            /* Mobile: plansza wykorzystuje cały ekran */
+        @media (max-width: 768px), (max-height: 500px) {
+            body { justify-content: flex-start; }
+            body > div.text-center { max-width: 100%; padding-left: 0; padding-right: 0; }
+            #game-title { display: none; }
+            #hud { height: 40px; padding: 0 10px 0 82px; gap: 8px; margin-bottom: 0; border-radius: 0; font-size: 12px; flex-wrap: nowrap; align-items: center; overflow-x: auto; white-space: nowrap; }
+            #gameCanvas { height: calc(100dvh - 40px) !important; border-radius: 0; }
+            .back-link { top: 5px; left: 6px; padding: 6px 10px; font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+<a class="back-link" href="../">← Wróć</a>
+
+<div class="text-center w-full max-w-6xl px-4">
+    <h1 id="game-title" class="text-3xl font-bold mb-4 text-green-400">Snajper</h1>
+
+    <div id="hud" class="flex flex-wrap justify-between items-center w-full gap-2 md:gap-6 bg-gray-800 p-3 rounded-xl mb-3 shadow-lg border border-gray-700 text-sm md:text-base">
+        <div>Etap: <span id="current-level-display" class="font-bold text-blue-400">1</span>/<span id="max-level-display">4</span></div>
+        <div class="flex items-center gap-2">
+            Cel: <span id="target-dot" style="display:inline-block;width:20px;height:20px;border-radius:50%;border:2px solid white;vertical-align:middle;"></span>
+            <span id="target-name" class="font-bold"></span>
+        </div>
+        <div>Wynik: <span id="score-display" class="font-bold text-green-400">0</span></div>
+        <div id="combo-box" class="hidden">Combo: <span id="combo-display" class="font-bold text-yellow-400">×1</span></div>
+        <div>Błędy: <span id="errors-display" class="font-bold text-red-400">0</span></div>
+        <div>Czas: <span id="timer" class="font-bold text-yellow-400">30</span>s</div>
+    </div>
+
+    <div id="game-container" class="relative">
+        <canvas id="gameCanvas" class="w-full shadow-2xl" style="height: clamp(260px, calc(100dvh - 300px), 680px)"></canvas>
+
+        <div id="overlay" class="absolute inset-0 flex flex-col items-center justify-center bg-black/85 rounded-lg p-4 z-10 overflow-y-auto">
+            <div id="overlay-content" class="w-full max-w-md text-center">
+                <h2 id="overlay-title" class="text-3xl font-bold mb-4 text-center text-white">Wybierz tryb gry!</h2>
+                <div id="overlay-stats" class="text-left text-lg text-gray-200 mb-6 bg-gray-800 p-4 rounded-lg hidden"></div>
+                <p id="overlay-desc" class="text-yellow-300 mb-6 font-bold text-xl min-h-[3rem]"></p>
+
+                <div id="mode-selection" class="flex flex-col sm:flex-row gap-4 w-full justify-center mt-4">
+                    <button id="btn-child" class="flex-1 bg-green-600 hover:bg-green-500 p-4 rounded-xl text-xl font-bold transition-all shadow-lg border border-green-400/30 flex flex-col items-center justify-center gap-2">
+                        <img src="../pic/kid.jpg" alt="Dziecko" class="w-32 h-32 rounded-full object-cover border-2 border-green-300"> Dziecko
+                        <span class="text-sm font-normal text-green-100">3 poziomy · 30s</span>
+                    </button>
+                    <button id="btn-adult" class="flex-1 bg-blue-600 hover:bg-blue-500 p-4 rounded-xl text-xl font-bold transition-all shadow-lg border border-blue-400/30 flex flex-col items-center justify-center gap-2">
+                        <img src="../pic/adult.jpg" alt="Dorosły" class="w-32 h-32 rounded-full object-cover border-2 border-blue-300"> Dorosły
+                        <span class="text-sm font-normal text-blue-100">4 poziomy · 30s</span>
+                    </button>
+                </div>
+
+                <button id="main-btn" class="hidden bg-blue-600 hover:bg-blue-500 px-8 py-4 rounded-xl text-xl font-bold transition-all shadow-lg border border-blue-400/30 w-full mt-4">
+                    Rozpocznij
+                </button>
+
+                <div id="save-section" class="hidden mt-4 pt-4 border-t border-gray-600 w-full">
+                    <p class="text-gray-300 text-sm mb-2">Zapisz wynik do tabeli rekordów:</p>
+                    <div class="flex gap-2 mb-1">
+                        <input id="player-name-input" type="text" placeholder="Twoje imię" maxlength="20"
+                               class="flex-1 bg-gray-700 text-white px-3 py-2 rounded-lg border border-gray-500 focus:outline-none focus:border-blue-400 text-sm">
+                        <button id="save-record-btn" class="bg-green-600 hover:bg-green-500 px-4 py-2 rounded-lg font-bold text-sm transition-colors">Zapisz</button>
+                    </div>
+                    <p id="save-info" class="text-green-400 text-xs hidden mb-1">✓ Wynik zapisany!</p>
+                    <button id="show-records-end-btn" class="text-blue-400 text-xs underline hover:text-blue-300 mt-1">Pokaż tabelę rekordów →</button>
+                </div>
+
+                <button id="show-records-start-btn" class="hidden text-blue-400 text-sm mt-3 underline hover:text-blue-300">Tabela rekordów</button>
+            </div>
+
+            <div id="records-view" class="hidden w-full max-w-xl text-center">
+                <h2 class="text-2xl font-bold mb-3 text-white">Tabela rekordów</h2>
+                <div class="flex gap-2 justify-center mb-2 flex-wrap">
+                    <button class="records-mode-tab px-3 py-1 rounded-lg text-sm font-bold transition-colors bg-blue-600 text-white" data-mode="adult">Dorosły</button>
+                    <button class="records-mode-tab px-3 py-1 rounded-lg text-sm font-bold transition-colors bg-gray-700 text-gray-300" data-mode="child">Dziecko</button>
+                </div>
+                <div id="records-player-filter" class="flex items-center gap-2 justify-center mb-2 flex-wrap">
+                    <span class="text-gray-400 text-xs">Osoba:</span>
+                    <select id="records-player-select" class="bg-gray-700 text-white text-xs px-2 py-1 rounded-lg border border-gray-600 focus:outline-none focus:border-blue-400">
+                        <option value="">Wszyscy</option>
+                    </select>
+                </div>
+                <div id="records-level-tabs" class="flex gap-2 justify-center mb-3 flex-wrap"></div>
+                <div id="records-table-wrapper" class="text-left bg-gray-800 rounded-lg p-3 overflow-y-auto" style="max-height: 50vh"></div>
+                <button id="close-records-btn" class="mt-4 bg-blue-600 hover:bg-blue-500 px-6 py-2 rounded-xl font-bold text-sm transition-colors">Zamknij</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const levelDisplayEl = document.getElementById('current-level-display');
+    const maxLevelDisplayEl = document.getElementById('max-level-display');
+    const scoreDisplayEl = document.getElementById('score-display');
+    const errorsDisplayEl = document.getElementById('errors-display');
+    const comboBox = document.getElementById('combo-box');
+    const comboDisplayEl = document.getElementById('combo-display');
+    const timerEl = document.getElementById('timer');
+    const targetDot = document.getElementById('target-dot');
+    const targetName = document.getElementById('target-name');
+    const overlay = document.getElementById('overlay');
+    const overlayTitle = document.getElementById('overlay-title');
+    const overlayStats = document.getElementById('overlay-stats');
+    const overlayDesc = document.getElementById('overlay-desc');
+    const mainBtn = document.getElementById('main-btn');
+    const modeSelection = document.getElementById('mode-selection');
+    const btnChild = document.getElementById('btn-child');
+    const btnAdult = document.getElementById('btn-adult');
+    const overlayContent = document.getElementById('overlay-content');
+    const saveSection = document.getElementById('save-section');
+    const playerNameInput = document.getElementById('player-name-input');
+    const saveRecordBtn = document.getElementById('save-record-btn');
+    const saveInfo = document.getElementById('save-info');
+    const showRecordsEndBtn = document.getElementById('show-records-end-btn');
+    const showRecordsStartBtn = document.getElementById('show-records-start-btn');
+    const recordsView = document.getElementById('records-view');
+    const recordsLevelTabs = document.getElementById('records-level-tabs');
+    const recordsTableWrapper = document.getElementById('records-table-wrapper');
+    const closeRecordsBtn = document.getElementById('close-records-btn');
+    const recordsPlayerSelect = document.getElementById('records-player-select');
+
+    const ALL_COLORS = [
+        { name: 'Czerwony',  hex: '#ef4444' },
+        { name: 'Niebieski', hex: '#3b82f6' },
+        { name: 'Zielony',   hex: '#22c55e' },
+        { name: 'Żółty',     hex: '#eab308' },
+        { name: 'Fioletowy', hex: '#a855f7' },
+        { name: 'Pomarańcz', hex: '#f97316' },
+    ];
+
+    // ─── Level config ──────────────────────────────────────────────────────────────
+    // speed: ball movement speed multiplier (0 = static)
+    const LEVEL_CONFIG = {
+        child: {
+            1: { colorCount: 2, ballCount: 4,  disappearTime: 4000, targetChangeInterval: null, penaltyPerError: 1, speed: 0   },
+            2: { colorCount: 3, ballCount: 5,  disappearTime: 3000, targetChangeInterval: 8000, penaltyPerError: 1, speed: 0.4 },
+            3: { colorCount: 4, ballCount: 6,  disappearTime: 2500, targetChangeInterval: 6000, penaltyPerError: 2, speed: 0.7 },
+        },
+        adult: {
+            1: { colorCount: 3, ballCount: 5,  disappearTime: 3000, targetChangeInterval: 8000, penaltyPerError: 1, speed: 0.5 },
+            2: { colorCount: 4, ballCount: 6,  disappearTime: 2500, targetChangeInterval: 5000, penaltyPerError: 2, speed: 0.8 },
+            3: { colorCount: 5, ballCount: 7,  disappearTime: 1800, targetChangeInterval: 4000, penaltyPerError: 3, speed: 1.2 },
+            4: { colorCount: 6, ballCount: 9,  disappearTime: 1200, targetChangeInterval: 3000, penaltyPerError: 3, speed: 1.6 },
+        },
+    };
+
+    function getRadius() {
+        const isMobile = window.matchMedia('(pointer: coarse)').matches;
+        const shortSide = Math.min(window.innerWidth, window.innerHeight);
+        if (isMobile) return Math.round(Math.min(36, Math.max(24, shortSide * 0.045)));
+        return Math.round(Math.min(36, Math.max(28, shortSide * 0.04)));
+    }
+
+    let RADIUS = getRadius();
+
+    // ─── State ─────────────────────────────────────────────────────────────────────
+    let balls = [];
+    let activeColors = [];
+    let targetColorIdx = 0;
+    let score = 0, errors = 0, combo = 0, maxCombo = 0;
+    let isRunning = false;
+    let currentLevel = 1, gameMode = 'adult';
+    let timeLeft = 30, maxLevels = 4;
+    let mainBtnAction = null, recordsSaved = false;
+    let nextBallId = 0;
+    let animFrameId = null;
+    let countdownInterval = null, spawnInterval = null, targetChangeInterval = null, disappearInterval = null;
+    let wrongFlashIds = new Set();
+    let popEffects = [];   // { x, y, color, startTime }
+    let results = {};
+
+    // ─── Records ──────────────────────────────────────────────────────────────────
+    const RECORDS_KEY = 'reflexSnajperRecords';
+    const NAME_KEY    = 'reflexLastName';
+    const MAX_PER_PLAYER = 10;
+
+    function normalizeName(n) { return n.trim().toLowerCase(); }
+    function loadRecords() { try { return JSON.parse(localStorage.getItem(RECORDS_KEY)) || {}; } catch { return {}; } }
+    function saveRecordsToStorage(r) { localStorage.setItem(RECORDS_KEY, JSON.stringify(r)); }
+
+    function addRecord(mode, levelKey, name, scoreVal, errorsVal) {
+        const records = loadRecords();
+        if (!records[mode]) records[mode] = {};
+        if (!records[mode][levelKey]) records[mode][levelKey] = [];
+        records[mode][levelKey].push({ name: name.trim(), score: scoreVal, errors: errorsVal, date: new Date().toLocaleDateString('pl-PL') });
+        records[mode][levelKey].sort((a, b) => b.score - a.score || a.errors - b.errors);
+        const seen = {};
+        records[mode][levelKey] = records[mode][levelKey].filter(r => {
+            const key = normalizeName(r.name);
+            seen[key] = (seen[key] || 0) + 1;
+            return seen[key] <= MAX_PER_PLAYER;
+        });
+        saveRecordsToStorage(records);
+    }
+
+    function savePlayerRecord(name) {
+        if (!name.trim()) return;
+        localStorage.setItem(NAME_KEY, name.trim());
+        let totalScore = 0, totalErrors = 0;
+        for (let lvl = 1; lvl <= maxLevels; lvl++) {
+            if (results[lvl]) {
+                addRecord(gameMode, `level${lvl}`, name, results[lvl].score, results[lvl].errors);
+                totalScore += results[lvl].score;
+                totalErrors += results[lvl].errors;
+            }
+        }
+        addRecord(gameMode, 'total', name, totalScore, totalErrors);
+    }
+
+    // ─── Records view ─────────────────────────────────────────────────────────────
+    let recordsViewMode = 'adult', recordsViewLevel = 'total', recordsViewPlayer = '', recordsReturnFn = null;
+
+    function renderRecordsTable(mode, levelKey, filterPlayer) {
+        const records = loadRecords();
+        let data = (records[mode] && records[mode][levelKey]) || [];
+        if (filterPlayer) {
+            const norm = normalizeName(filterPlayer);
+            data = data.filter(r => normalizeName(r.name) === norm);
+        }
+        if (!data.length) return '<p class="text-gray-400 text-sm py-4 text-center">Brak rekordów</p>';
+        const medals = ['🥇', '🥈', '🥉'];
+        let html = '<table class="w-full text-sm border-collapse"><thead><tr class="text-gray-400 text-xs uppercase">';
+        html += '<th class="py-1 px-2 text-left">#</th><th class="py-1 px-2 text-left">Imię</th>';
+        html += '<th class="py-1 px-2 text-right">Wynik</th><th class="py-1 px-2 text-right">Błędy</th>';
+        html += '<th class="py-1 px-2 text-right">Data</th></tr></thead><tbody>';
+        data.forEach((r, i) => {
+            const cls = i === 0 ? 'text-yellow-300' : i === 1 ? 'text-gray-300' : i === 2 ? 'text-orange-400' : 'text-white';
+            html += `<tr class="${cls} border-t border-gray-700/50">`;
+            html += `<td class="py-1 px-2">${medals[i] || (i+1)+'.'}</td>`;
+            html += `<td class="py-1 px-2">${r.name}</td>`;
+            html += `<td class="py-1 px-2 text-right font-mono text-green-400">${r.score}</td>`;
+            html += `<td class="py-1 px-2 text-right font-mono text-red-400">${r.errors}</td>`;
+            html += `<td class="py-1 px-2 text-right text-gray-400 text-xs">${r.date}</td></tr>`;
+        });
+        html += '</tbody></table>';
+        return html;
+    }
+
+    function getAllPlayersForMode(mode) {
+        const records = loadRecords();
+        const modeData = records[mode] || {};
+        const nameMap = new Map();
+        for (const levelData of Object.values(modeData)) {
+            for (const r of levelData) {
+                const key = normalizeName(r.name);
+                if (!nameMap.has(key)) nameMap.set(key, r.name);
+            }
+        }
+        return [...nameMap.values()].sort((a, b) => a.localeCompare(b, 'pl'));
+    }
+
+    function buildPlayerFilter(mode) {
+        const players = getAllPlayersForMode(mode);
+        recordsPlayerSelect.innerHTML = '<option value="">Wszyscy</option>' +
+            players.map(p => `<option value="${p}" ${normalizeName(p) === normalizeName(recordsViewPlayer) ? 'selected' : ''}>${p}</option>`).join('');
+    }
+
+    function buildRecordsLevelTabs(mode) {
+        const levels = gameMode === 'child'
+            ? [['level1','Poziom 1'],['level2','Poziom 2'],['level3','Poziom 3'],['total','Łącznie']]
+            : [['level1','Poziom 1'],['level2','Poziom 2'],['level3','Poziom 3'],['level4','Poziom 4'],['total','Łącznie']];
+        recordsLevelTabs.innerHTML = levels.map(([key, label]) =>
+            `<button class="records-level-tab px-3 py-1 rounded-lg text-xs font-bold transition-colors ${recordsViewLevel === key ? 'bg-green-600 text-white' : 'bg-gray-700 text-gray-300'}" data-level="${key}">${label}</button>`
+        ).join('');
+        recordsLevelTabs.querySelectorAll('.records-level-tab').forEach(btn => {
+            btn.addEventListener('click', () => {
+                recordsViewLevel = btn.dataset.level;
+                buildRecordsLevelTabs(recordsViewMode);
+                recordsTableWrapper.innerHTML = renderRecordsTable(recordsViewMode, recordsViewLevel, recordsViewPlayer);
+            });
+        });
+    }
+
+    function showRecordsView(returnFn, preferMode, preferPlayer) {
+        recordsReturnFn = returnFn;
+        recordsViewMode = preferMode || gameMode || 'adult';
+        recordsViewLevel = 'total';
+        recordsViewPlayer = preferPlayer || '';
+        overlayContent.classList.add('hidden');
+        recordsView.classList.remove('hidden');
+        document.querySelectorAll('.records-mode-tab').forEach(btn => {
+            btn.classList.toggle('bg-blue-600', btn.dataset.mode === recordsViewMode);
+            btn.classList.toggle('text-white', btn.dataset.mode === recordsViewMode);
+            btn.classList.toggle('bg-gray-700', btn.dataset.mode !== recordsViewMode);
+            btn.classList.toggle('text-gray-300', btn.dataset.mode !== recordsViewMode);
+        });
+        buildPlayerFilter(recordsViewMode);
+        buildRecordsLevelTabs(recordsViewMode);
+        recordsTableWrapper.innerHTML = renderRecordsTable(recordsViewMode, recordsViewLevel, recordsViewPlayer);
+    }
+
+    document.querySelectorAll('.records-mode-tab').forEach(btn => {
+        btn.addEventListener('click', () => { recordsViewMode = btn.dataset.mode; recordsViewPlayer = ''; showRecordsView(recordsReturnFn, recordsViewMode); });
+    });
+    recordsPlayerSelect.addEventListener('change', () => {
+        recordsViewPlayer = recordsPlayerSelect.value;
+        buildRecordsLevelTabs(recordsViewMode);
+        recordsTableWrapper.innerHTML = renderRecordsTable(recordsViewMode, recordsViewLevel, recordsViewPlayer);
+    });
+    closeRecordsBtn.addEventListener('click', () => {
+        recordsView.classList.add('hidden');
+        overlayContent.classList.remove('hidden');
+        if (recordsReturnFn) recordsReturnFn();
+    });
+
+    saveRecordBtn.addEventListener('click', () => {
+        if (recordsSaved) return;
+        const name = playerNameInput.value.trim();
+        if (!name) { playerNameInput.focus(); return; }
+        savePlayerRecord(name);
+        recordsSaved = true;
+        saveRecordBtn.disabled = true;
+        saveRecordBtn.classList.replace('bg-green-600', 'bg-gray-600');
+        saveInfo.classList.remove('hidden');
+        showRecordsView(() => {}, gameMode, name);
+    });
+    playerNameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') saveRecordBtn.click(); });
+    showRecordsEndBtn.addEventListener('click', () => showRecordsView(() => {}));
+    showRecordsStartBtn.addEventListener('click', () => showRecordsView(() => {}));
+    mainBtn.addEventListener('click', () => { if (mainBtnAction) mainBtnAction(); });
+
+    // ─── Mode selection ────────────────────────────────────────────────────────────
+    function setMode(mode) {
+        gameMode = mode;
+        maxLevels = mode === 'child' ? 3 : 4;
+        maxLevelDisplayEl.textContent = maxLevels;
+    }
+    btnChild.addEventListener('click', () => { setMode('child'); startCampaign(); });
+    btnAdult.addEventListener('click', () => { setMode('adult'); startCampaign(); });
+
+    // ─── Canvas resize ─────────────────────────────────────────────────────────────
+    function resize() { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; RADIUS = getRadius(); }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // ─── Combo ─────────────────────────────────────────────────────────────────────
+    function getComboMultiplier() {
+        if (combo < 3) return 1;
+        if (combo < 6) return 2;
+        if (combo < 10) return 3;
+        return 4;
+    }
+
+    function updateComboDisplay() {
+        const mult = getComboMultiplier();
+        if (mult > 1) {
+            comboBox.classList.remove('hidden');
+            comboDisplayEl.textContent = `×${mult}`;
+            comboDisplayEl.className = 'font-bold ' + (mult >= 4 ? 'text-red-400' : mult >= 3 ? 'text-orange-400' : 'text-yellow-400');
+        } else {
+            comboBox.classList.add('hidden');
+        }
+    }
+
+    // ─── Target color ──────────────────────────────────────────────────────────────
+    function setTarget(colorListIdx) {
+        targetColorIdx = colorListIdx;
+        const c = ALL_COLORS[activeColors[colorListIdx]];
+        targetDot.style.backgroundColor = c.hex;
+        targetName.textContent = c.name;
+        targetName.style.color = c.hex;
+    }
+
+    function pickNewTarget(cfg) {
+        let next;
+        do { next = Math.floor(Math.random() * cfg.colorCount); } while (next === targetColorIdx && cfg.colorCount > 1);
+        setTarget(next);
+        // flash the HUD target dot
+        targetDot.classList.remove('target-flash');
+        void targetDot.offsetWidth;
+        targetDot.classList.add('target-flash');
+    }
+
+    // ─── Ball helpers ──────────────────────────────────────────────────────────────
+    function spawnBall(cfg) {
+        const margin = RADIUS + 10;
+        let x, y, attempts = 0, valid = false;
+        while (!valid && attempts < 200) {
+            x = margin + Math.random() * (canvas.width - margin * 2);
+            y = margin + Math.random() * (canvas.height - margin * 2);
+            valid = balls.every(b => Math.hypot(x - b.x, y - b.y) > RADIUS * 2.4);
+            attempts++;
+        }
+        const colorListIdx = Math.floor(Math.random() * cfg.colorCount);
+        const baseSpeed = cfg.speed || 0;
+        const speed = baseSpeed > 0 ? baseSpeed * (0.7 + Math.random() * 0.6) : 0;
+        const angle = Math.random() * Math.PI * 2;
+        balls.push({
+            x, y,
+            dx: Math.cos(angle) * speed,
+            dy: Math.sin(angle) * speed,
+            colorListIdx,
+            spawnedAt: Date.now(),
+            id: nextBallId++,
+        });
+    }
+
+    // ─── Drawing ───────────────────────────────────────────────────────────────────
+    function drawBall(b, cfg) {
+        const color = ALL_COLORS[activeColors[b.colorListIdx]].hex;
+        const isWrong = wrongFlashIds.has(b.id);
+        const age = Date.now() - b.spawnedAt;
+
+        let alpha = 1;
+        const ratio = age / cfg.disappearTime;
+        if (ratio > 0.7) alpha = Math.max(0.15, 1 - (ratio - 0.7) / 0.3);
+
+        ctx.globalAlpha = alpha;
+        ctx.shadowColor = isWrong ? '#ef4444' : color;
+        ctx.shadowBlur = isWrong ? 20 : 12;
+        ctx.fillStyle = isWrong ? '#ef4444' : color;
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, RADIUS, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+    }
+
+    function drawPopEffects() {
+        const now = Date.now();
+        popEffects = popEffects.filter(p => now - p.startTime < 350);
+        for (const p of popEffects) {
+            const t = (now - p.startTime) / 350;
+            const r = RADIUS + RADIUS * 1.5 * t;
+            ctx.globalAlpha = 1 - t;
+            ctx.strokeStyle = p.color;
+            ctx.lineWidth = 3 * (1 - t);
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+        }
+    }
+
+    function drawComboFloat() {
+        const now = Date.now();
+        popEffects.forEach(p => {
+            if (!p.points) return;
+            const t = (now - p.startTime) / 350;
+            const y = p.y - RADIUS * 2 - 20 * t;
+            ctx.globalAlpha = 1 - t;
+            ctx.fillStyle = '#fff';
+            ctx.font = `bold ${Math.round(RADIUS * 0.8)}px Inter`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(`+${p.points}`, p.x, y);
+            ctx.globalAlpha = 1;
+        });
+    }
+
+    function draw() {
+        if (!isRunning) return;
+        const cfg = LEVEL_CONFIG[gameMode][currentLevel];
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // move balls
+        if (cfg.speed > 0) {
+            for (const b of balls) {
+                b.x += b.dx;
+                b.y += b.dy;
+                if (b.x - RADIUS < 0 || b.x + RADIUS > canvas.width)  { b.dx *= -1; b.x = Math.max(RADIUS, Math.min(canvas.width - RADIUS, b.x)); }
+                if (b.y - RADIUS < 0 || b.y + RADIUS > canvas.height)  { b.dy *= -1; b.y = Math.max(RADIUS, Math.min(canvas.height - RADIUS, b.y)); }
+            }
+        }
+
+        balls.forEach(b => drawBall(b, cfg));
+        drawPopEffects();
+        drawComboFloat();
+        animFrameId = requestAnimationFrame(draw);
+    }
+
+    // ─── Click handling ────────────────────────────────────────────────────────────
+    canvas.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        if (!isRunning) return;
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+        const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+        const cfg = LEVEL_CONFIG[gameMode][currentLevel];
+
+        for (let i = balls.length - 1; i >= 0; i--) {
+            const b = balls[i];
+            if (Math.hypot(x - b.x, y - b.y) <= RADIUS) {
+                if (b.colorListIdx === targetColorIdx) {
+                    const color = ALL_COLORS[activeColors[b.colorListIdx]].hex;
+                    popEffects.push({ x: b.x, y: b.y, color, startTime: Date.now(), points: getComboMultiplier() });
+                    balls.splice(i, 1);
+                    combo++;
+                    if (combo > maxCombo) maxCombo = combo;
+                    const points = getComboMultiplier();
+                    score += points;
+                    scoreDisplayEl.textContent = score;
+                    updateComboDisplay();
+                    spawnBall(cfg);
+                } else {
+                    errors++;
+                    errorsDisplayEl.textContent = errors;
+                    score = Math.max(0, score - cfg.penaltyPerError);
+                    scoreDisplayEl.textContent = score;
+                    combo = 0;
+                    updateComboDisplay();
+                    wrongFlashIds.add(b.id);
+                    setTimeout(() => wrongFlashIds.delete(b.id), 350);
+                }
+                return;
+            }
+        }
+    });
+
+    // ─── Disappear checker ─────────────────────────────────────────────────────────
+    function startDisappearChecker(cfg) {
+        disappearInterval = setInterval(() => {
+            const now = Date.now();
+            const before = balls.length;
+            balls = balls.filter(b => now - b.spawnedAt < cfg.disappearTime);
+            const removed = before - balls.length;
+            for (let i = 0; i < removed; i++) spawnBall(cfg);
+        }, 100);
+    }
+
+    // ─── Game flow ─────────────────────────────────────────────────────────────────
+    function clearAll() {
+        if (animFrameId)        { cancelAnimationFrame(animFrameId); animFrameId = null; }
+        if (countdownInterval)  { clearInterval(countdownInterval); countdownInterval = null; }
+        if (spawnInterval)      { clearInterval(spawnInterval); spawnInterval = null; }
+        if (targetChangeInterval){ clearInterval(targetChangeInterval); targetChangeInterval = null; }
+        if (disappearInterval)  { clearInterval(disappearInterval); disappearInterval = null; }
+    }
+
+    function startGame(level) {
+        clearAll();
+        currentLevel = level;
+        levelDisplayEl.textContent = level;
+        RADIUS = getRadius();
+        score = 0; errors = 0; combo = 0; maxCombo = 0;
+        scoreDisplayEl.textContent = '0';
+        errorsDisplayEl.textContent = '0';
+        updateComboDisplay();
+        timeLeft = 30;
+        timerEl.textContent = timeLeft;
+        balls = [];
+        wrongFlashIds = new Set();
+        popEffects = [];
+        overlay.classList.add('hidden');
+        document.getElementById('game-title').style.display = 'none';
+        resize();
+        isRunning = true;
+
+        const cfg = LEVEL_CONFIG[gameMode][level];
+
+        const shuffled = [...ALL_COLORS.keys()].sort(() => Math.random() - 0.5);
+        activeColors = shuffled.slice(0, cfg.colorCount);
+
+        setTarget(Math.floor(Math.random() * cfg.colorCount));
+
+        for (let i = 0; i < cfg.ballCount; i++) spawnBall(cfg);
+
+        startDisappearChecker(cfg);
+
+        if (cfg.targetChangeInterval) {
+            targetChangeInterval = setInterval(() => { if (isRunning) pickNewTarget(cfg); }, cfg.targetChangeInterval);
+        }
+
+        countdownInterval = setInterval(() => {
+            timeLeft--;
+            timerEl.textContent = timeLeft;
+            if (timeLeft <= 0) {
+                clearAll();
+                isRunning = false;
+                results[level] = { score, errors, maxCombo };
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                if (level < maxLevels) showNextLevelScreen(level);
+                else showEndScreen();
+            }
+        }, 1000);
+
+        draw();
+    }
+
+    function startCampaign() { results = {}; startGame(1); }
+
+    // ─── Overlay screens ───────────────────────────────────────────────────────────
+    function updateInstructions(level) {
+        const descs = {
+            child: {
+                1: '2 kolory, 4 kulki. Klikaj tylko cel!',
+                2: '3 kolory, kulki się ruszają. Cel zmienia się co 8s!',
+                3: '4 kolory, szybciej! Zmiana co 6s. Błąd = -2 pkt.',
+            },
+            adult: {
+                1: '3 kolory, kulki się ruszają. Cel zmienia się co 8s.',
+                2: '4 kolory, szybciej! Zmiana co 5s. Błąd = -2 pkt.',
+                3: '5 kolorów, zmiana co 4s. Błąd = -3 pkt! Buduj combo!',
+                4: '6 kolorów, zmiana co 3s. Szybkie kulki. Ekstremalne!',
+            },
+        };
+        overlayDesc.textContent = (descs[gameMode] && descs[gameMode][level]) || '';
+    }
+
+    function hideModeAndShowMain() { modeSelection.classList.add('hidden'); mainBtn.classList.remove('hidden'); }
+    function hideSaveSection() { saveSection.classList.add('hidden'); showRecordsStartBtn.classList.add('hidden'); saveInfo.classList.add('hidden'); }
+
+    function showStartScreen() {
+        document.getElementById('game-title').style.display = '';
+        overlayTitle.innerHTML = 'Wybierz tryb gry!';
+        overlayStats.classList.add('hidden');
+        hideSaveSection();
+        updateInstructions(1);
+        modeSelection.classList.remove('hidden');
+        mainBtn.classList.add('hidden');
+        showRecordsStartBtn.classList.remove('hidden');
+        targetDot.style.backgroundColor = 'transparent';
+        targetName.textContent = '';
+        comboBox.classList.add('hidden');
+        overlay.classList.remove('hidden');
+    }
+
+    function showNextLevelScreen(level) {
+        hideModeAndShowMain();
+        hideSaveSection();
+        overlayTitle.innerHTML = `Poziom ${level} Ukończony! 🎉`;
+        let statsHtml = `<p>Wynik: <span class="text-green-400 font-bold">${results[level].score}</span></p>`;
+        statsHtml += `<p>Błędy: <span class="text-red-400 font-bold">${results[level].errors}</span></p>`;
+        if (results[level].maxCombo >= 3) statsHtml += `<p>Max combo: <span class="text-yellow-400 font-bold">×${results[level].maxCombo >= 10 ? 4 : results[level].maxCombo >= 6 ? 3 : 2}</span> (seria ${results[level].maxCombo})</p>`;
+        overlayStats.innerHTML = statsHtml;
+        overlayStats.classList.remove('hidden');
+        updateInstructions(level + 1);
+        mainBtn.innerHTML = `Start: Poziom ${level + 1}`;
+        mainBtnAction = () => startGame(level + 1);
+        overlay.classList.remove('hidden');
+        mainBtn.disabled = true;
+        setTimeout(() => { mainBtn.disabled = false; }, 1500);
+    }
+
+    function showEndScreen() {
+        hideModeAndShowMain();
+        overlayTitle.innerHTML = 'Wyzwanie Ukończone! 🏆';
+        const totalScore = Object.values(results).reduce((s, r) => s + r.score, 0);
+        const totalErrors = Object.values(results).reduce((s, r) => s + r.errors, 0);
+        const bestCombo = Math.max(...Object.values(results).map(r => r.maxCombo || 0));
+        let statsHtml = '';
+        for (let lvl = 1; lvl <= maxLevels; lvl++) {
+            if (results[lvl]) {
+                statsHtml += `<p>Poziom ${lvl}: <span class="text-green-400">${results[lvl].score}</span> pkt / <span class="text-red-400">${results[lvl].errors}</span> błędów</p>`;
+            }
+        }
+        statsHtml += `<p class="mt-2 border-t border-gray-600 pt-2">Łącznie: <span class="text-green-400 font-bold">${totalScore}</span> pkt / <span class="text-red-400 font-bold">${totalErrors}</span> błędów</p>`;
+        if (bestCombo >= 3) statsHtml += `<p>Najdłuższa seria: <span class="text-yellow-400 font-bold">${bestCombo}</span> trafień z rzędu</p>`;
+        overlayStats.innerHTML = statsHtml;
+        overlayStats.classList.remove('hidden');
+        overlayDesc.textContent = '';
+        mainBtn.innerHTML = 'Zagraj ponownie';
+        mainBtnAction = showStartScreen;
+        recordsSaved = false;
+        saveRecordBtn.disabled = false;
+        saveRecordBtn.classList.replace('bg-gray-600', 'bg-green-600');
+        saveInfo.classList.add('hidden');
+        playerNameInput.value = localStorage.getItem(NAME_KEY) || '';
+        saveSection.classList.remove('hidden');
+        showRecordsStartBtn.classList.add('hidden');
+        overlay.classList.remove('hidden');
+    }
+
+    showStartScreen();
+</script>
+  <script src="../../shared/auth.js"></script>
+</body>
+</html>

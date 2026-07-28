@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pytania | @twoznia</title>
+    <link rel="stylesheet" href="../shared/style.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<a class="back-link" href="../">← Wróć</a>
+
+<!-- ========== SETUP SCREEN ========== -->
+<section id="screen-setup" class="screen active">
+    <div class="game-title">🧠 Pytania</div>
+    <p class="game-subtitle">Sprawdź swoją wiedzę z różnych dziedzin!</p>
+
+    <div class="card">
+        <div class="form-group">
+            <label for="sel-category">Kategoria</label>
+            <select id="sel-category">
+                <option value="__random__">🎲 Losowa</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="sel-level">Poziom trudności</label>
+            <select id="sel-level">
+                <option value="__all__">Wszystkie</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="sel-questions">Liczba pytań</label>
+            <select id="sel-questions">
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="15">15</option>
+                <option value="20">20</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="error-msg" id="setup-error"></div>
+    <button class="btn btn-primary" id="btn-start" disabled>Ładowanie…</button>
+    <button class="btn btn-secondary btn-report-tech" id="btn-report-tech">Zgłoś problem techniczny</button>
+</section>
+
+<!-- ========== GAME SCREEN ========== -->
+<section id="screen-game" class="screen">
+    <div class="hud" style="width:100%;max-width:560px;">
+        <span id="q-counter">Pytanie 1 / 10</span>
+        <span>Wynik: <span class="score-val" id="score-display">0</span></span>
+    </div>
+    <div class="progress-bar" id="progress-bar" style="width:100%;max-width:560px;"></div>
+
+    <div class="card" id="top-card">
+        <button class="q-speak-btn" id="q-speak-btn" title="Odsłuchaj pytanie" aria-label="Odsłuchaj pytanie">🔊</button>
+        <div class="q-meta">
+            <div class="q-category-label">Kategoria</div>
+            <div class="q-category-name" id="q-category-name"></div>
+            <div class="q-subcategory-name" id="q-subcategory-name"></div>
+        </div>
+        <div class="q-question" id="q-question"></div>
+    </div>
+
+    <div class="answers-grid" id="answers-grid"></div>
+
+    <div class="feedback" id="feedback"></div>
+    <button class="btn btn-secondary btn-report-inline" id="btn-report-question" type="button" style="display:none;">Zgłoś błąd w pytaniu</button>
+
+    <button class="btn btn-primary" id="btn-next" style="display:none;">Następne pytanie →</button>
+</section>
+
+<!-- ========== RESULTS SCREEN ========== -->
+<section id="screen-results" class="screen">
+    <div class="game-title">🏆 Wyniki</div>
+    <div class="result-score" id="result-score">0</div>
+    <div class="result-max" id="result-max">na 10 pytań</div>
+    <div class="result-comment" id="result-comment"></div>
+    <div class="card result-list" id="result-list"></div>
+    <div style="display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;">
+        <button class="btn btn-primary" id="btn-replay">Zagraj ponownie</button>
+        <a class="btn btn-secondary" href="../">Strona główna</a>
+    </div>
+</section>
+
+<footer>@twoznia | 2026</footer>
+
+<div class="report-modal" id="report-modal" aria-hidden="true">
+    <div class="report-modal__backdrop" id="report-modal-close"></div>
+    <div class="card report-modal__content" role="dialog" aria-modal="true" aria-labelledby="report-title">
+        <div class="report-modal__header">
+            <h2 id="report-title">Zgłoś błąd</h2>
+            <button class="report-modal__x" id="btn-report-cancel" type="button" aria-label="Zamknij formularz">×</button>
+        </div>
+
+        <form id="report-form" class="report-form">
+            <div class="form-group">
+                <label for="report-category">Kategoria</label>
+                <input id="report-category" type="text" readonly>
+            </div>
+
+            <div class="form-group">
+                <label for="report-subcategory">Subkategoria</label>
+                <input id="report-subcategory" type="text" readonly>
+            </div>
+
+            <div class="form-group">
+                <label for="report-question">Pytanie</label>
+                <textarea id="report-question" rows="3" readonly></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="report-correct">Poprawna odpowiedź</label>
+                <input id="report-correct" type="text" readonly>
+            </div>
+
+            <div class="report-honeypot" aria-hidden="true">
+                <label for="report-website">Pozostaw to pole puste</label>
+                <input id="report-website" type="text" tabindex="-1" autocomplete="off">
+            </div>
+
+            <div class="form-group">
+                <label for="report-comment">Komentarz (opcjonalnie)</label>
+                <textarea id="report-comment" rows="4" maxlength="500" placeholder="Dodaj komentarz lub opis błędu (opcjonalne)."></textarea>
+                <div class="field-hint"><span id="report-comment-count">0</span>/500 znaków</div>
+            </div>
+
+            <div class="error-msg" id="report-error"></div>
+            <div class="report-success" id="report-success"></div>
+
+            <div class="report-actions">
+                <button class="btn btn-secondary" id="btn-report-close" type="button">Anuluj</button>
+                <button class="btn btn-primary" type="submit">Otwórz zgłoszenie na GitHub</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="script.js"></script>
+  <script src="../shared/auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tower Defense - Trudne Starcie</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <a class="back-link" href="../">← Wróć</a>
+
+    <div style="position: relative;">
+        <div id="game-wrapper">
+            <div>
+                <canvas id="gameCanvas" width="800" height="600"></canvas>
+            </div>
+
+            <div class="sidebar">
+                <div class="stat-box">
+                    <span>⭐ Punkty:</span>
+                    <span id="score-display" class="stat-value text-purple-400">0</span>
+                </div>
+                <div class="stat-box">
+                    <span>❤️ Życia:</span>
+                    <span id="lives-display" class="stat-value text-red-500">25</span>
+                </div>
+                <div class="stat-box">
+                    <span>💰 Złoto:</span>
+                    <span id="money-display" class="stat-value">200</span>
+                </div>
+                <div class="stat-box">
+                    <span>🌊 Fala:</span>
+                    <span id="wave-display" class="stat-value text-blue-400">0</span>
+                </div>
+
+                <div class="stat-box" style="flex-direction: column; align-items: flex-start; gap: 5px;">
+                    <div class="w-full flex justify-between">
+                        <span class="text-xs text-slate-400">🏆 Rekord pkt:</span>
+                        <span id="high-score-display" class="text-xs text-purple-300">0</span>
+                    </div>
+                    <div class="w-full flex justify-between">
+                        <span class="text-xs text-slate-400">🌊 Rekord fal:</span>
+                        <span id="high-wave-display" class="text-xs text-blue-300">0</span>
+                    </div>
+                </div>
+
+                <div class="h-px bg-slate-600 my-1"></div>
+                <h3 class="font-bold text-slate-300 text-sm">Buduj (kliknij na mapie):</h3>
+
+                <div class="tower-btn selected" data-type="basic" onclick="selectTower('basic')">
+                    <div class="tower-title">
+                        <span class="text-blue-400">■ Podstawowa</span>
+                        <span class="text-yellow-400">50 💰</span>
+                    </div>
+                    <div class="tower-desc">Solidna i tania. Dobra na start.</div>
+                </div>
+
+                <div class="tower-btn" data-type="rapid" onclick="selectTower('rapid')">
+                    <div class="tower-title">
+                        <span class="text-green-400">▲ Szybkostrzelna</span>
+                        <span class="text-yellow-400">100 💰</span>
+                    </div>
+                    <div class="tower-desc">Spowalnia wrogów. Idealna na szybkich.</div>
+                </div>
+
+                <div class="tower-btn" data-type="sniper" onclick="selectTower('sniper')">
+                    <div class="tower-title">
+                        <span class="text-purple-400">◆ Snajper</span>
+                        <span class="text-yellow-400">200 💰</span>
+                    </div>
+                    <div class="tower-desc">Przebija wrogów — trafia sąsiedniego. Kluczowy vs bossów.</div>
+                </div>
+
+                <!-- Tower info panel (hidden until tower selected on map) -->
+                <div id="tower-info" class="hidden">
+                    <div class="tower-info-header">
+                        <span id="ti-name" class="font-bold"></span>
+                        <span class="text-slate-400 text-xs">Poz. <span id="ti-level">1</span>/3</span>
+                    </div>
+                    <div class="tower-info-stats">
+                        <span>DMG: <b id="ti-damage"></b></span>
+                        <span>Zasięg: <b id="ti-range"></b></span>
+                        <span>DPS: <b id="ti-dps"></b></span>
+                    </div>
+                    <div class="tower-info-actions">
+                        <button id="upgrade-btn" onclick="upgradeTower()">⬆️ Ulepsz</button>
+                        <button id="sell-btn" onclick="sellTower()">💰 Sprzedaj</button>
+                    </div>
+                </div>
+
+                <div class="h-px bg-slate-600 my-1"></div>
+                <h3 class="font-bold text-slate-300 text-sm">Zdolności (w trakcie fali):</h3>
+                <div class="abilities-row">
+                    <button id="bombard-btn" class="ability-btn" onclick="activateBombard()" disabled>
+                        💥 Bomba<br><small>100💰</small>
+                        <span class="ability-cd"></span>
+                    </button>
+                    <button id="freeze-btn" class="ability-btn" onclick="activateFreeze()" disabled>
+                        ❄️ Mróz<br><small>75💰</small>
+                        <span class="ability-cd"></span>
+                    </button>
+                </div>
+
+                <button id="start-wave-btn" class="action-btn" onclick="startWave()">Rozpocznij Falę</button>
+            </div>
+        </div>
+
+        <div id="game-over-overlay">
+            <h1 class="text-5xl font-bold text-red-500 mb-4">KONIEC GRY</h1>
+            <p class="text-xl mb-6">Przetrwałeś <span id="final-waves" class="text-blue-400 font-bold"></span> fal.</p>
+            <button class="action-btn px-8" onclick="location.reload()">Zagraj Ponownie</button>
+        </div>
+    </div>
+
+    <script type="module" src="script.js"></script>
+  <script src="../shared/auth.js"></script>
+</body>
+</html>

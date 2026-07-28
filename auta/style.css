@@ -1,0 +1,328 @@
+:root {
+    --bg-lcd: #8b956d;
+    --segment-on: rgba(0, 0, 0, 0.82);
+    --case: #c8c8c8;
+    --hit-color: #a00;
+    --lane-dur: 280ms;
+}
+body {
+    background: #111;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100dvh;
+    margin: 0;
+    font-family: 'Courier New', Courier, monospace;
+    overflow: hidden;
+    user-select: none;
+    touch-action: none;
+}
+
+a.back-link {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 100;
+    background: #334155;
+    color: #fff;
+    border: 1px solid #475569;
+    border-radius: 8px;
+    padding: 8px 14px;
+    text-decoration: none;
+    font-size: 13px;
+    font-family: 'Courier New', Courier, monospace;
+}
+a.back-link:hover { background: #475569; }
+
+body.record-beaten { --bg-lcd: #f3ee9b; }
+body.speed-high    { --bg-lcd: #9fa87a; }
+
+#console {
+    background: var(--case);
+    width: 90vw;
+    max-width: 400px;
+    height: 90vh;
+    max-height: 800px;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    border-radius: 40px;
+    box-shadow: inset -5px -5px 15px #888, inset 2px 2px 6px #fff, 0 20px 50px #000;
+    border: 4px solid #bbb;
+}
+
+#screen-border {
+    background: #2a2a2a;
+    padding: 10px;
+    border-radius: 15px;
+    flex-grow: 1;
+    display: flex;
+    box-shadow: inset 0 3px 8px #000;
+}
+
+#screen {
+    width: 100%;
+    background: var(--bg-lcd);
+    position: relative;
+    overflow: hidden;
+    border: 3px solid #444;
+    border-radius: 5px;
+    transition: background 0.3s ease-in-out;
+}
+
+/* ── Road lines ─────────────────────────────────────────────────────────── */
+#road-bg {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: space-evenly;
+    pointer-events: none;
+    z-index: 0;
+    padding: 0 27px;
+}
+.lane-line {
+    width: 3px;
+    height: 100%;
+    background: repeating-linear-gradient(
+        to bottom,
+        rgba(0,0,0,0.22) 0px, rgba(0,0,0,0.22) 14px,
+        transparent       14px, transparent       28px
+    );
+    background-size: 100% 28px;
+    animation: lane-scroll var(--lane-dur) linear infinite;
+}
+@keyframes lane-scroll { to { background-position: 0 28px; } }
+
+/* ── Cars ───────────────────────────────────────────────────────────────── */
+.car-shape {
+    position: absolute;
+    width: 54px;
+    height: 36px;
+    transition: left 0.08s ease-out;
+    z-index: 2;
+}
+.car-body {
+    position: absolute;
+    width: 32px;
+    height: 36px;
+    background: var(--segment-on);
+    left: 11px;
+    border-radius: 5px 5px 3px 3px;
+}
+/* windshield cutout */
+.car-body::before {
+    content: '';
+    position: absolute;
+    width: 22px;
+    height: 9px;
+    background: var(--bg-lcd);
+    left: 5px;
+    top: 5px;
+    border-radius: 2px;
+}
+/* rear window */
+.car-body::after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 7px;
+    background: var(--bg-lcd);
+    left: 7px;
+    bottom: 5px;
+    border-radius: 2px;
+    opacity: 0.6;
+}
+.wheel {
+    position: absolute;
+    width: 9px;
+    height: 11px;
+    background: var(--segment-on);
+    border-radius: 2px;
+}
+.w1 { top: 4px;    left: 0; }
+.w2 { top: 4px;    right: 0; }
+.w3 { bottom: 4px; left: 0; }
+.w4 { bottom: 4px; right: 0; }
+
+/* Player car — slightly tinted */
+.player-car .car-body { background: rgba(0,0,0,0.88); }
+
+/* Exhaust puffs on player */
+.exhaust {
+    position: absolute;
+    bottom: -6px;
+    width: 5px;
+    height: 5px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 50%;
+    animation: puff 0.4s ease-out infinite;
+    opacity: 0;
+}
+#exhaust-l { left: 16px; animation-delay: 0s; }
+#exhaust-r { left: 32px; animation-delay: 0.2s; }
+@keyframes puff {
+    0%   { transform: scale(0.5) translateY(0);  opacity: 0.5; }
+    100% { transform: scale(2)   translateY(-8px); opacity: 0; }
+}
+
+/* Truck variant */
+.truck-shape {
+    position: absolute;
+    width: 54px;
+    height: 52px;
+    z-index: 2;
+}
+.truck-body {
+    position: absolute;
+    width: 36px;
+    height: 52px;
+    background: var(--segment-on);
+    left: 9px;
+    border-radius: 4px;
+}
+.truck-body::before {
+    content: '';
+    position: absolute;
+    width: 24px;
+    height: 8px;
+    background: var(--bg-lcd);
+    left: 6px;
+    top: 6px;
+    border-radius: 2px;
+}
+.truck-body::after {
+    content: '';
+    position: absolute;
+    width: 28px;
+    height: 14px;
+    background: var(--bg-lcd);
+    opacity: 0.15;
+    left: 4px;
+    top: 18px;
+    border-radius: 2px;
+}
+.truck-shape .wheel {
+    width: 9px; height: 13px;
+}
+.truck-shape .w1 { top: 5px;    left: 0; }
+.truck-shape .w2 { top: 5px;    right: 0; }
+.truck-shape .w3 { bottom: 5px; left: 0; }
+.truck-shape .w4 { bottom: 5px; right: 0; }
+
+/* ── HUD ────────────────────────────────────────────────────────────────── */
+#ui {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    text-align: right;
+    color: var(--segment-on);
+    z-index: 5;
+}
+#score    { font-size: 30px; font-weight: bold; line-height: 1; }
+#hi-score { font-size: 13px; opacity: 0.75; }
+#lives    { font-size: 14px; margin-top: 4px; letter-spacing: 2px; }
+#streak   { font-size: 12px; margin-top: 3px; opacity: 0.85; min-height: 16px; }
+
+/* ── Overlay ────────────────────────────────────────────────────────────── */
+#overlay {
+    position: absolute;
+    inset: 0;
+    background: var(--bg-lcd);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    text-align: center;
+    padding: 20px;
+    transition: background 0.3s ease-in-out;
+}
+#mode-buttons { display: flex; gap: 12px; width: 85%; }
+.menu-btn {
+    flex: 1;
+    padding: 18px 10px;
+    font-size: 18px;
+    cursor: pointer;
+    background: #333;
+    color: white;
+    border: none;
+    font-weight: bold;
+    margin-top: 20px;
+    border-radius: 10px;
+    font-family: 'Courier New', Courier, monospace;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+.menu-btn:active { background: #555; }
+.menu-btn-hard { background: #5a1a1a; }
+.menu-btn-hard:active { background: #8a2a2a; }
+
+/* ── Controls ───────────────────────────────────────────────────────────── */
+.controls { margin-top: 10px; padding-bottom: 10px; display: flex; flex-direction: column; gap: 6px; }
+.controls-row { display: flex; gap: 6px; }
+.btn {
+    flex: 1;
+    padding: 20px 0;
+    background: #3a3a3a;
+    border: 2px solid #1a1a1a;
+    font-size: 22px;
+    font-weight: bold;
+    color: #fff;
+    border-radius: 12px;
+    cursor: pointer;
+    font-family: 'Courier New', Courier, monospace;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    box-shadow: 0 4px 0 #111;
+}
+.btn:active { background: #666; box-shadow: none; transform: translateY(3px); }
+.btn-reset {
+    width: 100%;
+    padding: 8px;
+    background: #555;
+    border: 1px solid #000;
+    font-size: 11px;
+    color: #fff;
+    border-radius: 8px;
+    font-family: 'Courier New', Courier, monospace;
+    touch-action: manipulation;
+}
+
+/* ── Misc ───────────────────────────────────────────────────────────────── */
+.blink { animation: blink-animation 0.1s steps(2, start) infinite; }
+@keyframes blink-animation { to { visibility: hidden; } }
+.hit-style .car-body, .hit-style .wheel,
+.hit-style .truck-body, .hit-style .truck-shape .wheel { background: var(--hit-color) !important; }
+
+.heart-shape {
+    position: absolute;
+    width: 54px;
+    height: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 44px;
+    color: #cc0000;
+    line-height: 1;
+    z-index: 2;
+}
+
+/* milestone pop */
+.milestone-pop {
+    position: absolute;
+    left: 50%;
+    top: 40%;
+    transform: translate(-50%, -50%);
+    font-size: 22px;
+    font-weight: bold;
+    color: var(--segment-on);
+    z-index: 20;
+    pointer-events: none;
+    animation: milestone-anim 0.9s ease-out forwards;
+}
+@keyframes milestone-anim {
+    0%   { opacity: 1; transform: translate(-50%, -50%) scale(1.3); }
+    60%  { opacity: 1; transform: translate(-50%, -70%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -90%) scale(0.9); }
+}

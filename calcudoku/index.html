@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Calcudoku | @twoznia</title>
+    <link rel="stylesheet" href="../shared/style.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<a class="back-link" href="../">← Wróć</a>
+<button id="themeBtn" type="button">☀️ Jasny</button>
+<div id="langSwitch">
+    <button id="langPl" type="button" title="Polski">🇵🇱</button>
+    <button id="langEn" type="button" title="English">🇬🇧</button>
+</div>
+
+<div class="game-title">🧮 Calcudoku</div>
+<p class="game-subtitle">Wypełnij siatkę liczbami 1–n bez powtórzeń w wierszach i kolumnach tak, by każda klatka dawała swój wynik.</p>
+
+<div class="card controls">
+    <div class="control-row">
+        <span class="control-label">Rozmiar</span>
+        <div class="pill-group" id="sizeButtons"></div>
+    </div>
+    <div class="control-row">
+        <span class="control-label">Trudność</span>
+        <div class="pill-group" id="diffButtons">
+            <button class="pill" data-diff="easy">Łatwy</button>
+            <button class="pill" data-diff="hard">Trudny</button>
+        </div>
+    </div>
+    <div class="control-row">
+        <button class="btn btn-secondary" id="noteBtn" type="button">✏️ Notatki</button>
+        <button class="btn btn-secondary" id="hintBtn" type="button">💡 Podpowiedź <span id="hintCount">(3)</span></button>
+        <button class="btn btn-secondary" id="undoBtn" type="button" disabled>↩️ Cofnij</button>
+    </div>
+    <button class="btn btn-primary" id="newGameBtn">Nowa gra</button>
+</div>
+
+<div class="hud">
+    <span>Czas: <span class="score-val" id="timer">0:00</span></span>
+    <span>Rekord: <span class="score-val" id="recordDisplay">—</span></span>
+    <button class="btn btn-secondary" id="recordsBtn" type="button">🏆 Rekordy</button>
+</div>
+
+<div id="boardWrap">
+    <div id="board"></div>
+</div>
+
+<div id="numpad"></div>
+
+<div id="winBanner" class="card win-banner" hidden>
+    <div id="winText"></div>
+    <div class="name-row" id="nameRow">
+        <input type="text" id="playerName" placeholder="Twoje imię…" maxlength="20" autocomplete="off">
+        <button class="btn btn-secondary" id="saveBtn">Zapisz</button>
+    </div>
+    <p class="save-info" id="saveInfo"></p>
+    <button class="btn btn-primary" id="winPlayAgain">Zagraj ponownie</button>
+</div>
+
+<div class="rec-panel" id="recPanel">
+    <div class="card rec-card">
+        <h3>🏆 Rekordy</h3>
+        <div class="rec-tabs" id="recTabs"></div>
+        <div id="recTable"></div>
+        <button class="btn btn-secondary rec-close" id="recCloseBtn">Zamknij</button>
+    </div>
+</div>
+
+<details class="card rules">
+    <summary>Zasady gry</summary>
+    <p>Wypełnij siatkę liczbami od 1 do n (n = rozmiar planszy) — w każdym wierszu i kolumnie każda liczba dokładnie raz.</p>
+    <p>Plansza jest podzielona na klatki (grube obramowanie). Liczby w klatce muszą dawać wynik z jej rogu: np. „12×” to iloczyn 12, „3−” to różnica 3, „2÷” to iloraz 2. Klatka z samą liczbą to pole o tej wartości. Odejmowanie i dzielenie występują tylko w klatkach 2-polowych — kolejność liczb nie ma znaczenia.</p>
+    <p>Kliknij pole, a potem liczbę na klawiaturze poniżej planszy. Powtórzone liczby i błędne klatki podświetlają się na czerwono.</p>
+    <p>Tryb notatek (przycisk „Notatki” lub klawisz N) pozwala zapisać kandydujące liczby. Podpowiedź uzupełnia jedno pole (3 na grę) — w rankingu liczy się najpierw liczba podpowiedzi, potem czas. „Cofnij” (Ctrl+Z) wycofuje ruchy. Gra zapisuje się automatycznie i wznawia po powrocie.</p>
+</details>
+
+<script src="script.js"></script>
+  <script src="../shared/auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Puzzle 🧩</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="top-bar">
+  <a class="back-link" href="../">← Wróć</a>
+  <h1>🧩 Puzzle</h1>
+  <select id="img-select">
+    <option value="foka">🦭 Foka</option>
+    <option value="ges">🪿 Gęś</option>
+    <option value="okno">🪟 Okno</option>
+    <option value="wiadro">🪣 Wiadro</option>
+    <option value="dom">🏠 Dom</option>
+    <option value="auto">🚗 Auto</option>
+    <option value="most">🌉 Most</option>
+  </select>
+  <select id="size-select">
+    <option value="4">16 el.</option>
+    <option value="5">25 el.</option>
+    <option value="6">36 el.</option>
+  </select>
+  <button id="new-btn">🔄 Nowa</button>
+</div>
+
+<div id="progress">Ułożono: 0 / 16</div>
+
+<div id="board-wrap">
+  <canvas id="board"></canvas>
+</div>
+
+<div id="tray-label">Dostępne puzzle</div>
+<div id="tray">
+  <div class="tray-slot" id="tray-slot-0"><canvas></canvas></div>
+  <div class="tray-slot" id="tray-slot-1"><canvas></canvas></div>
+  <div class="tray-slot" id="tray-slot-2"><canvas></canvas></div>
+</div>
+
+<div id="replay-bar">
+  <div class="win-msg">🎉 Brawo! Ułożone!</div>
+  <button id="replay-btn">🔄 Zagraj ponownie</button>
+</div>
+
+<canvas id="drag-piece"></canvas>
+
+<script src="script.js"></script>
+  <script src="../shared/auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saper</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <a class="back-link" href="../">← Wróć</a>
+
+    <div class="mb-6 text-center">
+        <h1 class="text-4xl font-extrabold tracking-tight mb-2">Saper</h1>
+        <p class="text-sm text-slate-300 opacity-80">Klasyk w nowoczesnym wydaniu</p>
+    </div>
+
+    <div class="controls">
+        <select id="difficulty-select">
+            <option value="easy">Łatwy (9x9, 10 min)</option>
+            <option value="medium">Średni (16x16, 40 min)</option>
+            <option value="hard">Trudny (30x16, 99 min)</option>
+        </select>
+        <button id="new-game-btn" class="primary">Nowa Gra</button>
+    </div>
+
+    <div class="game-container">
+        <div class="header-panel">
+            <div id="mines-count" class="digital-display">010</div>
+            <button id="face-btn">🙂</button>
+            <div id="timer" class="digital-display">000</div>
+        </div>
+
+        <div id="board" oncontextmenu="return false;"></div>
+    </div>
+    
+    <div class="mt-4 text-xs text-slate-300 opacity-60 text-center max-w-md">
+        <p>Lewy klik (lub dotknięcie): Odsłoń pole.</p>
+        <p>Prawy klik (lub długie przytrzymanie): Oznacz flagą 🚩.</p>
+    </div>
+
+    <script src="script.js"></script>
+  <script src="../shared/auth.js"></script>
+</body>
+</html>

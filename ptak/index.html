@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flappy Bird - Lot do rekordu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <a class="back-link" href="../">← Wróć</a>
+
+    <div class="game-container">
+        
+        <div class="ui-panel">
+            <div>
+                <div class="score-text">WYNIK: <span id="current-score">0</span></div>
+                <div class="text-xs text-blue-300 mt-1" style="font-size: 0.6rem;">POZIOM: <span id="current-level">1</span></div>
+            </div>
+            <div class="highscore-text">REKORD: <span id="high-score">0</span></div>
+        </div>
+
+        <div id="canvas-wrap">
+            <canvas id="gameCanvas" width="400" height="500"></canvas>
+
+            <div id="overlay" class="active">
+                <div class="title" id="overlay-title">FLAPPY<br>BIRD</div>
+                <button id="start-btn" class="action-btn">ZAGRAJ</button>
+                <div class="instructions">
+                    Kliknij myszką, dotknij ekranu<br>
+                    lub naciśnij SPACJĘ aby latać.
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script type="module" src="script.js"></script>
+  <script src="../shared/auth.js"></script>
+</body>
+</html>

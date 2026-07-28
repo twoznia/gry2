@@ -1,0 +1,46 @@
+        body { background-color: #0f172a; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100dvh; margin: 0; font-family: 'Inter', sans-serif; }
+        .back-link { position: fixed; top: 10px; left: 10px; z-index: 100; background: #334155; color: #fff; border: 1px solid #475569; border-radius: 8px; padding: 8px 14px; text-decoration: none; font-size: 13px; }
+        .back-link:hover { background: #475569; }
+        .variant-card { display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 1.25rem; padding: 2rem 2.5rem; text-decoration: none; transition: transform 0.15s, box-shadow 0.15s; border: 2px solid transparent; width: 180px; flex-shrink: 0; }
+        .variant-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.5); }
+        .variant-icon { font-size: 4rem; line-height: 1; font-weight: 900; letter-spacing: -2px; margin-bottom: 0.75rem; font-family: 'Inter', monospace; }
+        .card-numbers { background: linear-gradient(135deg, #1e3a5f 0%, #1e293b 100%); border-color: #3b82f6; }
+        .card-numbers .variant-icon { color: #60a5fa; text-shadow: 0 0 20px rgba(96,165,250,0.5); }
+        .card-numbers:hover { border-color: #60a5fa; }
+        .card-letters { background: linear-gradient(135deg, #3b1f5f 0%, #1e293b 100%); border-color: #a855f7; }
+        .card-letters .variant-icon { color: #c084fc; text-shadow: 0 0 20px rgba(192,132,252,0.5); }
+        .card-letters:hover { border-color: #c084fc; }
+        .card-colors { background: linear-gradient(135deg, #5f2a1f 0%, #1e293b 100%); border-color: #f97316; }
+        .card-colors .variant-icon { font-size: 2.5rem; letter-spacing: 2px; text-shadow: 0 0 20px rgba(249,115,22,0.5); }
+        .card-colors:hover { border-color: #fb923c; }
+        .card-colors2 { background: linear-gradient(135deg, #1f5f2a 0%, #1e293b 100%); border-color: #22c55e; }
+        .card-colors2 .variant-icon { font-size: 2.5rem; letter-spacing: 2px; text-shadow: 0 0 20px rgba(34,197,94,0.5); }
+        .card-colors2:hover { border-color: #4ade80; }
+        .card-stroop { background: linear-gradient(135deg, #4c1d95 0%, #1e293b 100%); border-color: #a855f7; }
+        .card-stroop .variant-icon { font-size: 2.5rem; letter-spacing: 2px; text-shadow: 0 0 20px rgba(168,85,247,0.5); }
+        .card-stroop:hover { border-color: #c084fc; }
+        .card-znikanie { background: linear-gradient(135deg, #5f1f4a 0%, #1e293b 100%); border-color: #ec4899; }
+        .card-znikanie .variant-icon { font-size: 2.5rem; text-shadow: 0 0 20px rgba(236,72,153,0.5); }
+        .card-znikanie:hover { border-color: #f472b6; }
+        .card-sekwencja { background: linear-gradient(135deg, #3b1f5f 0%, #1e293b 100%); border-color: #a855f7; }
+        .card-sekwencja .variant-icon { font-size: 2.5rem; text-shadow: 0 0 20px rgba(168,85,247,0.5); }
+        .card-sekwencja:hover { border-color: #c084fc; }
+        .card-unik { background: linear-gradient(135deg, #5f1f1f 0%, #1e293b 100%); border-color: #ef4444; }
+        .card-unik .variant-icon { font-size: 2.5rem; text-shadow: 0 0 20px rgba(239,68,68,0.5); }
+        .card-unik:hover { border-color: #f87171; }
+        .card-snajper { background: linear-gradient(135deg, #1f3f1f 0%, #1e293b 100%); border-color: #22c55e; }
+        .card-snajper .variant-icon { font-size: 2.5rem; text-shadow: 0 0 20px rgba(34,197,94,0.5); }
+        .card-snajper:hover { border-color: #4ade80; }
+        .card-lancuch { background: linear-gradient(135deg, #1f3a5f 0%, #1e293b 100%); border-color: #38bdf8; }
+        .card-lancuch .variant-icon { font-size: 2.5rem; text-shadow: 0 0 20px rgba(56,189,248,0.5); }
+        .card-lancuch:hover { border-color: #7dd3fc; }
+        .card-samuraj { background: linear-gradient(135deg, #5f1f23 0%, #1e293b 100%); border-color: #fb7185; }
+        .card-samuraj .variant-icon { font-size: 2.5rem; text-shadow: 0 0 20px rgba(251,113,133,0.5); }
+        .card-samuraj:hover { border-color: #fda4af; }
+        .variant-card { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+        @media (max-width: 480px) {
+            body { justify-content: flex-start; padding-top: 3.5rem; }
+            .variant-card { width: calc(50vw - 20px); min-width: 140px; padding: 1rem 0.75rem; }
+            .variant-icon { font-size: 2.5rem; margin-bottom: 0.4rem; }
+            h1 { font-size: 1.8rem !important; }
+        }

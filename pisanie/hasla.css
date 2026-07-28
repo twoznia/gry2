@@ -1,0 +1,69 @@
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(160deg, #a855f7 0%, #6366f1 50%, #3b82f6 100%);
+            min-height: 100dvh;
+            padding: 20px 16px 40px;
+            color: white;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.8rem;
+            margin-bottom: 24px;
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.3);
+        }
+
+        .level-section {
+            max-width: 700px;
+            margin: 0 auto 32px;
+        }
+
+        .level-title {
+            font-size: 1rem;
+            font-weight: bold;
+            opacity: 0.85;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            padding-left: 4px;
+        }
+
+        .words-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+            gap: 10px;
+        }
+
+        .word-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(6px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 16px;
+            padding: 14px 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .word-icon {
+            font-size: 2.4rem;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+        .word-icon img {
+            width: 2.4rem;
+            height: 2.4rem;
+            object-fit: contain;
+            vertical-align: middle;
+        }
+
+        .word-text {
+            font-size: 1rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+    

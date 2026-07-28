@@ -1,0 +1,336 @@
+Film i Telewizja:
+  - Aktorzy Starszego Pokolenia
+  - Festiwal w Gdyni
+  - Filmy Animowane
+  - Gwiazdy Hollywood
+  - Historia Kina
+  - Horrory i Thrillery
+  - Kino Akcji
+  - Kino Marvela i DC
+  - Komedie Stanisława Barei
+  - Kultowe Polskie Seriale
+  - Muzyka Filmowa
+  - Nagrody Oscar
+  - Polscy Reżyserzy
+  - Programy Rozrywkowe (Show)
+  - Seriale Netflix i HBO
+  - Złote Myśli z Ekranu
+
+Geografia i Turystyka:
+  - Kontynenty i Regiony Świata
+  - Polska - Regiony i Miasta
+  - Polska - Przyroda i Atrakcje
+  - Stolice, Państwa i Flagi
+  - Góry i Szczyty
+  - Wody Świata - Rzeki, Jeziora, Morza
+  - Pustynie, Dżungle i Ekstrema
+  - Wyspy i Archipelagi
+  - Geologia i Zjawiska Naturalne
+  - Architektura i Cuda Świata
+  - Metropolie i Miasta Świata
+  - Regiony Europy
+  - Azja i Rosja
+  - Afryka - Geografia i Przyroda
+  - Geografia Gospodarcza i Społeczna
+  - Kartografia i Orientacja
+  - Kultura i Zwyczaje w Podróży
+  - Transport Turystyczny
+  - Parki i Rozrywka
+  - Przyroda i Rekordy
+
+Historia:
+  - Prehistoria i Starożytny Wschód
+  - Starożytna Grecja i Rzym
+  - Średniowiecze
+  - Polska Piastowska
+  - Polska Królewska i Jagiellońska
+  - Wielkie Odkrycia Geograficzne
+  - Oświecenie i Rewolucje
+  - Polska pod Zaborami
+  - Wiek XIX
+  - Historia USA
+  - I Wojna Światowa i Nowoczesność
+  - II Wojna Światowa
+  - II Rzeczpospolita
+  - Polska Ludowa (PRL)
+  - Zimna Wojna
+  - Współczesna Polska i Świat
+  - Wielcy Polacy i Dowódcy
+  - Zamki i Twierdze
+  - Historia Sportu
+
+Kulinaria i Smaki:
+  - Desery i Wypieki
+  - Kuchnia Amerykańska
+  - Kuchnia Azjatycka
+  - Kuchnia Polska Dawniej
+  - Kuchnia Włoska
+  - Mięsa i Wędliny
+  - Napoje i Alkohole
+  - Owoce i Warzywa
+  - Pierogi i Dania Mączne
+  - Przyprawy Świata
+  - Ryby i Owoce Morza
+  - Sery i Nabiał
+  - Street Food i Fast Food
+  - Słodycze i Przekąski
+  - Słynni Szefowie Kuchni
+  - Tradycyjne Zupy Polskie
+
+Literatura i Język:
+  - Eposy i Dramaty
+  - Fantasy i Sci-Fi
+  - Gramatyka i Ortografia
+  - Gwara i Dialekty
+  - Języki Obce
+  - Klasyka Światowa
+  - Komiksy i Powieści Graficzne
+  - Kryminały i Thrillery
+  - Lektury Szkolne
+  - Literatura Dziecięca
+  - Mitologia w Literaturze
+  - Poezja Polska
+  - Polscy Nobliści
+  - Przysłowia i Powiedzenia
+  - Słynne Cytaty Literackie
+  - Współcześni Pisarze Polscy
+
+Matura Geografia:
+  - Astronomia i Kartografia
+  - Litosfera i Procesy Rzeźbotwórcze
+  - Atmosfera i Klimat
+  - Hydrosfera
+  - Gleby i Biosfera
+  - Demografia i Ludność
+  - Urbanizacja i Osadnictwo
+  - Rolnictwo i Wyżywienie
+  - Przemysł i Energetyka
+  - Usługi i Transport
+  - Gospodarka Światowa
+  - Geografia Polityczna i Konflikty
+  - Organizacje Międzynarodowe i UE
+  - Ochrona Środowiska
+  - Geografia Fizyczna Polski
+  - Turystyka
+  - Współczesne Problemy Społeczne
+  - Regiony Świata - Azja i Afryka
+
+Matura Język Polski:
+  - Starożytność i Biblia
+  - Średniowiecze
+  - Renesans
+  - Barok
+  - Oświecenie
+  - Romantyzm
+  - Pozytywizm
+  - Młoda Polska
+  - Dwudziestolecie Międzywojenne
+  - Literatura Wojny i Okupacji
+  - Literatura Współczesna
+  - Dramat i Teatr
+  - Zbrodnia i Kara
+  - Lektury Obowiązkowe - Zestawienie
+  - Epoki Literackie i Teoria
+  - Interpretacja i Analiza Tekstu
+  - Bohaterowie Literaccy
+  - Język Polski w Użyciu
+  - Wiedza o Kulturze
+
+Motoryzacja i Transport:
+  - Budowa Samochodu
+  - Ekologia w Motoryzacji
+  - Formuła 1 i Motorsport
+  - Historia Motoryzacji
+  - Infrastruktura Drogowa
+  - Kolejnictwo i Pociągi
+  - Kultowe Auta PRL
+  - Lotnictwo i Samoloty
+  - Marki Samochodów
+  - Pojazdy Dwukołowe
+  - Przepisy Drogowe
+  - Statki i Transport Wodny
+  - Słynne Trasy i Mosty
+  - Transport Miejski
+  - Wynalazki Transportowe
+  - Wyposażenie Samochodu
+
+Muzyka:
+  - Disco Polo i Biesiada
+  - Festiwal w Opolu i Sopocie
+  - Fryderyk Chopin i Klasyka
+  - Hip-hop i Rap (Polska)
+  - Hymny i Pieśni Patriotyczne
+  - Instrumenty Muzyczne
+  - Jazz i Blues
+  - Konkurs Eurowizji
+  - Legendarne Zespoły
+  - Muzyka Elektroniczna
+  - Polska Muzyka Alternatywna
+  - Polski Rock
+  - Teksty Piosenek
+  - Teledyski i MTV
+  - Wielkie Gwiazdy Estrady
+  - Światowy Pop
+
+Nauka i Odkrycia:
+  - Anatomia Człowieka
+  - Astronomia i Kosmos
+  - Biologia i Ciało Człowieka
+  - Chemia i Fizyka
+  - Fizyka w Codzienności
+  - Geologia i Wulkany
+  - Informatyka i AI
+  - Maria Skłodowska-Curie
+  - Matematyka i Logika
+  - Medycyna i Zdrowie
+  - Mikołaj Kopernik i Kosmos
+  - Polscy Wynalazcy
+  - Tablica Mendelejewa
+  - Układ Słoneczny
+  - Wynalazki i Odkrycia
+  - Wynalazki, które zmieniły świat
+
+Przyroda i Biologia:
+  - Anatomia i Fizjologia Człowieka
+  - Biochemia i Genetyka
+  - Biologia Komórki
+  - Botanika i Flora Polski
+  - Ekologia i Środowisko
+  - Ekosystemy Wodne
+  - Ewolucjonizm
+  - Leśnictwo i Łowiectwo
+  - Mikrobiologia i Świat Mikrobów
+  - Mykologia - Grzyby
+  - Zjawiska Atmosferyczne
+  - Zoologia - Ptaki
+  - Zoologia - Ryby i Gady
+  - Zoologia - Ssaki
+
+Rozrywka i Popkultura:
+  - Anime i Manga
+  - Festiwale Muzyczne
+  - Gry Planszowe i Karciane
+  - Gwiazdy Muzyki Pop
+  - Gwiezdne Wojny
+  - Klasyka Kina
+  - Komiksy Marvela
+  - Kreskówki z Dzieciństwa
+  - Książki i Literatura Bestsellerowa
+  - Kultowe Seriale TV
+  - Nagrody i Gale
+  - Słynne Memy i Internet
+  - Słynni Reżyserzy
+  - Uniwersum DC
+  - Władca Pierścieni
+  - Świat Harry'ego Pottera
+
+Sport:
+  - Boks i MMA (KSW)
+  - Formuła 1 i Robert Kubica
+  - Igrzyska Olimpijskie
+  - Kolarstwo i Tour de Pologne
+  - Koszykówka i NBA
+  - Legendarni Sportowcy
+  - Lekkoatletyka
+  - Piłka Nożna - Ekstraklasa
+  - Piłka Nożna - Reprezentacja
+  - Reprezentacja Polski
+  - Siatkówka - Sukcesy Polaków
+  - Skoki Narciarskie
+  - Sporty Motorowe
+  - Sporty Zimowe
+  - Stadiony i Obiekty
+  - Tenis i Iga Świątek
+  - Zasady i Przepisy Gier
+
+Społeczeństwo i Prawo:
+  - Dokumenty Osobiste
+  - Edukacja i Szkolnictwo
+  - Instytucje Państwowe
+  - Konstytucja RP
+  - Media i Dziennikarstwo
+  - Organizacje Międzynarodowe
+  - Podatki i Finanse
+  - Prawa Człowieka
+  - Prawo Karne i Sądowe
+  - Rynek Pracy
+  - Systemy Polityczne
+  - Służby Mundurowe
+  - Unia Europejska
+  - Ustrój Samorządowy
+  - Wybory i Głosowanie
+  - Władza w Polsce
+
+Sztuka i Architektura:
+  - Architektura Sakralna
+  - Fotografia i Sztuka Cyfrowa
+  - Impresjonizm
+  - Muzea i Galerie Sztuki
+  - Najdroższe Obrazy Świata
+  - Polscy Malarze
+  - Polska Sztuka Ludowa
+  - Starożytność i Antyk
+  - Style Architektoniczne
+  - Sztuka Orientu
+  - Sztuka Współczesna i Street Art
+  - Słynne Budowle Świata
+  - Słynne Rzeźby i Pomniki
+  - Słynni Malarze
+  - Teatr i Opera
+  - Zamki i Pałace Polski
+
+Technologie i IT:
+  - Cyberbezpieczeństwo
+  - Ewolucja Nośników Danych
+  - Giganci Technologiczni
+  - Gry Wideo i Konsole
+  - Historia Komputerów
+  - Internet i WWW
+  - Języki Programowania
+  - Kryptowaluty i Blockchain
+  - Media Społecznościowe
+  - Rozwój Robotyki i AI
+  - Smartfony i Urządzenia Mobilne
+  - Sprzęt Komputerowy (Hardware)
+  - Streaming i VOD
+  - Systemy Operacyjne
+  - Słynne Wirusy i Ataki Hakerskie
+  - Technologie Przyszłości
+
+Tradycje i Religie:
+  - Chrześcijaństwo
+  - Biblia
+  - Islam
+  - Judaizm
+  - Buddyzm i Hinduizm
+  - Religie Azji Wschodniej
+  - Mitologia Grecka i Rzymska
+  - Mitologia Nordycka i Słowiańska
+  - Mitologie Świata
+  - Bogowie Starożytnego Egiptu i Mezopotamii
+  - Religie Afryki i Ameryk
+  - Religie Świata - Przegląd
+  - Budownictwo Sakralne
+  - Obrzędy i Zwyczaje Ludowe
+  - Wierzenia i Zabobony
+  - Święta Bożego Narodzenia i Wielkanoc
+  - Święta w Innych Kulturach
+
+Wiedza Ogólna i Ciekawostki:
+  - Ciało Człowieka
+  - Cuda Świata
+  - Jednostki Miar i Wag
+  - Kosmos i Eksploracja
+  - Mity i Fakty
+  - Nagrody Nobla
+  - Pierwiastki i Chemia
+  - Przysłowia i Powiedzenia
+  - Rekordy Guinnessa
+  - Rekordy Świata
+  - Stolice Świata
+  - Słynne Cytaty
+  - Słynni Odkrywcy
+  - Tajemnice Świata
+  - Wynalazki Codziennego Użytku
+  - Zjawiska Pogodowe
+  - Świat Finansów

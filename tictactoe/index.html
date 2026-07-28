@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kółko i Krzyżyk</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <a class="back-link" href="../">← Wróć</a>
+
+    <div class="glass-panel p-6 sm:p-10 w-full max-w-2xl flex flex-col items-center">
+        <h1 class="text-4xl sm:text-5xl font-extrabold mb-6 text-center tracking-tight">
+            Kółko i <span class="text-[#ff4757]">Krzyżyk</span>
+        </h1>
+
+        <div class="flex flex-wrap justify-center gap-4 mb-6 w-full">
+            <div class="flex flex-col items-center">
+                <label for="board-size" class="text-sm uppercase tracking-wider mb-1 opacity-80">Rozmiar planszy</label>
+                <select id="board-size" class="w-32 text-center">
+                    <option value="3">3 x 3</option>
+                    <option value="4">4 x 4</option>
+                    <option value="5">5 x 5</option>
+                    <option value="6">6 x 6</option>
+                </select>
+            </div>
+            
+            <div class="flex flex-col items-center">
+                <label for="difficulty" class="text-sm uppercase tracking-wider mb-1 opacity-80">Poziom AI</label>
+                <select id="difficulty" class="w-32 text-center">
+                    <option value="easy">Łatwy</option>
+                    <option value="medium">Średni</option>
+                    <option value="hard">Trudny</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-4 mb-4 text-xl font-semibold">
+            <div class="flex items-center gap-2"><span class="text-[#ff4757]">X</span> Ty</div>
+            <div class="text-sm opacity-50">VS</div>
+            <div class="flex items-center gap-2">AI <span class="text-[#2ed573]">O</span></div>
+        </div>
+
+        <div id="turn-indicator" class="text-lg font-bold mb-2 h-8 transition-colors duration-300">
+            Twój ruch (X)
+        </div>
+
+        <div id="board"></div>
+
+        <button id="reset-btn" class="primary-btn mt-6 px-8 py-3 text-lg rounded-full w-full sm:w-auto">
+            Restart Gry
+        </button>
+    </div>
+
+    <div id="message-overlay">
+        <div class="glass-panel message-box">
+            <h2 id="result-message" class="text-5xl font-bold mb-6">Wygrałeś!</h2>
+            <button id="play-again-btn" class="primary-btn px-8 py-3 text-xl rounded-full">
+                Zagraj ponownie
+            </button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+  <script src="../shared/auth.js"></script>
+</body>
+</html>

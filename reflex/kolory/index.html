@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Szybka Reakcja - Kolory</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        #gameCanvas { touch-action: none; background-color: #1a1a1a; border-radius: 8px; cursor: crosshair; display: block; }
+        body { background-color: #111; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100dvh; margin: 0; font-family: 'Inter', sans-serif; }
+        .back-link { position: fixed; top: 10px; left: 10px; z-index: 100; background: #334155; color: #fff; border: 1px solid #475569; border-radius: 8px; padding: 8px 14px; text-decoration: none; font-size: 13px; }
+        .back-link:hover { background: #475569; }
+        .seq-dot { width: 28px; height: 28px; border-radius: 50%; border: 2px solid transparent; flex-shrink: 0; transition: opacity 0.15s, border-color 0.15s; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.9); }
+        .seq-dot.done { background-color: #374151 !important; border-color: #4b5563 !important; box-shadow: none !important; opacity: 1 !important; }
+        .seq-dot.current { border-color: white !important; }
+        .seq-dot.future { opacity: 0.5; }
+        #main-btn:disabled { opacity: 0.5; pointer-events: none; }
+            /* Mobile: plansza wykorzystuje cały ekran */
+        @media (max-width: 768px), (max-height: 500px) {
+            body { justify-content: flex-start; }
+            body > div.text-center { max-width: 100%; padding-left: 0; padding-right: 0; }
+            #game-title { display: none; }
+            #hud { height: 40px; padding: 0 10px 0 82px; gap: 8px; margin-bottom: 0; border-radius: 0; font-size: 12px; flex-wrap: nowrap; align-items: center; overflow-x: auto; white-space: nowrap; }
+            #gameCanvas { height: calc(100dvh - 40px) !important; border-radius: 0; }
+            .back-link { top: 5px; left: 6px; padding: 6px 10px; font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+<a class="back-link" href="../">← Wróć</a>
+
+<div class="text-center w-full max-w-6xl px-4">
+    <h1 id="game-title" class="text-3xl font-bold mb-4 text-orange-400">Time Trial: Szybkość i Kolory</h1>
+
+    <div id="hud" class="flex flex-wrap justify-between items-center w-full gap-2 md:gap-6 bg-gray-800 p-3 rounded-xl mb-3 shadow-lg border border-gray-700 text-sm md:text-base">
+        <div>Etap: <span id="current-level-display" class="font-bold text-blue-400">1</span>/<span id="max-level-display">4</span></div>
+        <div>Krok: <span id="step-display" class="font-bold text-green-400">0</span>/<span id="total-steps" class="text-gray-400">20</span></div>
+        <div id="current-color-box" class="hidden items-center gap-2 text-sm md:text-base">
+            Szukaj:&nbsp;<span id="current-color-dot" style="display:inline-block;width:18px;height:18px;border-radius:50%;border:2px solid white;vertical-align:middle;"></span>&nbsp;<span id="current-color-name" class="font-bold"></span>
+        </div>
+        <div>Czas: <span id="timer" class="font-bold text-yellow-400">0.0</span>s</div>
+        <button id="restart-level-btn" class="hidden bg-orange-600 hover:bg-orange-500 px-3 py-1 rounded-lg font-bold text-sm transition-colors">↺ Restart</button>
+    </div>
+
+    <div id="game-container" class="relative">
+        <canvas id="gameCanvas" class="w-full shadow-2xl" style="height: clamp(260px, calc(100dvh - 300px), 680px)"></canvas>
+
+        <div id="overlay" class="absolute inset-0 flex flex-col items-center justify-center bg-black/85 rounded-lg p-4 z-10 overflow-y-auto">
+            <div id="overlay-content" class="w-full max-w-md text-center">
+                <h2 id="overlay-title" class="text-3xl font-bold mb-4 text-center text-white">Wybierz tryb gry!</h2>
+                <div id="overlay-stats" class="text-left text-lg text-gray-200 mb-6 bg-gray-800 p-4 rounded-lg hidden"></div>
+                <p id="overlay-desc" class="text-yellow-300 mb-6 font-bold text-xl min-h-[3rem]"></p>
+
+                <div id="mode-selection" class="flex flex-col sm:flex-row gap-4 w-full justify-center mt-4">
+                    <button id="btn-child" class="flex-1 bg-green-600 hover:bg-green-500 p-4 rounded-xl text-xl font-bold transition-all shadow-lg border border-green-400/30 flex flex-col items-center justify-center gap-2">
+                        <img src="../pic/kid.jpg" alt="Dziecko" class="w-32 h-32 rounded-full object-cover border-2 border-green-300"> Dziecko
+                        <span class="text-sm font-normal text-green-100">3 poziomy · 10 kolorów</span>
+                    </button>
+                    <button id="btn-adult" class="flex-1 bg-blue-600 hover:bg-blue-500 p-4 rounded-xl text-xl font-bold transition-all shadow-lg border border-blue-400/30 flex flex-col items-center justify-center gap-2">
+                        <img src="../pic/adult.jpg" alt="Dorosły" class="w-32 h-32 rounded-full object-cover border-2 border-blue-300"> Dorosły
+                        <span class="text-sm font-normal text-blue-100">4 poziomy · 20 kolorów</span>
+                    </button>
+                </div>
+
+                <button id="main-btn" class="hidden bg-blue-600 hover:bg-blue-500 px-8 py-4 rounded-xl text-xl font-bold transition-all shadow-lg border border-blue-400/30 w-full mt-4">
+                    Rozpocznij
+                </button>
+
+                <div id="save-section" class="hidden mt-4 pt-4 border-t border-gray-600 w-full">
+                    <p class="text-gray-300 text-sm mb-2">Zapisz wynik do tabeli rekordów:</p>
+                    <div class="flex gap-2 mb-1">
+                        <input id="player-name-input" type="text" placeholder="Twoje imię" maxlength="20"
+                               class="flex-1 bg-gray-700 text-white px-3 py-2 rounded-lg border border-gray-500 focus:outline-none focus:border-blue-400 text-sm">
+                        <button id="save-record-btn" class="bg-green-600 hover:bg-green-500 px-4 py-2 rounded-lg font-bold text-sm transition-colors">Zapisz</button>
+                    </div>
+                    <p id="save-info" class="text-green-400 text-xs hidden mb-1">✓ Wynik zapisany!</p>
+                    <button id="show-records-end-btn" class="text-blue-400 text-xs underline hover:text-blue-300 mt-1">Pokaż tabelę rekordów →</button>
+                </div>
+
+                <button id="show-records-start-btn" class="hidden text-blue-400 text-sm mt-3 underline hover:text-blue-300">Tabela rekordów</button>
+            </div>
+
+            <div id="records-view" class="hidden w-full max-w-xl text-center">
+                <h2 class="text-2xl font-bold mb-3 text-white">Tabela rekordów</h2>
+                <div class="flex gap-2 justify-center mb-2 flex-wrap">
+                    <button class="records-mode-tab px-3 py-1 rounded-lg text-sm font-bold transition-colors bg-blue-600 text-white" data-mode="adult">Dorosły</button>
+                    <button class="records-mode-tab px-3 py-1 rounded-lg text-sm font-bold transition-colors bg-gray-700 text-gray-300" data-mode="child">Dziecko</button>
+                </div>
+                <div id="records-player-filter" class="flex items-center gap-2 justify-center mb-2 flex-wrap">
+                    <span class="text-gray-400 text-xs">Osoba:</span>
+                    <select id="records-player-select" class="bg-gray-700 text-white text-xs px-2 py-1 rounded-lg border border-gray-600 focus:outline-none focus:border-blue-400">
+                        <option value="">Wszyscy</option>
+                    </select>
+                </div>
+                <div id="records-level-tabs" class="flex gap-2 justify-center mb-3 flex-wrap"></div>
+                <div id="records-table-wrapper" class="text-left bg-gray-800 rounded-lg p-3 overflow-y-auto" style="max-height: 50vh"></div>
+                <button id="close-records-btn" class="mt-4 bg-blue-600 hover:bg-blue-500 px-6 py-2 rounded-xl font-bold text-sm transition-colors">Zamknij</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sequence bar -->
+    <div id="sequence-bar" class="hidden mt-3 bg-gray-800 rounded-xl p-3 border border-gray-700">
+        <div id="sequence-dots" class="flex flex-wrap justify-center gap-1"></div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const levelDisplayEl = document.getElementById('current-level-display');
+    const maxLevelDisplayEl = document.getElementById('max-level-display');
+    const stepDisplayEl = document.getElementById('step-display');
+    const totalStepsEl = document.getElementById('total-steps');
+    const currentColorBox = document.getElementById('current-color-box');
+    const currentColorDot = document.getElementById('current-color-dot');
+    const currentColorName = document.getElementById('current-color-name');
+    const timeEl = document.getElementById('timer');
+    const overlay = document.getElementById('overlay');
+    const overlayTitle = document.getElementById('overlay-title');
+    const overlayStats = document.getElementById('overlay-stats');
+    const overlayDesc = document.getElementById('overlay-desc');
+    const mainBtn = document.getElementById('main-btn');
+    const modeSelection = document.getElementById('mode-selection');
+    const btnChild = document.getElementById('btn-child');
+    const btnAdult = document.getElementById('btn-adult');
+    const overlayContent = document.getElementById('overlay-content');
+    const saveSection = document.getElementById('save-section');
+    const playerNameInput = document.getElementById('player-name-input');
+    const saveRecordBtn = document.getElementById('save-record-btn');
+    const saveInfo = document.getElementById('save-info');
+    const showRecordsEndBtn = document.getElementById('show-records-end-btn');
+    const showRecordsStartBtn = document.getElementById('show-records-start-btn');
+    const recordsView = document.getElementById('records-view');
+    const recordsLevelTabs = document.getElementById('records-level-tabs');
+    const recordsTableWrapper = document.getElementById('records-table-wrapper');
+    const closeRecordsBtn = document.getElementById('close-records-btn');
+    const recordsPlayerSelect = document.getElementById('records-player-select');
+    const restartLevelBtn = document.getElementById('restart-level-btn');
+    const sequenceBar = document.getElementById('sequence-bar');
+    const sequenceDots = document.getElementById('sequence-dots');
+
+    // ─── Colors ──────────────────────────────────────────────────────────────────
+    const COLORS = [
+        { name: 'Czerwony',      abbr: 'C', hex: '#ef4444', textColor: 'white'   },
+        { name: 'Niebieski',     abbr: 'N', hex: '#3b82f6', textColor: 'white'   },
+        { name: 'Zielony',       abbr: 'Z', hex: '#22c55e', textColor: 'white'   },
+        { name: 'Żółty',         abbr: 'Ż', hex: '#eab308', textColor: '#1a1a1a' },
+        { name: 'Fioletowy',     abbr: 'F', hex: '#a855f7', textColor: 'white'   },
+        { name: 'Pomarańczowy',  abbr: 'P', hex: '#f97316', textColor: 'white'   },
+        { name: 'Różowy',        abbr: 'R', hex: '#ec4899', textColor: 'white'   },
+        { name: 'Turkusowy',     abbr: 'T', hex: '#14b8a6', textColor: 'white'   },
+        { name: 'Granatowy',     abbr: 'G', hex: '#6366f1', textColor: 'white'   },
+        { name: 'Brązowy',       abbr: 'B', hex: '#b45309', textColor: 'white'   },
+    ];
+
+    // Level config: number of distinct colors, moving balls, per-item countdown
+    const LEVEL_CONFIG = {
+        1: { colors: 10, moving: false, timed: false },
+        2: { colors: 10, moving: false, timed: false },
+        3: { colors: 5,  moving: true,  timed: false },
+        4: { colors: 7,  moving: true,  timed: true  },
+    };
+
+    function getRadius() {
+        const isMobile = window.matchMedia('(pointer: coarse)').matches;
+        const shortSide = Math.min(window.innerWidth, window.innerHeight);
+        if (isMobile) return Math.round(Math.min(36, Math.max(24, shortSide * 0.045)));
+        return 28;
+    }
+    let RADIUS = getRadius();
+    const PENALTY_WRONG   = 3000; // ms added for wrong color click
+    const PENALTY_TIMEOUT = 5000; // ms added per missed item (level 4)
+    const ITEM_TIME_SEC   = 1;    // seconds per item in level 4
+
+    // ─── State ────────────────────────────────────────────────────────────────────
+    let balls = [], sequence = [], currentStep = 0;
+    let startTime = 0, isRunning = false, finalTime = 0;
+    let currentLevel = 1, gameMode = 'adult';
+    let seqLength = 20; // adults: 20, children: 10
+    let errorsWrong = 0, errorsTimeout = 0;
+    let errorsAtLevelStart = 0, timeoutAtLevelStart = 0;
+    let timeLvl1 = 0, timeLvl2 = 0, timeLvl3 = 0, timeLvl4 = 0;
+    let mainBtnAction = null, recordsSaved = false;
+    let itemCountdown = ITEM_TIME_SEC, countdownInterval = null;
+
+    // ─── Records management ──────────────────────────────────────────────────────
+    const RECORDS_KEY = 'reflexKoloryRecords';
+    const NAME_KEY    = 'reflexLastName';
+    const MAX_PER_PLAYER = 10;
+
+    function normalizeName(n) { return n.trim().toLowerCase(); }
+    function loadRecords() { try { return JSON.parse(localStorage.getItem(RECORDS_KEY)) || {}; } catch { return {}; } }
+    function saveRecordsToStorage(r) { localStorage.setItem(RECORDS_KEY, JSON.stringify(r)); }
+
+    function addRecord(mode, levelKey, name, timeVal, errorsVal) {
+        const records = loadRecords();
+        if (!records[mode]) records[mode] = {};
+        if (!records[mode][levelKey]) records[mode][levelKey] = [];
+        records[mode][levelKey].push({ name: name.trim(), time: +timeVal.toFixed(3), errors: errorsVal, date: new Date().toLocaleDateString('pl-PL') });
+        records[mode][levelKey].sort((a, b) => a.time - b.time);
+        const seen = {};
+        records[mode][levelKey] = records[mode][levelKey].filter(r => {
+            const key = normalizeName(r.name);
+            seen[key] = (seen[key] || 0) + 1;
+            return seen[key] <= MAX_PER_PLAYER;
+        });
+        saveRecordsToStorage(records);
+    }
+
+    function savePlayerRecord(name) {
+        if (!name.trim()) return;
+        localStorage.setItem(NAME_KEY, name.trim());
+        const totalTime = timeLvl1 + timeLvl2 + timeLvl3 + (gameMode === 'adult' ? timeLvl4 : 0);
+        addRecord(gameMode, 'level1', name, timeLvl1, 0);
+        if (timeLvl2 > 0) addRecord(gameMode, 'level2', name, timeLvl2, 0);
+        if (timeLvl3 > 0) addRecord(gameMode, 'level3', name, timeLvl3, 0);
+        if (gameMode === 'adult' && timeLvl4 > 0) addRecord(gameMode, 'level4', name, timeLvl4, 0);
+        addRecord(gameMode, 'total', name, totalTime, errorsWrong + errorsTimeout);
+    }
+
+    // ─── Records view ─────────────────────────────────────────────────────────────
+    let recordsViewMode = 'adult', recordsViewLevel = 'total', recordsViewPlayer = '', recordsReturnFn = null;
+
+    function renderRecordsTable(mode, levelKey, filterPlayer) {
+        const records = loadRecords();
+        let data = (records[mode] && records[mode][levelKey]) || [];
+        if (filterPlayer) {
+            const norm = normalizeName(filterPlayer);
+            data = data.filter(r => normalizeName(r.name) === norm);
+        }
+        if (!data.length) return '<p class="text-gray-400 text-sm py-4 text-center">Brak rekordów</p>';
+        const isTotal = levelKey === 'total';
+        const medals = ['🥇', '🥈', '🥉'];
+        let html = '<table class="w-full text-sm border-collapse"><thead><tr class="text-gray-400 text-xs uppercase">';
+        html += '<th class="py-1 px-2 text-left">#</th><th class="py-1 px-2 text-left">Imię</th>';
+        html += `<th class="py-1 px-2 text-right">${isTotal ? 'Łączny czas' : 'Czas'}</th>`;
+        if (isTotal) html += '<th class="py-1 px-2 text-right">Błędy</th>';
+        html += '<th class="py-1 px-2 text-right">Data</th></tr></thead><tbody>';
+        data.forEach((r, i) => {
+            const cls = i === 0 ? 'text-yellow-300' : i === 1 ? 'text-gray-300' : i === 2 ? 'text-orange-400' : 'text-white';
+            html += `<tr class="${cls} border-t border-gray-700/50">`;
+            html += `<td class="py-1 px-2">${medals[i] || (i + 1) + '.'}</td>`;
+            html += `<td class="py-1 px-2">${r.name}</td>`;
+            html += `<td class="py-1 px-2 text-right font-mono">${r.time.toFixed(2)}s</td>`;
+            if (isTotal) html += `<td class="py-1 px-2 text-right">${r.errors}</td>`;
+            html += `<td class="py-1 px-2 text-right text-gray-400 text-xs">${r.date}</td></tr>`;
+        });
+        html += '</tbody></table>';
+        return html;
+    }
+
+    function getAllPlayersForMode(mode) {
+        const records = loadRecords();
+        const modeData = records[mode] || {};
+        const nameMap = new Map();
+        for (const levelData of Object.values(modeData)) {
+            for (const r of levelData) {
+                const key = normalizeName(r.name);
+                if (!nameMap.has(key)) nameMap.set(key, r.name);
+            }
+        }
+        return [...nameMap.values()].sort((a, b) => a.localeCompare(b, 'pl'));
+    }
+
+    function buildPlayerFilter(mode) {
+        const players = getAllPlayersForMode(mode);
+        recordsPlayerSelect.innerHTML = '<option value="">Wszyscy</option>' +
+            players.map(p => `<option value="${p}" ${normalizeName(p) === normalizeName(recordsViewPlayer) ? 'selected' : ''}>${p}</option>`).join('');
+    }
+
+    function buildRecordsLevelTabs(mode) {
+        const levels = mode === 'adult'
+            ? [['level1','Poziom 1'],['level2','Poziom 2'],['level3','Poziom 3'],['level4','Poziom 4'],['total','Łącznie']]
+            : [['level1','Poziom 1'],['level2','Poziom 2'],['level3','Poziom 3'],['total','Łącznie']];
+        recordsLevelTabs.innerHTML = levels.map(([key, label]) =>
+            `<button class="records-level-tab px-3 py-1 rounded-lg text-xs font-bold transition-colors ${recordsViewLevel === key ? 'bg-green-600 text-white' : 'bg-gray-700 text-gray-300'}" data-level="${key}">${label}</button>`
+        ).join('');
+        recordsLevelTabs.querySelectorAll('.records-level-tab').forEach(btn => {
+            btn.addEventListener('click', () => {
+                recordsViewLevel = btn.dataset.level;
+                buildRecordsLevelTabs(recordsViewMode);
+                recordsTableWrapper.innerHTML = renderRecordsTable(recordsViewMode, recordsViewLevel, recordsViewPlayer);
+            });
+        });
+    }
+
+    function showRecordsView(returnFn, preferMode, preferPlayer) {
+        recordsReturnFn = returnFn;
+        recordsViewMode = preferMode || gameMode || 'adult';
+        recordsViewLevel = 'total';
+        recordsViewPlayer = preferPlayer || '';
+        overlayContent.classList.add('hidden');
+        recordsView.classList.remove('hidden');
+        document.querySelectorAll('.records-mode-tab').forEach(btn => {
+            btn.classList.toggle('bg-blue-600', btn.dataset.mode === recordsViewMode);
+            btn.classList.toggle('text-white', btn.dataset.mode === recordsViewMode);
+            btn.classList.toggle('bg-gray-700', btn.dataset.mode !== recordsViewMode);
+            btn.classList.toggle('text-gray-300', btn.dataset.mode !== recordsViewMode);
+        });
+        buildPlayerFilter(recordsViewMode);
+        buildRecordsLevelTabs(recordsViewMode);
+        recordsTableWrapper.innerHTML = renderRecordsTable(recordsViewMode, recordsViewLevel, recordsViewPlayer);
+    }
+
+    document.querySelectorAll('.records-mode-tab').forEach(btn => {
+        btn.addEventListener('click', () => { recordsViewMode = btn.dataset.mode; recordsViewPlayer = ''; showRecordsView(recordsReturnFn, recordsViewMode); });
+    });
+    recordsPlayerSelect.addEventListener('change', () => {
+        recordsViewPlayer = recordsPlayerSelect.value;
+        buildRecordsLevelTabs(recordsViewMode);
+        recordsTableWrapper.innerHTML = renderRecordsTable(recordsViewMode, recordsViewLevel, recordsViewPlayer);
+    });
+    closeRecordsBtn.addEventListener('click', () => {
+        recordsView.classList.add('hidden');
+        overlayContent.classList.remove('hidden');
+        if (recordsReturnFn) recordsReturnFn();
+    });
+
+    saveRecordBtn.addEventListener('click', () => {
+        if (recordsSaved) return;
+        const name = playerNameInput.value.trim();
+        if (!name) { playerNameInput.focus(); return; }
+        savePlayerRecord(name);
+        recordsSaved = true;
+        saveRecordBtn.disabled = true;
+        saveRecordBtn.classList.replace('bg-green-600', 'bg-gray-600');
+        saveInfo.classList.remove('hidden');
+        showRecordsView(() => {}, gameMode, name);
+    });
+    playerNameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') saveRecordBtn.click(); });
+    showRecordsEndBtn.addEventListener('click', () => showRecordsView(() => {}));
+    showRecordsStartBtn.addEventListener('click', () => showRecordsView(() => {}));
+
+    restartLevelBtn.addEventListener('click', () => {
+        if (!isRunning) return;
+        isRunning = false;
+        clearItemTimer();
+        errorsWrong = errorsAtLevelStart;
+        errorsTimeout = timeoutAtLevelStart;
+        startGame(currentLevel);
+    });
+
+    mainBtn.addEventListener('click', () => { if (mainBtnAction) mainBtnAction(); });
+
+    // ─── Mode selection ───────────────────────────────────────────────────────────
+    function setMode(mode) {
+        gameMode = mode;
+        seqLength = mode === 'child' ? 10 : 20;
+        maxLevelDisplayEl.textContent = mode === 'child' ? '3' : '4';
+    }
+    btnChild.addEventListener('click', () => { setMode('child'); startCampaign(); });
+    btnAdult.addEventListener('click', () => { setMode('adult'); startCampaign(); });
+
+    // ─── Canvas resize ────────────────────────────────────────────────────────────
+    function resize() { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; RADIUS = getRadius(); }
+    window.addEventListener('resize', () => { resize(); if (!isRunning) drawStaticBalls(); });
+    resize();
+
+    // ─── Sequence generation ─────────────────────────────────────────────────────
+    function generateSequence() {
+        const numColors = LEVEL_CONFIG[currentLevel].colors;
+        sequence = [];
+        // Ensure every color appears at least once in first numColors entries
+        const firstChunk = Array.from({ length: numColors }, (_, i) => i);
+        for (let i = firstChunk.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [firstChunk[i], firstChunk[j]] = [firstChunk[j], firstChunk[i]];
+        }
+        sequence.push(...firstChunk);
+        while (sequence.length < seqLength) {
+            const last = sequence[sequence.length - 1];
+            let next;
+            do { next = Math.floor(Math.random() * numColors); } while (next === last);
+            sequence.push(next);
+        }
+        currentStep = 0;
+    }
+
+    // ─── Balls spawning ───────────────────────────────────────────────────────────
+    function spawnBalls() {
+        balls = [];
+        const numColors = LEVEL_CONFIG[currentLevel].colors;
+        const isMoving = LEVEL_CONFIG[currentLevel].moving;
+        const speedBase = gameMode === 'child' ? 0.7 : 1.1;
+
+        for (let i = 0; i < numColors; i++) {
+            let valid = false, x, y, attempts = 0;
+            while (!valid && attempts < 300) {
+                x = RADIUS + 10 + Math.random() * (canvas.width - (RADIUS + 10) * 2);
+                y = RADIUS + 10 + Math.random() * (canvas.height - (RADIUS + 10) * 2);
+                valid = true;
+                for (const b of balls) {
+                    if (Math.hypot(x - b.x, y - b.y) < RADIUS * 2.5) { valid = false; break; }
+                }
+                attempts++;
+            }
+            const angle = Math.random() * Math.PI * 2;
+            const speed = speedBase + Math.random() * 0.6;
+            balls.push({
+                colorIdx: i,
+                x, y,
+                dx: isMoving ? Math.cos(angle) * speed : 0,
+                dy: isMoving ? Math.sin(angle) * speed : 0,
+            });
+        }
+    }
+
+    // ─── Sequence bar rendering ───────────────────────────────────────────────────
+    function updateCountdownDot() {
+        if (currentLevel !== 4 || !isRunning) return;
+        const dots = sequenceDots.children;
+        if (currentStep < dots.length) {
+            dots[currentStep].textContent = String(Math.max(itemCountdown, 1));
+        }
+    }
+
+    function renderSequenceBar() {
+        sequenceDots.innerHTML = '';
+        for (let i = 0; i < sequence.length; i++) {
+            const c = COLORS[sequence[i]];
+            const dot = document.createElement('div');
+            dot.className = 'seq-dot ' + (i < currentStep ? 'done' : i === currentStep ? 'current' : 'future');
+            dot.style.backgroundColor = c.hex;
+            dot.title = c.name;
+            sequenceDots.appendChild(dot);
+        }
+        // Scroll current dot into view
+        const currentDot = sequenceDots.children[currentStep];
+        if (currentDot) currentDot.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        // Show countdown number in current dot for level 4
+        updateCountdownDot();
+    }
+
+    // ─── HUD update ───────────────────────────────────────────────────────────────
+    function updateHUD() {
+        stepDisplayEl.textContent = Math.min(currentStep + 1, seqLength);
+        totalStepsEl.textContent = seqLength;
+        if (currentStep < sequence.length) {
+            const c = COLORS[sequence[currentStep]];
+            currentColorDot.style.backgroundColor = c.hex;
+            currentColorName.textContent = c.name;
+            currentColorBox.style.display = 'flex';
+        } else {
+            currentColorBox.style.display = 'none';
+        }
+    }
+
+    // ─── Level 4 item timer ───────────────────────────────────────────────────────
+    function clearItemTimer() {
+        if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+        itemCountdown = ITEM_TIME_SEC;
+    }
+
+    function startItemTimer() {
+        clearItemTimer();
+        itemCountdown = ITEM_TIME_SEC;
+        updateCountdownDot();
+        countdownInterval = setInterval(() => {
+            itemCountdown--;
+            updateCountdownDot();
+            if (itemCountdown <= 0) {
+                clearItemTimer();
+                // Miss – apply penalty and advance
+                startTime -= PENALTY_TIMEOUT;
+                errorsTimeout++;
+                currentStep++;
+                renderSequenceBar();
+                updateHUD();
+                if (currentStep >= sequence.length) {
+                    finalTime = Math.max(0, (Date.now() - startTime) / 1000);
+                    gameOver();
+                } else {
+                    startItemTimer();
+                }
+            }
+        }, 1000);
+    }
+
+    // ─── Click handling ───────────────────────────────────────────────────────────
+    canvas.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        if (!isRunning || currentStep >= sequence.length) return;
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+        const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+        const required = sequence[currentStep];
+
+        // Find topmost clicked ball
+        for (let i = balls.length - 1; i >= 0; i--) {
+            const b = balls[i];
+            if (Math.hypot(x - b.x, y - b.y) <= RADIUS) {
+                if (b.colorIdx === required) {
+                    // Correct!
+                    if (LEVEL_CONFIG[currentLevel].timed) clearItemTimer();
+                    currentStep++;
+                    renderSequenceBar();
+                    updateHUD();
+                    if (currentStep >= sequence.length) {
+                        finalTime = Math.max(0, (Date.now() - startTime) / 1000);
+                        gameOver();
+                    } else if (LEVEL_CONFIG[currentLevel].timed) {
+                        startItemTimer();
+                    }
+                } else {
+                    // Wrong color
+                    startTime -= PENALTY_WRONG;
+                    errorsWrong++;
+                    flashPenalty();
+                }
+                return;
+            }
+        }
+    });
+
+    function flashPenalty() {
+        timeEl.classList.add('text-red-400');
+        timeEl.classList.remove('text-yellow-400');
+        setTimeout(() => {
+            timeEl.classList.remove('text-red-400');
+            timeEl.classList.add('text-yellow-400');
+        }, 400);
+    }
+
+    // ─── Drawing ──────────────────────────────────────────────────────────────────
+    function drawBall(b) {
+        const color = COLORS[b.colorIdx];
+        const isRequired = isRunning && currentStep < sequence.length && b.colorIdx === sequence[currentStep];
+
+        // Shadow glow for required ball
+        if (isRequired) {
+            ctx.shadowColor = color.hex;
+            ctx.shadowBlur = 18;
+        } else {
+            ctx.shadowBlur = 0;
+        }
+
+        // Fill
+        ctx.fillStyle = color.hex;
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, RADIUS, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // Stroke
+        ctx.strokeStyle = isRequired ? 'white' : 'rgba(255,255,255,0.25)';
+        ctx.lineWidth = isRequired ? 3.5 : 1.5;
+        ctx.stroke();
+    }
+
+    function drawStaticBalls() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        balls.forEach(drawBall);
+    }
+
+    function draw() {
+        if (!isRunning) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        if (LEVEL_CONFIG[currentLevel].moving) {
+            balls.forEach(b => {
+                b.x += b.dx; b.y += b.dy;
+                if (b.x - RADIUS < 0 || b.x + RADIUS > canvas.width)  { b.dx *= -1; b.x = Math.max(RADIUS, Math.min(canvas.width - RADIUS, b.x)); }
+                if (b.y - RADIUS < 0 || b.y + RADIUS > canvas.height) { b.dy *= -1; b.y = Math.max(RADIUS, Math.min(canvas.height - RADIUS, b.y)); }
+            });
+        }
+
+        // Draw required ball last (on top)
+        const reqColorIdx = currentStep < sequence.length ? sequence[currentStep] : -1;
+        balls.forEach(b => { if (b.colorIdx !== reqColorIdx) drawBall(b); });
+        if (reqColorIdx >= 0) { const rb = balls.find(b => b.colorIdx === reqColorIdx); if (rb) drawBall(rb); }
+
+        timeEl.textContent = Math.max(0, (Date.now() - startTime) / 1000).toFixed(1);
+        requestAnimationFrame(draw);
+    }
+
+    // ─── Game flow ────────────────────────────────────────────────────────────────
+    function startGame(level) {
+        currentLevel = level;
+        levelDisplayEl.textContent = level;
+        errorsAtLevelStart = errorsWrong;
+        timeoutAtLevelStart = errorsTimeout;
+        generateSequence();
+        spawnBalls();
+        renderSequenceBar();
+        updateHUD();
+        sequenceBar.classList.remove('hidden');
+        overlay.classList.add('hidden');
+        document.getElementById('game-title').style.display = 'none';
+        resize();
+        restartLevelBtn.classList.remove('hidden');
+        currentColorBox.style.display = 'flex';
+        isRunning = true;
+        startTime = Date.now();
+        if (LEVEL_CONFIG[level].timed) startItemTimer();
+        draw();
+    }
+
+    function gameOver() {
+        isRunning = false;
+        clearItemTimer();
+        restartLevelBtn.classList.add('hidden');
+        currentColorBox.style.display = 'none';
+        if (currentLevel === 1) { timeLvl1 = finalTime; showLevel2Screen(); }
+        else if (currentLevel === 2) { timeLvl2 = finalTime; showLevel3Screen(); }
+        else if (currentLevel === 3) { timeLvl3 = finalTime; if (gameMode === 'child') showEndScreen(); else showLevel4Screen(); }
+        else { timeLvl4 = finalTime; showEndScreen(); }
+    }
+
+    function startCampaign() {
+        errorsWrong = 0; errorsTimeout = 0;
+        timeLvl1 = timeLvl2 = timeLvl3 = timeLvl4 = 0;
+        startGame(1);
+    }
+
+    function updateInstructions(level) {
+        const desc = {
+            1: 'Klikaj kulki w kolejności kolorów z listy na dole! 10 kolorów do wyboru.',
+            2: 'Więcej wyzwań! 10 kolorów – uważaj na kolejność!',
+            3: 'Kulki się ruszają! 5 kolorów – śledź ruch!',
+            4: 'Finał! 7 kolorów, 1 sekunda na każdy ruch! Kara: +5s za ominięty kolor.',
+        };
+        overlayDesc.textContent = desc[level] || '';
+    }
+
+    function hideModeAndShowMain() { modeSelection.classList.add('hidden'); mainBtn.classList.remove('hidden'); }
+    function hideSaveAndRecordsBtn() { saveSection.classList.add('hidden'); showRecordsStartBtn.classList.add('hidden'); saveInfo.classList.add('hidden'); }
+
+    function showStartScreen() {
+        document.getElementById('game-title').style.display = '';
+        overlayTitle.innerHTML = 'Wybierz tryb gry!';
+        overlayStats.classList.add('hidden');
+        hideSaveAndRecordsBtn();
+        updateInstructions(1);
+        modeSelection.classList.remove('hidden');
+        mainBtn.classList.add('hidden');
+        showRecordsStartBtn.classList.remove('hidden');
+        sequenceBar.classList.add('hidden');
+        overlay.classList.remove('hidden');
+    }
+
+    function showLevel2Screen() {
+        hideModeAndShowMain(); hideSaveAndRecordsBtn();
+        overlayTitle.innerHTML = 'Poziom 1 Ukończony! 🎉';
+        updateInstructions(2);
+        mainBtn.innerHTML = 'Start: Poziom 2';
+        mainBtnAction = () => startGame(2);
+        overlay.classList.remove('hidden');
+        mainBtn.disabled = true;
+        setTimeout(() => { mainBtn.disabled = false; }, 1500);
+    }
+
+    function showLevel3Screen() {
+        hideModeAndShowMain(); hideSaveAndRecordsBtn();
+        overlayTitle.innerHTML = 'Poziom 2 Ukończony! 🎉';
+        updateInstructions(3);
+        mainBtn.innerHTML = 'Start: Poziom 3';
+        mainBtnAction = () => startGame(3);
+        overlay.classList.remove('hidden');
+        mainBtn.disabled = true;
+        setTimeout(() => { mainBtn.disabled = false; }, 1500);
+    }
+
+    function showLevel4Screen() {
+        hideModeAndShowMain(); hideSaveAndRecordsBtn();
+        overlayTitle.innerHTML = 'Poziom 3 Ukończony! 🎉';
+        updateInstructions(4);
+        mainBtn.innerHTML = 'Start: Finał';
+        mainBtnAction = () => startGame(4);
+        overlay.classList.remove('hidden');
+        mainBtn.disabled = true;
+        setTimeout(() => { mainBtn.disabled = false; }, 1500);
+    }
+
+    function showEndScreen() {
+        hideModeAndShowMain();
+        overlayTitle.innerHTML = 'Wyzwanie Ukończone! 🏆';
+        const errTotal = errorsWrong + errorsTimeout;
+        overlayStats.innerHTML =
+            `<p>Poziom 1: ${timeLvl1.toFixed(2)}s</p>` +
+            `<p>Poziom 2: ${timeLvl2.toFixed(2)}s</p>` +
+            `<p>Poziom 3: ${timeLvl3.toFixed(2)}s</p>` +
+            (gameMode === 'adult' ? `<p>Poziom 4: ${timeLvl4.toFixed(2)}s</p>` : '') +
+            `<p>Błędy: ${errTotal}</p>`;
+        overlayStats.classList.remove('hidden');
+        overlayDesc.textContent = '';
+        mainBtn.innerHTML = 'Zagraj ponownie';
+        mainBtnAction = showStartScreen;
+        recordsSaved = false;
+        saveRecordBtn.disabled = false;
+        saveRecordBtn.classList.replace('bg-gray-600', 'bg-green-600');
+        saveInfo.classList.add('hidden');
+        playerNameInput.value = localStorage.getItem(NAME_KEY) || '';
+        saveSection.classList.remove('hidden');
+        showRecordsStartBtn.classList.add('hidden');
+        overlay.classList.remove('hidden');
+    }
+
+    // ─── Init ─────────────────────────────────────────────────────────────────────
+    showStartScreen();
+</script>
+  <script src="../../shared/auth.js"></script>
+</body>
+</html>

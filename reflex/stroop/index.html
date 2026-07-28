@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Szybka Reakcja - Stroop</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #111; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100dvh; margin: 0; font-family: 'Inter', sans-serif; user-select: none; }
+        .back-link { position: fixed; top: 10px; left: 10px; z-index: 100; background: #334155; color: #fff; border: 1px solid #475569; border-radius: 8px; padding: 8px 14px; text-decoration: none; font-size: 13px; }
+        .back-link:hover { background: #475569; }
+        #main-btn:disabled { opacity: 0.5; pointer-events: none; }
+        #lang-switcher { position: fixed; top: 10px; right: 10px; z-index: 100; display: flex; gap: 4px; }
+        #lang-switcher button { background: rgba(0,0,0,0.7); border: 1px solid #888; border-radius: 20px; padding: 4px 10px; line-height: 0; cursor: pointer; }
+        #lang-switcher img { display: block; border-radius: 3px; }
+        #word { font-size: 3.5rem; font-weight: 900; letter-spacing: 2px; text-align: center; min-height: 4.5rem; -webkit-text-stroke: 1px rgba(255,255,255,0.55); paint-order: stroke fill; text-shadow: 0 2px 8px rgba(0,0,0,0.7); transition: opacity 0.15s; }
+        #buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; width: 100%; max-width: 420px; }
+        .color-btn { width: 100%; height: 70px; border: 3px solid rgba(255,255,255,0.15); border-radius: 14px; cursor: pointer; transition: transform 0.08s, border-color 0.1s; }
+        .color-btn:active { transform: scale(0.94); }
+        .color-btn.flash-bad { border-color: #ef4444; }
+        #timebar { width: 280px; height: 10px; background: #1e293b; border-radius: 6px; overflow: hidden; }
+        #timebar > div { height: 100%; width: 100%; background: #22c55e; transition: width 0.1s linear; }
+        @media (max-width: 480px) { #word { font-size: 2.2rem; } .color-btn { height: 60px; } }
+    </style>
+</head>
+<body>
+<a class="back-link" href="../">← Wróć</a>
+
+<div id="lang-switcher">
+    <button id="btn-pl" onclick="setLang('pl')"><img src="https://flagcdn.com/24x18/pl.png" width="24" height="18" alt="Polski"></button>
+    <button id="btn-en" onclick="setLang('en')"><img src="https://flagcdn.com/24x18/gb.png" width="24" height="18" alt="English"></button>
+</div>
+
+<div class="text-center w-full max-w-lg px-4">
+    <h1 id="game-title" class="text-3xl font-bold mb-4 text-purple-400">Stroop</h1>
+
+    <div id="hud" class="hidden flex flex-wrap justify-between items-center w-full gap-2 md:gap-6 bg-gray-800 p-3 rounded-xl mb-3 shadow-lg border border-gray-700 text-sm md:text-base">
+        <div>Etap: <span id="current-level-display" class="font-bold text-blue-400">1</span>/<span id="max-level-display">4</span></div>
+        <div><span id="lbl-score">Wynik</span>: <span id="score" class="font-bold text-green-400">0</span></div>
+        <div><span id="lbl-mode-hud" class="text-gray-400 text-xs"></span></div>
+    </div>
+
+    <div id="game-area" class="hidden flex flex-col items-center gap-4">
+        <div id="timebar"><div id="timebar-fill"></div></div>
+        <div id="word">A</div>
+        <div id="buttons"></div>
+    </div>
+
+    <div id="overlay" class="flex flex-col items-center justify-center p-4 z-10">
+        <div id="overlay-content" class="w-full max-w-md text-center">
+            <h2 id="overlay-title" class="text-3xl font-bold mb-4 text-center text-white">Wybierz tryb gry!</h2>
+            <div id="overlay-stats" class="text-left text-lg text-gray-200 mb-6 bg-gray-800 p-4 rounded-lg hidden"></div>
+            <p id="overlay-desc" class="text-yellow-300 mb-6 font-bold text-xl min-h-[3rem]"></p>
+
+            <div id="mode-switch" class="flex border border-gray-600 rounded-xl overflow-hidden mb-4 w-full max-w-xs mx-auto">
+                <button id="mode-ink" type="button" class="flex-1 py-2 text-sm font-bold transition-colors bg-sky-500 text-white">Kolor czcionki</button>
+                <button id="mode-word" type="button" class="flex-1 py-2 text-sm font-bold transition-colors bg-gray-700 text-gray-300">Kolor słowa</button>
+            </div>
+
+            <div id="mode-selection" class="flex flex-col sm:flex-row gap-4 w-full justify-center mt-4">
+                <button id="btn-child" class="flex-1 bg-green-600 hover:bg-green-500 p-4 rounded-xl text-xl font-bold transition-all shadow-lg border border-green-400/30 flex flex-col items-center justify-center gap-2">
+                    <img src="../pic/kid.jpg" alt="Dziecko" class="w-32 h-32 rounded-full object-cover border-2 border-green-300"> Dziecko
+                    <span class="text-sm font-normal text-green-100">3 poziomy</span>
+                </button>
+                <button id="btn-adult" class="flex-1 bg-blue-600 hover:bg-blue-500 p-4 rounded-xl text-xl font-bold transition-all shadow-lg border border-blue-400/30 flex flex-col items-center justify-center gap-2">
+                    <img src="../pic/adult.jpg" alt="Dorosły" class="w-32 h-32 rounded-full object-cover border-2 border-blue-300"> Dorosły
+                    <span class="text-sm font-normal text-blue-100">4 poziomy</span>
+                </button>
+            </div>
+
+            <button id="main-btn" class="hidden bg-blue-600 hover:bg-blue-500 px-8 py-4 rounded-xl text-xl font-bold transition-all shadow-lg border border-blue-400/30 w-full mt-4">
+                Rozpocznij
+            </button>
+
+            <div id="save-section" class="hidden mt-4 pt-4 border-t border-gray-600 w-full">
+                <p class="text-gray-300 text-sm mb-2">Zapisz wynik do tabeli rekordów:</p>
+                <div class="flex gap-2 mb-1">
+                    <input id="player-name-input" type="text" placeholder="Twoje imię" maxlength="20"
+                           class="flex-1 bg-gray-700 text-white px-3 py-2 rounded-lg border border-gray-500 focus:outline-none focus:border-blue-400 text-sm">
+                    <button id="save-record-btn" class="bg-green-600 hover:bg-green-500 px-4 py-2 rounded-lg font-bold text-sm transition-colors">Zapisz</button>
+                </div>
+                <p id="save-info" class="text-green-400 text-xs hidden mb-1">✓ Wynik zapisany!</p>
+                <button id="show-records-end-btn" class="text-blue-400 text-xs underline hover:text-blue-300 mt-1">Pokaż tabelę rekordów →</button>
+            </div>
+
+            <button id="show-records-start-btn" class="hidden text-blue-400 text-sm mt-3 underline hover:text-blue-300">Tabela rekordów</button>
+        </div>
+
+        <div id="records-view" class="hidden w-full max-w-xl text-center">
+            <h2 class="text-2xl font-bold mb-3 text-white">Tabela rekordów</h2>
+            <div class="flex gap-2 justify-center mb-2 flex-wrap">
+                <button class="records-mode-tab px-3 py-1 rounded-lg text-sm font-bold transition-colors bg-blue-600 text-white" data-mode="adult">Dorosły</button>
+                <button class="records-mode-tab px-3 py-1 rounded-lg text-sm font-bold transition-colors bg-gray-700 text-gray-300" data-mode="child">Dziecko</button>
+            </div>
+            <div id="records-player-filter" class="flex items-center gap-2 justify-center mb-2 flex-wrap">
+                <span class="text-gray-400 text-xs">Osoba:</span>
+                <select id="records-player-select" class="bg-gray-700 text-white text-xs px-2 py-1 rounded-lg border border-gray-600 focus:outline-none focus:border-blue-400">
+                    <option value="">Wszyscy</option>
+                </select>
+            </div>
+            <div id="records-level-tabs" class="flex gap-2 justify-center mb-3 flex-wrap"></div>
+            <div id="records-table-wrapper" class="text-left bg-gray-800 rounded-lg p-3 overflow-y-auto" style="max-height: 50vh"></div>
+            <button id="close-records-btn" class="mt-4 bg-blue-600 hover:bg-blue-500 px-6 py-2 rounded-xl font-bold text-sm transition-colors">Zamknij</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ── Translations ──────────────────────────────────────────────────────
+    const TRANSLATIONS = {
+        pl: {
+            title: 'Stroop', score: 'Wynik',
+            modeInk: 'Kolor czcionki', modeWord: 'Kolor słowa',
+            subInk: 'Kliknij KOLOR czcionki, nie czytaj słowa!',
+            subWord: 'Kliknij kolor, który NAZYWA słowo!',
+            child: 'Dziecko', adult: 'Dorosły',
+            names: { white: 'BIAŁY', yellow: 'ŻÓŁTY', green: 'ZIELONY', blue: 'NIEBIESKI', red: 'CZERWONY', purple: 'FIOLETOWY' },
+            locale: 'pl-PL',
+        },
+        en: {
+            title: 'Stroop', score: 'Score',
+            modeInk: 'Font color', modeWord: 'Word color',
+            subInk: 'Click the FONT COLOR, do not read the word!',
+            subWord: 'Click the color the WORD names!',
+            child: 'Child', adult: 'Adult',
+            names: { white: 'WHITE', yellow: 'YELLOW', green: 'GREEN', blue: 'BLUE', red: 'RED', purple: 'PURPLE' },
+            locale: 'en-GB',
+        },
+    };
+    const lang = localStorage.getItem('lang') || 'pl';
+    const t = TRANSLATIONS[lang];
+    window.setLang = (l) => { localStorage.setItem('lang', l); location.reload(); };
+
+    document.getElementById('btn-pl').style.borderColor = lang === 'pl' ? '#FFD700' : '#888';
+    document.getElementById('btn-en').style.borderColor = lang === 'en' ? '#FFD700' : '#888';
+
+    // ── Colors ────────────────────────────────────────────────────────────
+    const BUTTON_COLORS = [
+        { key: 'white',  hex: '#ffffff' },
+        { key: 'yellow', hex: '#facc15' },
+        { key: 'green',  hex: '#22c55e' },
+        { key: 'blue',   hex: '#3b82f6' },
+        { key: 'red',    hex: '#ef4444' },
+        { key: 'purple', hex: '#a855f7' },
+    ];
+    const ALL = BUTTON_COLORS;
+
+    // ── Level config ──────────────────────────────────────────────────────
+    // base = starting time per round in ms; shrinks over time
+    const LEVEL_CONFIG = {
+        child: [
+            { num: 1, base: 4000 },
+            { num: 2, base: 3200 },
+            { num: 3, base: 2600 },
+        ],
+        adult: [
+            { num: 1, base: 2100 },
+            { num: 2, base: 1700 },
+            { num: 3, base: 1300 },
+            { num: 4, base: 900 },
+        ],
+    };
+    const HOLD = 6000, RAMP = 25000, FLOOR = 200;
+
+    // ── Elements ──────────────────────────────────────────────────────────
+    const el = (id) => document.getElementById(id);
+    const wordEl = el('word'), scoreEl = el('score'), barEl = el('timebar-fill'), btnsEl = el('buttons');
+    const hud = el('hud'), gameArea = el('game-area'), overlay = el('overlay');
+    const overlayContent = el('overlay-content'), overlayTitle = el('overlay-title');
+    const overlayStats = el('overlay-stats'), overlayDesc = el('overlay-desc');
+    const mainBtn = el('main-btn'), modeSelection = el('mode-selection');
+    const btnChild = el('btn-child'), btnAdult = el('btn-adult');
+    const saveSection = el('save-section'), playerNameInput = el('player-name-input');
+    const saveRecordBtn = el('save-record-btn'), saveInfo = el('save-info');
+    const showRecordsEndBtn = el('show-records-end-btn'), showRecordsStartBtn = el('show-records-start-btn');
+    const recordsView = el('records-view'), recordsLevelTabs = el('records-level-tabs');
+    const recordsTableWrapper = el('records-table-wrapper'), closeRecordsBtn = el('close-records-btn');
+    const recordsPlayerSelect = el('records-player-select');
+    const btnModeInk = el('mode-ink'), btnModeWord = el('mode-word');
+    const levelDisplayEl = el('current-level-display'), maxLevelDisplayEl = el('max-level-display');
+
+    // ── Labels ─────────────────────────────────────────────────────────────
+    el('game-title').textContent = t.title;
+    el('lbl-score').textContent = t.score;
+    btnModeInk.textContent = t.modeInk;
+    btnModeWord.textContent = t.modeWord;
+
+    // ── State ──────────────────────────────────────────────────────────────
+    let stroopMode = 'ink';
+    let gameMode = 'adult';
+    let currentLevel = 1;
+    let score = 0, answerKey = null, prevAnswer = null;
+    let roundTime = 0, remaining = 0, timer = null;
+    let levelStartTime = 0;
+    let mainBtnAction = null, recordsSaved = false;
+    let results = {};  // { level: { score } }
+
+    const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+    const shuffle = (a) => a.slice().sort(() => Math.random() - 0.5);
+
+    // ── Stroop mode switch ────────────────────────────────────────────────
+    function setStroopMode(m) {
+        stroopMode = m;
+        btnModeInk.classList.toggle('bg-sky-500', m === 'ink');
+        btnModeInk.classList.toggle('text-white', m === 'ink');
+        btnModeInk.classList.toggle('bg-gray-700', m !== 'ink');
+        btnModeInk.classList.toggle('text-gray-300', m !== 'ink');
+        btnModeWord.classList.toggle('bg-sky-500', m === 'word');
+        btnModeWord.classList.toggle('text-white', m === 'word');
+        btnModeWord.classList.toggle('bg-gray-700', m !== 'word');
+        btnModeWord.classList.toggle('text-gray-300', m !== 'word');
+        el('lbl-mode-hud').textContent = m === 'ink' ? t.subInk : t.subWord;
+    }
+    btnModeInk.addEventListener('click', () => setStroopMode('ink'));
+    btnModeWord.addEventListener('click', () => setStroopMode('word'));
+
+    // ── Game mechanics ────────────────────────────────────────────────────
+    function getLevelBase() {
+        const levels = LEVEL_CONFIG[gameMode];
+        const cfg = levels.find(l => l.num === currentLevel);
+        return cfg ? cfg.base : levels[levels.length - 1].base;
+    }
+
+    function currentTime() {
+        const elapsed = Date.now() - levelStartTime;
+        const base = getLevelBase();
+        if (elapsed <= HOLD) return base;
+        const k = Math.min(1, (elapsed - HOLD) / RAMP);
+        return Math.round(base - (base - FLOOR) * k);
+    }
+
+    function buildButtons() {
+        btnsEl.innerHTML = '';
+        for (const c of shuffle(BUTTON_COLORS)) {
+            const b = document.createElement('button');
+            b.className = 'color-btn';
+            b.style.background = c.hex;
+            b.addEventListener('click', () => choose(c.key, b));
+            btnsEl.appendChild(b);
+        }
+    }
+
+    function nextRound() {
+        let word, ink;
+        if (stroopMode === 'ink') {
+            let ans = pick(BUTTON_COLORS);
+            if (ans.key === prevAnswer) ans = pick(BUTTON_COLORS);
+            ink = ans; word = pick(ALL.filter(c => c.key !== ink.key));
+        } else {
+            let ans = pick(BUTTON_COLORS);
+            if (ans.key === prevAnswer) ans = pick(BUTTON_COLORS);
+            word = ans; ink = pick(ALL.filter(c => c.key !== word.key));
+        }
+        answerKey = (stroopMode === 'ink' ? ink : word).key;
+        prevAnswer = answerKey;
+        wordEl.textContent = t.names[word.key];
+        wordEl.style.color = ink.hex;
+        roundTime = currentTime();
+        remaining = roundTime;
+        clearInterval(timer);
+        timer = setInterval(tick, 50);
+        updateBar();
+    }
+
+    function tick() {
+        remaining -= 50;
+        updateBar();
+        if (remaining <= 0) { clearInterval(timer); levelOver(); }
+    }
+
+    function updateBar() {
+        barEl.style.width = Math.max(0, (remaining / roundTime) * 100) + '%';
+        barEl.style.background = remaining < roundTime * 0.3 ? '#ef4444' : '#22c55e';
+    }
+
+    function choose(key, btn) {
+        if (key === answerKey) {
+            score++; scoreEl.textContent = score; nextRound();
+        } else {
+            btn.classList.add('flash-bad'); clearInterval(timer); levelOver();
+        }
+    }
+
+    // ── Campaign flow ─────────────────────────────────────────────────────
+    function startLevel(level) {
+        currentLevel = level;
+        levelDisplayEl.textContent = level;
+        score = 0; prevAnswer = null;
+        scoreEl.textContent = '0';
+        levelStartTime = Date.now();
+        overlay.classList.add('hidden');
+        hud.classList.remove('hidden');
+        gameArea.classList.remove('hidden');
+        el('game-title').style.display = 'none';
+        buildButtons();
+        nextRound();
+    }
+
+    function levelOver() {
+        results[currentLevel] = { score };
+        hud.classList.add('hidden');
+        gameArea.classList.add('hidden');
+        overlay.classList.remove('hidden');
+
+        const maxLevel = LEVEL_CONFIG[gameMode].length;
+        if (currentLevel < maxLevel) {
+            showNextLevelScreen(currentLevel);
+        } else {
+            showEndScreen();
+        }
+    }
+
+    function startCampaign() {
+        results = {};
+        maxLevelDisplayEl.textContent = LEVEL_CONFIG[gameMode].length;
+        startLevel(1);
+    }
+
+    // ── Records ───────────────────────────────────────────────────────────
+    const RECORDS_KEY = 'reflexStroopRecords';
+    const NAME_KEY    = 'reflexLastName';
+    const MAX_PER_PLAYER = 10;
+
+    function normalizeName(n) { return n.trim().toLowerCase(); }
+    function loadRecords() { try { return JSON.parse(localStorage.getItem(RECORDS_KEY)) || {}; } catch { return {}; } }
+    function saveRecordsToStorage(r) { localStorage.setItem(RECORDS_KEY, JSON.stringify(r)); }
+
+    function addRecord(mode, levelKey, name, scoreVal) {
+        const records = loadRecords();
+        if (!records[mode]) records[mode] = {};
+        if (!records[mode][levelKey]) records[mode][levelKey] = [];
+        records[mode][levelKey].push({ name: name.trim(), score: scoreVal, date: new Date().toLocaleDateString(t.locale) });
+        records[mode][levelKey].sort((a, b) => b.score - a.score);
+        const seen = {};
+        records[mode][levelKey] = records[mode][levelKey].filter(r => {
+            const key = normalizeName(r.name);
+            seen[key] = (seen[key] || 0) + 1;
+            return seen[key] <= MAX_PER_PLAYER;
+        });
+        saveRecordsToStorage(records);
+    }
+
+    function savePlayerRecord(name) {
+        if (!name.trim()) return;
+        localStorage.setItem(NAME_KEY, name.trim());
+        const maxLevel = LEVEL_CONFIG[gameMode].length;
+        for (let lvl = 1; lvl <= maxLevel; lvl++) {
+            if (results[lvl]) {
+                addRecord(gameMode, `level${lvl}`, name, results[lvl].score);
+            }
+        }
+        const totalScore = Object.values(results).reduce((s, r) => s + r.score, 0);
+        addRecord(gameMode, 'total', name, totalScore);
+    }
+
+    // ── Records view ──────────────────────────────────────────────────────
+    let recordsViewMode = 'adult', recordsViewLevel = 'total', recordsViewPlayer = '', recordsReturnFn = null;
+
+    function renderRecordsTable(mode, levelKey, filterPlayer) {
+        const records = loadRecords();
+        let data = (records[mode] && records[mode][levelKey]) || [];
+        if (filterPlayer) {
+            const norm = normalizeName(filterPlayer);
+            data = data.filter(r => normalizeName(r.name) === norm);
+        }
+        if (!data.length) return '<p class="text-gray-400 text-sm py-4 text-center">Brak rekordów</p>';
+        const medals = ['🥇', '🥈', '🥉'];
+        let html = '<table class="w-full text-sm border-collapse"><thead><tr class="text-gray-400 text-xs uppercase">';
+        html += '<th class="py-1 px-2 text-left">#</th><th class="py-1 px-2 text-left">Imię</th>';
+        html += '<th class="py-1 px-2 text-right">Wynik</th>';
+        html += '<th class="py-1 px-2 text-right">Data</th></tr></thead><tbody>';
+        data.forEach((r, i) => {
+            const cls = i === 0 ? 'text-yellow-300' : i === 1 ? 'text-gray-300' : i === 2 ? 'text-orange-400' : 'text-white';
+            html += `<tr class="${cls} border-t border-gray-700/50">`;
+            html += `<td class="py-1 px-2">${medals[i] || (i+1)+'.'}</td>`;
+            html += `<td class="py-1 px-2">${escapeHtml(r.name)}</td>`;
+            html += `<td class="py-1 px-2 text-right font-mono text-green-400">${r.score}</td>`;
+            html += `<td class="py-1 px-2 text-right text-gray-400 text-xs">${r.date}</td></tr>`;
+        });
+        html += '</tbody></table>';
+        return html;
+    }
+    function escapeHtml(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+
+    function getAllPlayersForMode(mode) {
+        const records = loadRecords();
+        const modeData = records[mode] || {};
+        const nameMap = new Map();
+        for (const levelData of Object.values(modeData)) {
+            for (const r of levelData) {
+                const key = normalizeName(r.name);
+                if (!nameMap.has(key)) nameMap.set(key, r.name);
+            }
+        }
+        return [...nameMap.values()].sort((a, b) => a.localeCompare(b, 'pl'));
+    }
+
+    function buildPlayerFilter(mode) {
+        const players = getAllPlayersForMode(mode);
+        recordsPlayerSelect.innerHTML = '<option value="">Wszyscy</option>' +
+            players.map(p => `<option value="${p}" ${normalizeName(p) === normalizeName(recordsViewPlayer) ? 'selected' : ''}>${p}</option>`).join('');
+    }
+
+    function buildRecordsLevelTabs(mode) {
+        const maxLevel = LEVEL_CONFIG[mode].length;
+        const levels = [];
+        for (let i = 1; i <= maxLevel; i++) levels.push([`level${i}`, `Poziom ${i}`]);
+        levels.push(['total', 'Łącznie']);
+        recordsLevelTabs.innerHTML = levels.map(([key, label]) =>
+            `<button class="records-level-tab px-3 py-1 rounded-lg text-xs font-bold transition-colors ${recordsViewLevel === key ? 'bg-green-600 text-white' : 'bg-gray-700 text-gray-300'}" data-level="${key}">${label}</button>`
+        ).join('');
+        recordsLevelTabs.querySelectorAll('.records-level-tab').forEach(btn => {
+            btn.addEventListener('click', () => {
+                recordsViewLevel = btn.dataset.level;
+                buildRecordsLevelTabs(recordsViewMode);
+                recordsTableWrapper.innerHTML = renderRecordsTable(recordsViewMode, recordsViewLevel, recordsViewPlayer);
+            });
+        });
+    }
+
+    function showRecordsView(returnFn, preferMode, preferPlayer) {
+        recordsReturnFn = returnFn;
+        recordsViewMode = preferMode || gameMode || 'adult';
+        recordsViewLevel = 'total';
+        recordsViewPlayer = preferPlayer || '';
+        overlayContent.classList.add('hidden');
+        recordsView.classList.remove('hidden');
+        document.querySelectorAll('.records-mode-tab').forEach(btn => {
+            btn.classList.toggle('bg-blue-600', btn.dataset.mode === recordsViewMode);
+            btn.classList.toggle('text-white', btn.dataset.mode === recordsViewMode);
+            btn.classList.toggle('bg-gray-700', btn.dataset.mode !== recordsViewMode);
+            btn.classList.toggle('text-gray-300', btn.dataset.mode !== recordsViewMode);
+        });
+        buildPlayerFilter(recordsViewMode);
+        buildRecordsLevelTabs(recordsViewMode);
+        recordsTableWrapper.innerHTML = renderRecordsTable(recordsViewMode, recordsViewLevel, recordsViewPlayer);
+    }
+
+    document.querySelectorAll('.records-mode-tab').forEach(btn => {
+        btn.addEventListener('click', () => { recordsViewMode = btn.dataset.mode; recordsViewPlayer = ''; showRecordsView(recordsReturnFn, recordsViewMode); });
+    });
+    recordsPlayerSelect.addEventListener('change', () => {
+        recordsViewPlayer = recordsPlayerSelect.value;
+        buildRecordsLevelTabs(recordsViewMode);
+        recordsTableWrapper.innerHTML = renderRecordsTable(recordsViewMode, recordsViewLevel, recordsViewPlayer);
+    });
+    closeRecordsBtn.addEventListener('click', () => {
+        recordsView.classList.add('hidden');
+        overlayContent.classList.remove('hidden');
+        if (recordsReturnFn) recordsReturnFn();
+    });
+
+    saveRecordBtn.addEventListener('click', () => {
+        if (recordsSaved) return;
+        const name = playerNameInput.value.trim();
+        if (!name) { playerNameInput.focus(); return; }
+        savePlayerRecord(name);
+        recordsSaved = true;
+        saveRecordBtn.disabled = true;
+        saveRecordBtn.classList.replace('bg-green-600', 'bg-gray-600');
+        saveInfo.classList.remove('hidden');
+        showRecordsView(() => {}, gameMode, name);
+    });
+    playerNameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') saveRecordBtn.click(); });
+    showRecordsEndBtn.addEventListener('click', () => showRecordsView(() => {}));
+    showRecordsStartBtn.addEventListener('click', () => showRecordsView(() => {}));
+    mainBtn.addEventListener('click', () => { if (mainBtnAction) mainBtnAction(); });
+
+    // ── Mode selection ────────────────────────────────────────────────────
+    btnChild.addEventListener('click', () => { gameMode = 'child'; startCampaign(); });
+    btnAdult.addEventListener('click', () => { gameMode = 'adult'; startCampaign(); });
+
+    // ── Screens ───────────────────────────────────────────────────────────
+    function hideModeAndShowMain() { modeSelection.classList.add('hidden'); el('mode-switch').classList.add('hidden'); mainBtn.classList.remove('hidden'); }
+    function hideSaveSection() { saveSection.classList.add('hidden'); showRecordsStartBtn.classList.add('hidden'); saveInfo.classList.add('hidden'); }
+
+    function showStartScreen() {
+        el('game-title').style.display = '';
+        hud.classList.add('hidden');
+        gameArea.classList.add('hidden');
+        overlay.classList.remove('hidden');
+        overlayTitle.textContent = 'Wybierz tryb gry!';
+        overlayStats.classList.add('hidden');
+        hideSaveSection();
+        overlayDesc.textContent = stroopMode === 'ink' ? t.subInk : t.subWord;
+        el('mode-switch').classList.remove('hidden');
+        modeSelection.classList.remove('hidden');
+        mainBtn.classList.add('hidden');
+        showRecordsStartBtn.classList.remove('hidden');
+    }
+
+    function showNextLevelScreen(level) {
+        hideModeAndShowMain();
+        hideSaveSection();
+        overlayTitle.innerHTML = `Poziom ${level} Ukończony! 🎉`;
+        overlayStats.innerHTML =
+            `<p>Wynik: <span class="text-green-400 font-bold">${results[level].score}</span></p>`;
+        overlayStats.classList.remove('hidden');
+        overlayDesc.textContent = '';
+        mainBtn.innerHTML = `Start: Poziom ${level + 1}`;
+        mainBtnAction = () => startLevel(level + 1);
+        overlay.classList.remove('hidden');
+        mainBtn.disabled = true;
+        setTimeout(() => { mainBtn.disabled = false; }, 1500);
+    }
+
+    function showEndScreen() {
+        hideModeAndShowMain();
+        overlayTitle.innerHTML = 'Wyzwanie Ukończone! 🏆';
+        const maxLevel = LEVEL_CONFIG[gameMode].length;
+        let statsHtml = '';
+        for (let lvl = 1; lvl <= maxLevel; lvl++) {
+            if (results[lvl]) {
+                statsHtml += `<p>Poziom ${lvl}: <span class="text-green-400">${results[lvl].score}</span> pkt</p>`;
+            }
+        }
+        const totalScore = Object.values(results).reduce((s, r) => s + r.score, 0);
+        statsHtml += `<p class="mt-2 border-t border-gray-600 pt-2">Łącznie: <span class="text-green-400 font-bold">${totalScore}</span> pkt</p>`;
+        overlayStats.innerHTML = statsHtml;
+        overlayStats.classList.remove('hidden');
+        overlayDesc.textContent = '';
+        mainBtn.innerHTML = 'Zagraj ponownie';
+        mainBtnAction = showStartScreen;
+        recordsSaved = false;
+        saveRecordBtn.disabled = false;
+        saveRecordBtn.classList.replace('bg-gray-600', 'bg-green-600');
+        saveInfo.classList.add('hidden');
+        playerNameInput.value = localStorage.getItem(NAME_KEY) || '';
+        saveSection.classList.remove('hidden');
+        showRecordsStartBtn.classList.add('hidden');
+        overlay.classList.remove('hidden');
+    }
+
+    // ── Init ──────────────────────────────────────────────────────────────
+    setStroopMode('ink');
+    showStartScreen();
+</script>
+  <script src="../../shared/auth.js"></script>
+</body>
+</html>

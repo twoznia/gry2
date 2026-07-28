@@ -1,0 +1,45 @@
+name: Update słówka manifest
+
+on:
+  push:
+    paths:
+      - 'słówka/data/**'
+      - '!słówka/data/manifest.json'
+      - 'słówka/tools/generate_manifest.mjs'
+      - '.github/workflows/update-slowka-manifest.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-manifest:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6.4.0
+        with:
+          node-version: '22'
+
+      - name: Generate manifest
+        run: node słówka/tools/generate_manifest.mjs
+
+      - name: Commit updated manifest
+        run: |
+          if git diff --quiet -- słówka/data/manifest.json; then
+            echo "Manifest is up to date."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add słówka/data/manifest.json
+          git commit -m "Update słówka manifest"
+          git push

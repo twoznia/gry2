@@ -1,0 +1,221 @@
+    /* ── Reset & root ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0d0d1a;
+      --panel-bg:  #13132b;
+      --border:    #2a2a5a;
+      --text:      #e0e0ff;
+      --muted:     #6666aa;
+      --accent:    #7c3aed;
+
+      /* Tetromino neon colours */
+      --I: #00f5ff;  /* cyan   */
+      --O: #ffe600;  /* yellow */
+      --T: #cc00ff;  /* purple */
+      --S: #00ff88;  /* green  */
+      --Z: #ff2255;  /* red    */
+      --J: #2255ff;  /* blue   */
+      --L: #ff8800;  /* orange */
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100dvh;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    /* ── Back link ────────────────────────────────────────────── */
+    .back-link {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      z-index: 200;
+      background: #1e1e3f;
+      color: #fff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 13px;
+      text-decoration: none;
+      font-size: 13px;
+      transition: background .2s;
+    }
+    .back-link:hover { background: #2a2a5a; }
+
+    /* ── Wrapper ──────────────────────────────────────────────── */
+    #wrapper {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      /* scaled via JS to fit viewport */
+    }
+
+    /* ── Side panels ──────────────────────────────────────────── */
+    .panel {
+      background: var(--panel-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      width: 110px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .panel-section h3 {
+      font-size: 10px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .panel-section .value {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1;
+    }
+    .mini-canvas {
+      background: #0a0a18;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      display: block;
+    }
+
+    /* ── Main board container ─────────────────────────────────── */
+    #board-wrap {
+      position: relative;
+    }
+    #board {
+      display: block;
+      border: 2px solid var(--border);
+      border-radius: 4px;
+      background: #080814;
+      image-rendering: pixelated;
+    }
+
+    /* Shake animation on hard drop */
+    @keyframes shake {
+      0%  { transform: translateX(0); }
+      20% { transform: translateX(-5px); }
+      40% { transform: translateX(5px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(4px); }
+      100%{ transform: translateX(0); }
+    }
+    .shake { animation: shake .25s ease; }
+
+    /* ── Overlay (start / pause / game-over) ─────────────────── */
+    #overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(5,5,20,.88);
+      border-radius: 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      z-index: 10;
+      backdrop-filter: blur(3px);
+    }
+    #overlay h2 {
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #fff;
+      text-shadow: 0 0 20px var(--accent);
+    }
+    #overlay p {
+      font-size: 13px;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.6;
+    }
+    #overlay .btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 28px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: .06em;
+      transition: opacity .2s, transform .1s;
+      box-shadow: 0 0 18px var(--accent);
+    }
+    #overlay .btn:hover { opacity: .85; transform: scale(1.04); }
+
+    #overlay .score-display {
+      font-size: 13px;
+      color: var(--muted);
+    }
+    #overlay .score-display span {
+      color: var(--text);
+      font-weight: 700;
+      font-size: 20px;
+    }
+
+    /* Line-clear flash */
+    @keyframes flash-row {
+      0%   { opacity: 1; }
+      40%  { opacity: 0; }
+      70%  { opacity: 1; }
+      100% { opacity: 1; }
+    }
+
+    /* Controls hint */
+    #controls-hint {
+      position: fixed;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: .05em;
+      white-space: nowrap;
+    }
+
+    /* Mobile D-pad */
+    #mobile-controls {
+      display: none;
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      padding: 8px 12px 12px;
+      background: rgba(13,13,26,0.97);
+      border-top: 1px solid var(--border);
+      z-index: 100;
+      gap: 8px;
+      justify-content: center;
+      align-items: center;
+    }
+    #mobile-controls button {
+      background: var(--panel-bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 22px;
+      font-weight: 700;
+      padding: 12px 0;
+      width: 58px;
+      cursor: pointer;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    #mobile-controls button:active { background: var(--accent); border-color: var(--accent); }
+    #mc-drop { background: #1a0a30 !important; width: 72px !important; font-size: 16px !important; }
+    #mc-drop:active { background: var(--accent) !important; }
+    #mc-hold { font-size: 13px !important; width: 52px !important; }
+    @media (pointer: coarse) {
+      #mobile-controls { display: flex; }
+      #controls-hint { display: none; }
+    }
