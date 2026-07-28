@@ -1,0 +1,50 @@
+<!-- Supabase → Authentication → Emails → Templates → "Confirm signup"
+     Temat: Potwierdź konto w Gry2 🎮 -->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0f172a;margin:0;padding:32px 12px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <tr>
+    <td align="center">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#1e293b;border:1px solid #334155;border-radius:16px;overflow:hidden;">
+        <tr>
+          <td style="padding:32px 32px 8px;text-align:center;">
+            <div style="font-size:40px;line-height:1;">🎮</div>
+            <h1 style="margin:16px 0 0;color:#f8fafc;font-size:22px;font-weight:700;">Witaj w Gry2!</h1>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:8px 32px 0;text-align:center;">
+            <p style="margin:0;color:#94a3b8;font-size:15px;line-height:1.6;">
+              Dziękujemy za rejestrację. Potwierdź swój adres e-mail, aby zacząć
+              zapisywać rekordy w chmurze.
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:28px 32px;text-align:center;">
+            <a href="{{ .ConfirmationURL }}"
+               style="display:inline-block;background:#38bdf8;color:#0f172a;text-decoration:none;font-weight:700;font-size:15px;padding:13px 28px;border-radius:10px;">
+              Potwierdź konto
+            </a>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:0 32px 8px;text-align:center;">
+            <p style="margin:0;color:#64748b;font-size:12px;line-height:1.6;">
+              Jeśli przycisk nie działa, skopiuj i wklej ten link do przeglądarki:
+            </p>
+            <p style="margin:8px 0 0;word-break:break-all;">
+              <a href="{{ .ConfirmationURL }}" style="color:#38bdf8;font-size:12px;">{{ .ConfirmationURL }}</a>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:20px 32px 28px;text-align:center;border-top:1px solid #334155;">
+            <p style="margin:0;color:#64748b;font-size:12px;line-height:1.6;">
+              Jeśli to nie Ty zakładałeś konto, zignoruj tę wiadomość.
+            </p>
+          </td>
+        </tr>
+      </table>
+      <p style="margin:16px 0 0;color:#475569;font-size:11px;">Gry2 · twoznia.github.io/gry2</p>
+    </td>
+  </tr>
+</table>
