@@ -25,6 +25,15 @@
   const SUPABASE_KEY = 'sb_publishable_vAQgqpNef0eQUErsNHm9HQ_uAjKWDvg';
   const SUPABASE_CDN = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
   const GUEST_KEY = 'gry_guest_mode';
+  // Logowanie po nazwie: nazwa bez '@' zamieniana na syntetyczny e-mail.
+  const USERNAME_DOMAIN = 'gry2.local';
+
+  // Zamienia login (nazwa lub e-mail) na e-mail wymagany przez Supabase.
+  function toEmail(login) {
+    const v = String(login || '').trim();
+    if (v.indexOf('@') >= 0) return v.toLowerCase();
+    return v.toLowerCase().replace(/\s+/g, '_') + '@' + USERNAME_DOMAIN;
+  }
 
   let client = null;
   let currentUser = null;
@@ -72,12 +81,17 @@
       renderWidget();
     },
 
-    async signIn(email, password) {
-      const { error } = await client.auth.signInWithPassword({ email: email.trim(), password });
+    async signIn(login, password) {
+      const { error } = await client.auth.signInWithPassword({ email: toEmail(login), password });
       if (error) throw error;
     },
-    async signUp(email, password) {
-      const { data, error } = await client.auth.signUp({ email: email.trim(), password });
+    async signUp(login, password) {
+      const name = String(login || '').trim();
+      const { data, error } = await client.auth.signUp({
+        email: toEmail(login),
+        password,
+        options: { data: { full_name: name.indexOf('@') >= 0 ? name.split('@')[0] : name } },
+      });
       if (error) throw error;
       return data;
     },
@@ -340,17 +354,20 @@
   function renderModalHtml(mode) {
     const titles = { signin: 'Zaloguj się', signup: 'Utwórz konto', reset: 'Reset hasła' };
     const subs = {
-      signin: 'Zaloguj się, aby zapisywać rekordy.',
-      signup: 'Załóż konto, aby zapisywać wyniki w chmurze.',
+      signin: 'Podaj nazwę użytkownika i hasło.',
+      signup: 'Wybierz nazwę i hasło, aby zapisywać wyniki w chmurze.',
       reset: 'Podaj e-mail — wyślemy link do zmiany hasła.',
     };
     const showPass = mode !== 'reset';
     const btn = { signin: 'Zaloguj', signup: 'Utwórz konto', reset: 'Wyślij link' }[mode];
+    const loginField = mode === 'reset'
+      ? '<input type="email" data-f="email" placeholder="ty@example.com" autocomplete="email" />'
+      : '<input type="text" data-f="email" placeholder="Nazwa użytkownika (lub e-mail)" autocomplete="username" />';
     return `<div class="gry-modal">
       <button class="gry-close" data-act="close">&times;</button>
       <h2>${titles[mode]}</h2>
       <p class="sub">${subs[mode]}</p>
-      <input type="email" data-f="email" placeholder="ty@example.com" autocomplete="email" />
+      ${loginField}
       ${showPass ? '<input type="password" data-f="password" placeholder="Hasło (min. 6 znaków)" autocomplete="current-password" minlength="6" />' : ''}
       <button class="gry-primary" data-act="submit">${btn}</button>
       <div class="gry-msg"></div>
@@ -381,7 +398,7 @@
       const email = (q('[data-f="email"]') || {}).value || '';
       const passEl = q('[data-f="password"]');
       const password = passEl ? passEl.value : '';
-      if (!email.trim()) return setErr('Podaj e-mail.');
+      if (!email.trim()) return setErr(mode === 'reset' ? 'Podaj e-mail.' : 'Podaj nazwę użytkownika.');
       if (mode !== 'reset' && password.length < 6) return setErr('Hasło musi mieć min. 6 znaków.');
       btn.disabled = true; msg.innerHTML = '';
       try {
