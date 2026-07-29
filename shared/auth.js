@@ -196,8 +196,18 @@
     { game: 'ptak',      key: 'ptak_highscore' },
     { game: 'soltaire',  key: 'solitaire_piatnik_best', lowerIsBetter: true },
     { game: 'memo',      prefix: 'memo-rec-', lowerIsBetter: true },
+    { game: 'anatomia',  prefix: 'anatomia_best_' },
+    { game: 'auta',      prefix: 'autoslalom_hi_' },
+    { game: 'kulki',     prefix: 'lines_high_' },
   ];
+  // Gry z rekordami jako JSON per-poziom: klucz localStorage -> nazwa gry.
+  // Struktura: { <poziom>: [ { name, time, ...pola }, ... ] } (czas, niższy lepszy).
+  const JSON_RECORDS = {
+    binairoRecords: 'binairo', calcudokuRecords: 'calcudoku', nonogramRecords: 'nonogram',
+    piramidyRecords: 'piramidy', sudokuRecords: 'sudoku',
+  };
   const lastSubmitted = {}; // klucz -> wartość, żeby nie dublować
+  const prevJson = {};      // ostatnio widziany JSON rekordów (do wykrycia nowego wpisu)
   let rawSetItem = null;     // oryginalny localStorage.setItem (zapis bez wysyłki)
 
   function matchWatch(key) {
@@ -209,6 +219,7 @@
   }
 
   function handleWrite(key, rawValue) {
+    if (JSON_RECORDS[key]) { submitJsonRecords(key, rawValue); return; }
     const m = matchWatch(key);
     if (!m) return;
     const num = parseFloat(rawValue);
@@ -217,6 +228,31 @@
     if (!ready || !currentUser) return; // gość -> bez zapisu w chmurze
     lastSubmitted[key] = num;
     GryScores.submit(m.w.game, num, { mode: m.mode, lowerIsBetter: !!m.w.lowerIsBetter });
+  }
+
+  // Gry z rekordami JSON: wykryj nowo dodany wpis (różnica względem poprzedniego
+  // stanu) i wyślij go do chmury jako rekord zalogowanego gracza (czas -> niższy lepszy).
+  function submitJsonRecords(key, rawValue) {
+    const game = JSON_RECORDS[key];
+    let next; try { next = JSON.parse(rawValue) || {}; } catch (e) { return; }
+    const prev = (function () { try { return JSON.parse(prevJson[key] || '{}') || {}; } catch (e) { return {}; } })();
+    prevJson[key] = rawValue;
+    if (!ready || !currentUser) return; // gość -> bez zapisu
+    const sig = (e) => JSON.stringify([e && e.name, e && e.time, e && e.date, e && e.hints, e && e.mistakes]);
+    for (const level of Object.keys(next)) {
+      const nList = Array.isArray(next[level]) ? next[level] : [];
+      const oldSigs = new Set((Array.isArray(prev[level]) ? prev[level] : []).map(sig));
+      for (const entry of nList) {
+        if (oldSigs.has(sig(entry))) continue;      // już był
+        const t = Number(entry && entry.time);
+        if (!isFinite(t)) continue;
+        const errors = entry.mistakes != null ? Number(entry.mistakes) : (entry.hints != null ? Number(entry.hints) : null);
+        const dk = 'json|' + game + '|' + level + '|' + sig(entry);
+        if (lastSubmitted[dk]) continue;
+        lastSubmitted[dk] = 1;
+        GryScores.submit(game, t, { level: level, lowerIsBetter: true, errors: errors, meta: entry });
+      }
+    }
   }
 
   // Wariant (podgra) reflex z URL, np. 'znikanie'.
@@ -246,6 +282,13 @@
     } catch (e) { /* noop */ }
   }
   installWatch();
+  // Zapamiętaj bieżący stan rekordów JSON, by pierwszy zapis nie wysłał cudzych wpisów.
+  for (const key of Object.keys(JSON_RECORDS)) {
+    try { prevJson[key] = localStorage.getItem(key) || '{}'; } catch (e) { /* noop */ }
+  }
+
+  // Synchronizacja odczytu rekordów z chmury (liczbowe + JSON).
+  function cloudSync() { syncNumericFromCloud(); syncJsonFromCloud(); }
 
   // Zaciąga najlepszy wynik gracza z chmury do localStorage (odczyt rekordów z Supabase).
   // Gra czyta rekord z localStorage przy starcie — po zsynchronizowaniu pokaże wartość z chmury
@@ -253,8 +296,22 @@
   async function syncNumericFromCloud() {
     if (!ready || !currentUser) return;
     for (const w of WATCH) {
-      if (!w.key) continue; // pomiń klucze prefiksowe (np. memo)
       try {
+        if (w.prefix) {
+          // Klucze dynamiczne (np. memo-rec-<x>, anatomia_best_<x>): odtwórz każdy klucz z chmury.
+          const col = w.lowerIsBetter ? 'time_seconds' : 'score';
+          const { data, error } = await client.from('scores')
+            .select('mode,' + col).eq('game', w.game).eq('user_id', currentUser.id).limit(1000);
+          if (error || !data) continue;
+          for (const row of data) {
+            const val = row[col];
+            if (val == null) continue;
+            const k = w.prefix + (row.mode || '');
+            if (rawSetItem) rawSetItem.call(localStorage, k, String(val));
+            lastSubmitted[k] = Number(val);
+          }
+          continue;
+        }
         const cloud = await GryScores.best(w.game, { mode: w.mode || '', lowerIsBetter: !!w.lowerIsBetter });
         if (cloud == null) continue;
         let localNum = null;
@@ -263,6 +320,36 @@
         if (localNum != null && isFinite(localNum)) best = w.lowerIsBetter ? Math.min(cloud, localNum) : Math.max(cloud, localNum);
         if (rawSetItem) rawSetItem.call(localStorage, w.key, String(best));
         lastSubmitted[w.key] = best; // nie wysyłaj tej samej wartości z powrotem
+      } catch (e) { /* noop */ }
+    }
+  }
+
+  // Odtwarza tabele rekordów gier JSON z chmury (tylko bieżący użytkownik).
+  async function syncJsonFromCloud() {
+    if (!ready || !currentUser || !client) return;
+    for (const key of Object.keys(JSON_RECORDS)) {
+      const game = JSON_RECORDS[key];
+      try {
+        const { data, error } = await client.from('scores')
+          .select('display_name,time_seconds,errors,level,meta,created_at')
+          .eq('game', game).eq('user_id', currentUser.id).limit(2000);
+        if (error || !data || !data.length) continue; // brak danych w chmurze -> nie kasuj lokalnych
+        const obj = {};
+        for (const row of (data || [])) {
+          const level = row.level || '';
+          (obj[level] = obj[level] || []);
+          const entry = (row.meta && typeof row.meta === 'object' && Object.keys(row.meta).length)
+            ? row.meta
+            : { name: row.display_name, time: row.time_seconds, date: row.created_at ? new Date(row.created_at).toLocaleDateString('pl-PL') : '' };
+          obj[level].push(entry);
+        }
+        for (const level of Object.keys(obj)) {
+          obj[level].sort((a, b) => (Number(a.time) - Number(b.time))
+            || ((a.hints || a.mistakes || 0) - (b.hints || b.mistakes || 0)));
+        }
+        const json = JSON.stringify(obj);
+        if (rawSetItem) rawSetItem.call(localStorage, key, json);
+        prevJson[key] = json; // to już jest w chmurze — nie wysyłaj z powrotem
       } catch (e) { /* noop */ }
     }
   }
@@ -434,8 +521,8 @@
       injectStyles();
       renderWidget();
       initReflex();
-      syncNumericFromCloud();
-      GryAuth.onChange(() => syncNumericFromCloud());
+      cloudSync();
+      GryAuth.onChange(cloudSync);
       readyCbs.forEach((cb) => { try { cb(); } catch (e) { /* noop */ } });
     } catch (e) {
       console.warn('[GryAuth] init nieudany:', e.message);
@@ -493,7 +580,9 @@
       try {
         const { data, error } = await client.from('scores')
           .select('display_name,score,time_seconds,errors,mode,level,created_at')
-          .eq('game', 'reflex').eq('subgame', subgame).limit(3000);
+          .eq('game', 'reflex').eq('subgame', subgame)
+          .eq('user_id', currentUser.id) // domyślnie tylko bieżący użytkownik
+          .limit(3000);
         if (error) return;
         const cache = {};
         for (const r of (data || [])) {
@@ -531,6 +620,31 @@
       window.showRecordsView = function () { origShow.apply(this, arguments); refreshReflexCache(); };
     }
 
+    // Ekran „Twój wynik" — pokazuje wynik wszystkich poziomów i blokuje klikanie
+    // przez 2 s, żeby przypadkowy klik nie pominął/„zjadł" zapisu rekordu.
+    function showResultLock() {
+      if (section.classList.contains('hidden')) return;
+      if (document.getElementById('gry-result-lock')) return;
+      const stats = document.getElementById('overlay-stats');
+      const statsHtml = stats ? stats.innerHTML : '';
+      const ov = document.createElement('div');
+      ov.id = 'gry-result-lock';
+      ov.style.cssText = 'position:fixed;inset:0;z-index:2147483040;background:rgba(2,6,23,.9);display:flex;align-items:center;justify-content:center;padding:16px;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif';
+      ov.innerHTML = '<div style="background:#1e293b;border:1px solid #334155;border-radius:16px;max-width:360px;width:100%;padding:24px;text-align:center;color:#f8fafc;box-shadow:0 20px 60px rgba(0,0,0,.5)">'
+        + '<div style="font-size:34px;line-height:1">🏆</div>'
+        + '<h2 style="margin:8px 0 12px;font-size:20px;font-weight:700">Twój wynik</h2>'
+        + '<div style="color:#cbd5e1;font-size:15px;line-height:1.7;text-align:left;display:inline-block">' + statsHtml + '</div>'
+        + '<p id="gry-lock-hint" style="margin:16px 0 0;color:#64748b;font-size:12px">' + (currentUser ? 'Zapisujemy wynik…' : 'Zaloguj się, aby zapisać wynik') + '</p>'
+        + '</div>';
+      document.body.appendChild(ov); // pełnoekranowa nakładka blokuje kliknięcia w grę
+      setTimeout(() => {
+        const h = document.getElementById('gry-lock-hint');
+        if (h) h.textContent = 'Kliknij, aby kontynuować';
+        ov.style.cursor = 'pointer';
+        ov.addEventListener('click', () => ov.remove());
+      }, 2000);
+    }
+
     // Auto-uzupełnienie imienia + auto-zapis (bez klikania „Zapisz").
     const tryAuto = () => {
       if (section.classList.contains('hidden')) return;
@@ -540,10 +654,15 @@
       if (name) input.value = name;
       btn.click();                        // -> savePlayerRecord -> addRecord -> chmura
     };
-    new MutationObserver(tryAuto).observe(section, { attributes: true, attributeFilter: ['class'] });
-    GryAuth.onChange(() => { tryAuto(); refreshReflexCache(); });
+    const handleEndScreen = () => {
+      if (section.classList.contains('hidden')) { const ov = document.getElementById('gry-result-lock'); if (ov) ov.remove(); return; }
+      showResultLock();
+      tryAuto();
+    };
+    new MutationObserver(handleEndScreen).observe(section, { attributes: true, attributeFilter: ['class'] });
+    GryAuth.onChange(() => { handleEndScreen(); refreshReflexCache(); });
     refreshReflexCache();
-    tryAuto();
+    handleEndScreen();
   }
 
   if (document.readyState === 'loading') {

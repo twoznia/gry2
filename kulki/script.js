@@ -3,6 +3,7 @@
     let selectedCell = null;
     let score = 0;
     let isAnimating = false;
+    let autoFinishing = false; // tryb „Zakończ" — auto-dorzucanie kulek
     let difficulty = 'medium';
     let soundEnabled = false;
     let audioCtx = null;
@@ -228,6 +229,7 @@
     // --- LOGIKA I MECHANIKA GRY ---
 
     function resetGame() {
+      autoFinishing = false; // przerwij ew. auto-kończenie
       board = Array(BOARD_SIZE * BOARD_SIZE).fill(null);
       selectedCell = null;
       score = 0;
@@ -640,9 +642,26 @@
     }
 
     function triggerGameOver() {
+      autoFinishing = false;
       playSound('gameover');
       document.getElementById('status-bar').innerText = 'Koniec Gry! Brak wolnych ruchów.';
       document.getElementById('modal-final-score').innerText = formatScore(score);
       document.getElementById('game-over-overlay').style.display = 'block';
       document.getElementById('game-over-modal').style.display = 'block';
     }
+
+    // „Zakończ" — automatycznie dorzuca kolejne kulki (bez ruchu gracza), aż do końca gry.
+    function finishGame() {
+      const overlay = document.getElementById('game-over-overlay');
+      if (autoFinishing || (overlay && overlay.style.display === 'block')) return;
+      autoFinishing = true;
+      document.getElementById('status-bar').innerText = 'Kończenie gry…';
+      const timer = setInterval(() => {
+        const ov = document.getElementById('game-over-overlay');
+        if (!autoFinishing || (ov && ov.style.display === 'block')) { clearInterval(timer); autoFinishing = false; return; }
+        if (isAnimating) return;      // poczekaj na trwającą animację
+        selectedCell = null;          // nie ruszamy — tylko dorzucamy
+        spawnNextBalls();
+      }, 300);
+    }
+    window.finishGame = finishGame;
