@@ -198,6 +198,7 @@
     { game: 'memo',      prefix: 'memo-rec-', lowerIsBetter: true },
   ];
   const lastSubmitted = {}; // klucz -> wartość, żeby nie dublować
+  let rawSetItem = null;     // oryginalny localStorage.setItem (zapis bez wysyłki)
 
   function matchWatch(key) {
     for (const w of WATCH) {
@@ -208,8 +209,6 @@
   }
 
   function handleWrite(key, rawValue) {
-    // Gry reflex: JSON pod kluczem reflex…Records (leaderboard z imieniem).
-    if (/^reflex[A-Za-z0-9]*Records$/.test(key)) { submitReflexRecords(rawValue); return; }
     const m = matchWatch(key);
     if (!m) return;
     const num = parseFloat(rawValue);
@@ -227,38 +226,15 @@
     if (i >= 0 && parts[i + 1] && parts[i + 1] !== 'index.html') return parts[i + 1];
     return '';
   }
-
-  // Z zapisanego leaderboardu wyławiamy wynik 'total' zalogowanego gracza i wysyłamy do chmury.
-  function submitReflexRecords(rawValue) {
-    if (!ready || !currentUser) return; // gość -> bez zapisu w chmurze
-    let obj;
-    try { obj = JSON.parse(rawValue); } catch (e) { return; }
-    if (!obj || typeof obj !== 'object') return;
-    const subgame = reflexSubgame();
-    const me = String(GryAuth.displayName() || '').trim().toLowerCase();
-    if (!me) return;
-    for (const mode of Object.keys(obj)) {
-      const arr = obj[mode] && obj[mode]['total'];
-      if (!Array.isArray(arr)) continue;
-      let best = null, bestErr = null;
-      for (const r of arr) {
-        if (r && String(r.name || '').trim().toLowerCase() === me) {
-          if (best == null || Number(r.score) > best) { best = Number(r.score); bestErr = (r.errors != null ? Number(r.errors) : null); }
-        }
-      }
-      if (best == null || !isFinite(best) || best <= 0) continue;
-      const dedupKey = 'reflex/' + subgame + '|' + mode;
-      if (lastSubmitted[dedupKey] === best) continue;
-      lastSubmitted[dedupKey] = best;
-      GryScores.submit('reflex', best, { subgame: subgame, mode: mode, level: 'total', errors: bestErr });
-    }
-  }
+  // Warianty reflex liczone na czas (niższy lepszy).
+  const REFLEX_TIME = { kolory: 1, kolory2: 1, liczby: 1, litery: 1 };
 
   function installWatch() {
     try {
       const proto = window.Storage && window.Storage.prototype;
       if (!proto || proto.__gryPatched) return;
       const orig = proto.setItem;
+      rawSetItem = orig;
       proto.setItem = function (key, value) {
         const r = orig.apply(this, arguments);
         if (this === window.localStorage) {
@@ -270,6 +246,26 @@
     } catch (e) { /* noop */ }
   }
   installWatch();
+
+  // Zaciąga najlepszy wynik gracza z chmury do localStorage (odczyt rekordów z Supabase).
+  // Gra czyta rekord z localStorage przy starcie — po zsynchronizowaniu pokaże wartość z chmury
+  // (na bieżącej stronie po odświeżeniu, potem na żywo).
+  async function syncNumericFromCloud() {
+    if (!ready || !currentUser) return;
+    for (const w of WATCH) {
+      if (!w.key) continue; // pomiń klucze prefiksowe (np. memo)
+      try {
+        const cloud = await GryScores.best(w.game, { mode: w.mode || '', lowerIsBetter: !!w.lowerIsBetter });
+        if (cloud == null) continue;
+        let localNum = null;
+        try { const lv = localStorage.getItem(w.key); if (lv != null) localNum = parseFloat(lv); } catch (e) { /* noop */ }
+        let best = cloud;
+        if (localNum != null && isFinite(localNum)) best = w.lowerIsBetter ? Math.min(cloud, localNum) : Math.max(cloud, localNum);
+        if (rawSetItem) rawSetItem.call(localStorage, w.key, String(best));
+        lastSubmitted[w.key] = best; // nie wysyłaj tej samej wartości z powrotem
+      } catch (e) { /* noop */ }
+    }
+  }
 
   // ================= Widget + modal =================
   function injectStyles() {
@@ -438,6 +434,8 @@
       injectStyles();
       renderWidget();
       initReflex();
+      syncNumericFromCloud();
+      GryAuth.onChange(() => syncNumericFromCloud());
       readyCbs.forEach((cb) => { try { cb(); } catch (e) { /* noop */ } });
     } catch (e) {
       console.warn('[GryAuth] init nieudany:', e.message);
@@ -449,25 +447,102 @@
     }
   }
 
-  // Reflex: dla zalogowanego auto-uzupełnij imię i zapisz rekord bez klikania „Zapisz".
+  // Reflex: tabela rekordów czytana z chmury (gry2.scores), zapis do chmury,
+  // brak zapisu/odczytu z localStorage. Plus auto-uzupełnienie imienia i auto-zapis.
+  let reflexCache = {}; // mode -> level -> [{name, score, time, errors, date}]
   function initReflex() {
     const btn = document.getElementById('save-record-btn');
     const input = document.getElementById('player-name-input');
     const section = document.getElementById('save-section');
     if (!btn || !input || !section) return; // to nie strona reflex
+    if (typeof window.loadRecords !== 'function') return; // brak leaderboardu
+
+    const subgame = reflexSubgame();
+    const lower = !!REFLEX_TIME[subgame];
+
+    // Odczyt rekordów wyłącznie z chmury (podmiana źródła danych gry).
+    window.loadRecords = function () { return reflexCache; };
+    // Koniec zapisu lokalnego.
+    window.saveRecordsToStorage = function () { /* no-op: rekordy trzymamy w chmurze */ };
+
+    // Każdy wpis rekordu zalogowanego gracza leci do chmury (per poziom + total).
+    const origAdd = window.addRecord;
+    if (typeof origAdd === 'function') {
+      window.addRecord = function (mode, levelKey, name, value, errors) {
+        origAdd.apply(this, arguments);
+        try {
+          if (!ready || !currentUser) return;
+          const me = String(GryAuth.displayName() || '').trim().toLowerCase();
+          if (String(name || '').trim().toLowerCase() !== me) return;
+          const v = Number(value);
+          if (!isFinite(v)) return;
+          const dk = 'radd|' + subgame + '|' + mode + '|' + levelKey + '|' + v;
+          if (lastSubmitted[dk]) return;
+          lastSubmitted[dk] = 1;
+          GryScores.submit('reflex', v, {
+            subgame: subgame, mode: mode, level: levelKey,
+            errors: (errors != null ? errors : null), lowerIsBetter: lower,
+          });
+        } catch (e) { /* noop */ }
+      };
+    }
+
+    // Pobierz wszystkie rekordy tej podgry z chmury i przebuduj cache.
+    async function refreshReflexCache() {
+      if (!ready || !currentUser || !client) { reflexCache = {}; return; }
+      try {
+        const { data, error } = await client.from('scores')
+          .select('display_name,score,time_seconds,errors,mode,level,created_at')
+          .eq('game', 'reflex').eq('subgame', subgame).limit(3000);
+        if (error) return;
+        const cache = {};
+        for (const r of (data || [])) {
+          const mode = r.mode || 'adult';
+          const lvl = r.level || 'total';
+          const v = r.score != null ? Number(r.score) : (r.time_seconds != null ? Number(r.time_seconds) : null);
+          if (v == null || !isFinite(v)) continue;
+          (cache[mode] = cache[mode] || {});
+          (cache[mode][lvl] = cache[mode][lvl] || []);
+          const date = r.created_at ? new Date(r.created_at).toLocaleDateString('pl-PL') : '';
+          cache[mode][lvl].push({ name: r.display_name || '—', score: v, time: v, errors: (r.errors != null ? r.errors : 0), date: date });
+        }
+        for (const mode of Object.keys(cache))
+          for (const lvl of Object.keys(cache[mode]))
+            cache[mode][lvl].sort((a, b) => lower ? (a.score - b.score) : (b.score - a.score));
+        reflexCache = cache;
+        rerenderRecordsIfOpen();
+      } catch (e) { /* noop */ }
+    }
+
+    // Odśwież widoczną tabelę rekordów po zaciągnięciu danych.
+    function rerenderRecordsIfOpen() {
+      const rv = document.getElementById('records-view');
+      if (!rv || rv.classList.contains('hidden')) return;
+      const modeTab = document.querySelector('.records-mode-tab.bg-blue-600');
+      const mode = modeTab ? modeTab.dataset.mode : null;
+      if (mode && typeof window.buildPlayerFilter === 'function') { try { window.buildPlayerFilter(mode); } catch (e) { /* noop */ } }
+      const lvlTab = document.querySelector('.records-level-tab.bg-green-600');
+      if (lvlTab) lvlTab.click(); // ponowny render z aktualnego cache
+    }
+
+    // Odśwież cache przy każdym otwarciu tabeli rekordów.
+    const origShow = window.showRecordsView;
+    if (typeof origShow === 'function') {
+      window.showRecordsView = function () { origShow.apply(this, arguments); refreshReflexCache(); };
+    }
+
+    // Auto-uzupełnienie imienia + auto-zapis (bez klikania „Zapisz").
     const tryAuto = () => {
-      if (section.classList.contains('hidden')) return; // ekran końcowy niewidoczny
-      if (!currentUser) return;                         // gość -> ręczny zapis
-      if (btn.disabled) return;                         // już zapisano w tym cyklu
+      if (section.classList.contains('hidden')) return;
+      if (!currentUser) return;           // gość -> ręcznie
+      if (btn.disabled) return;           // już zapisano w tym cyklu
       const name = GryAuth.displayName();
-      if (name) {
-        input.value = name;
-        try { localStorage.setItem('reflexLastName', name); } catch (e) { /* noop */ }
-      }
-      btn.click(); // lokalny zapis + (przez mostek localStorage) zapis w chmurze
+      if (name) input.value = name;
+      btn.click();                        // -> savePlayerRecord -> addRecord -> chmura
     };
     new MutationObserver(tryAuto).observe(section, { attributes: true, attributeFilter: ['class'] });
-    GryAuth.onChange(() => tryAuto()); // gdy zaloguje się już na ekranie końcowym
+    GryAuth.onChange(() => { tryAuto(); refreshReflexCache(); });
+    refreshReflexCache();
     tryAuto();
   }
 

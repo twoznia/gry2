@@ -60,17 +60,29 @@ automatycznie (rejestr `WATCH` w `auth.js`):
 | soltaire | `solitaire_piatnik_best` | niższy (czas) |
 | memo | `memo-rec-*` | niższy (czas) |
 
-## Reflex (leaderboard z imieniem) — obsłużone automatycznie
+## Reflex (leaderboard z imieniem) — pełna chmura
 
-Wszystkie 11 wariantów reflex jest zintegrowanych bez zmian w ich kodzie:
-- **Auto-uzupełnienie imienia**: na ekranie końcowym pole imienia dostaje nazwę
-  zalogowanego gracza, a przycisk „Zapisz" jest klikany automatycznie.
-- **Chmura**: `auth.js` obserwuje zapis `reflex…Records`, wyławia wynik `total`
-  zalogowanego gracza i wysyła jako `game='reflex', subgame=<wariant>, level='total'`.
-- Gość gra jak dotąd — ręczne wpisanie imienia, tylko zapis lokalny.
+Wszystkie 11 wariantów reflex czyta i zapisuje rekordy **wyłącznie z Supabase**
+(bez localStorage), bez zmian w kodzie gier. `auth.js` podmienia globalne funkcje gry:
+- `loadRecords()` → dane z `gry2.scores` (odczyt z chmury),
+- `saveRecordsToStorage()` → no-op (koniec zapisu lokalnego),
+- `addRecord()` → wysyła rekord zalogowanego (per poziom + total) do chmury.
+- Ekran końcowy: imię auto-uzupełnia się nazwą gracza i zapis jest automatyczny.
+- Tabela rekordów odświeża się z chmury przy każdym otwarciu.
+- Warianty na czas (`kolory, kolory2, liczby, litery`) używają `lower_is_better`.
+- Gość: brak dostępu do rekordów w chmurze (RLS) — tabela pusta.
 
-## Do rozszerzenia (na razie tylko zapis lokalny)
+## Gry z rekordem liczbowym — odczyt i zapis z chmury
 
-- **binairo, calcudoku, nonogram, piramidy, sudoku** — `RECORDS_KEY` = rekordy
-  czasowe per-poziom (obiekty). Aby zsynchronizować, wstaw w miejscu zapisu rekordu
-  `GryScores.submit('<gra>', czas, { level: poziom, lowerIsBetter: true })`.
+Dla gier z `WATCH` (snake, riverraid, obrona, rybak, imuno, jumper, ptak, soltaire):
+`auth.js` przy zalogowaniu zaciąga najlepszy wynik z chmury do localStorage
+(`syncNumericFromCloud`), więc wyświetlany rekord pochodzi z Supabase (na bieżącej
+stronie po odświeżeniu, potem na żywo). Zapis nowych rekordów leci do chmury na bieżąco.
+
+## Do zrobienia (wciąż lokalnie)
+
+- **memo** — odczyt z chmury pominięty (dynamiczne klucze `memo-rec-*`); zapis działa.
+- **binairo, calcudoku, nonogram, piramidy, sudoku** — rekordy czasowe per-poziom.
+  Część gier jest owinięta w IIFE, więc nie da się ich podmienić z zewnątrz — wymagają
+  edycji kodu gry: `GryScores.submit('<gra>', czas, { level, lowerIsBetter: true })`
+  przy zapisie i odczytu z `GryScores.leaderboard(...)` przy renderze tabeli.
