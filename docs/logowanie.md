@@ -79,10 +79,20 @@ Dla gier z `WATCH` (snake, riverraid, obrona, rybak, imuno, jumper, ptak, soltai
 (`syncNumericFromCloud`), więc wyświetlany rekord pochodzi z Supabase (na bieżącej
 stronie po odświeżeniu, potem na żywo). Zapis nowych rekordów leci do chmury na bieżąco.
 
-## Do zrobienia (wciąż lokalnie)
+## Gry z rekordami JSON per-poziom — odczyt i zapis z chmury
 
-- **memo** — odczyt z chmury pominięty (dynamiczne klucze `memo-rec-*`); zapis działa.
-- **binairo, calcudoku, nonogram, piramidy, sudoku** — rekordy czasowe per-poziom.
-  Część gier jest owinięta w IIFE, więc nie da się ich podmienić z zewnątrz — wymagają
-  edycji kodu gry: `GryScores.submit('<gra>', czas, { level, lowerIsBetter: true })`
-  przy zapisie i odczytu z `GryScores.leaderboard(...)` przy renderze tabeli.
+Dla **binairo, calcudoku, nonogram, piramidy, sudoku** (rekordy `{poziom: [{name,time,...}]}`):
+`auth.js` wykrywa nowo dodany wpis (różnicowo) i wysyła go do chmury jako rekord
+zalogowanego (czas, `lower_is_better`), a przy zalogowaniu odtwarza tabelę z chmury
+(`syncJsonFromCloud`) — filtrując po bieżącym użytkowniku. Cały wpis trzymany jest w `meta`.
+
+## Klucze dynamiczne (prefiks) — odczyt i zapis z chmury
+
+`memo` (`memo-rec-*`), `anatomia` (`anatomia_best_*`), `auta` (`autoslalom_hi_*`),
+`kulki` (`lines_high_*`) — obsłużone przez `WATCH` (prefiks). Zapis na bieżąco,
+odczyt przez `syncNumericFromCloud` odtwarza każdy klucz z chmury.
+
+## Utrzymanie 20 najlepszych
+
+Trigger `gry2.prune_scores` po każdym wstawieniu zostawia **20 najlepszych** wyników
+użytkownika w obrębie `(game, subgame, mode, level)` i usuwa gorsze (poza 20. miejscem).
