@@ -89,8 +89,17 @@ zalogowanego (czas, `lower_is_better`), a przy zalogowaniu odtwarza tabelę z ch
 ## Klucze dynamiczne (prefiks) — odczyt i zapis z chmury
 
 `memo` (`memo-rec-*`), `anatomia` (`anatomia_best_*`), `auta` (`autoslalom_hi_*`),
-`kulki` (`lines_high_*`) — obsłużone przez `WATCH` (prefiks). Zapis na bieżąco,
-odczyt przez `syncNumericFromCloud` odtwarza każdy klucz z chmury.
+`kulki` (`lines_high_*`), `saper` (`saper_best_*`, czas), `mat-jaja` (`matjaja_best_*`)
+— obsłużone przez `WATCH` (prefiks). Zapis na bieżąco, odczyt przez
+`syncNumericFromCloud` odtwarza każdy klucz z chmury.
+
+## mahjong — leaderboard tablicowy
+
+`mahjong_leaderboard_v2_<styl>` to tablica wpisów (niższy `score` lepszy).
+`auth.js` wysyła nowy wpis różnicowo (`subgame=styl`, metryka w `time_seconds`,
+pełny wpis wraz z **karami** w `meta`) i odtwarza tabelę z chmury
+(`syncMahjongFromCloud`). Kary są zachowane i wyświetlane z `meta`. Schemat
+tabeli nie wymagał zmian — `meta` (jsonb) mieści kary/`elapsedSeconds`.
 
 ## Utrzymanie 20 najlepszych
 

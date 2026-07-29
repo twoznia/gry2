@@ -31,7 +31,8 @@
             clearInterval(timerInterval);
             secondsElapsed = 0;
             updateTimerDisplay();
-            
+            updateBestDisplay();
+
             const difficulty = difficultySelect.value;
             currentConfig = config[difficulty];
             
@@ -257,6 +258,7 @@
 
             if (isWin) {
                 faceBtn.innerText = '😎';
+                saveBestTime();
                 minesLeft = 0; // Flag remaining implicitly
                 updateMinesDisplay();
                 // Flag all remaining mines visually
@@ -288,6 +290,24 @@
                     deathCell.element.classList.add('mine'); 
                 }
             }
+        }
+
+        // Rekord: najlepszy (najniższy) czas per poziom trudności. Klucz obserwuje
+        // shared/auth.js -> zapis/odczyt w Supabase dla zalogowanych.
+        function bestKey() { return 'saper_best_' + difficultySelect.value; }
+        function saveBestTime() {
+            const key = bestKey();
+            const prev = parseInt(localStorage.getItem(key) || '0', 10);
+            if (!prev || secondsElapsed < prev) {
+                localStorage.setItem(key, String(secondsElapsed));
+            }
+            updateBestDisplay();
+        }
+        function updateBestDisplay() {
+            const el = document.getElementById('best-display');
+            if (!el) return;
+            const v = parseInt(localStorage.getItem(bestKey()) || '0', 10);
+            el.textContent = '🏆 Najlepszy czas: ' + (v ? v + ' s' : '—');
         }
 
         function startTimer() {

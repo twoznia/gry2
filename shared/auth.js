@@ -199,7 +199,11 @@
     { game: 'anatomia',  prefix: 'anatomia_best_' },
     { game: 'auta',      prefix: 'autoslalom_hi_' },
     { game: 'kulki',     prefix: 'lines_high_' },
+    { game: 'saper',     prefix: 'saper_best_', lowerIsBetter: true },
+    { game: 'mat-jaja',  prefix: 'matjaja_best_' },
   ];
+  // mahjong: leaderboard jako TABLICA wpisów pod kluczem per-styl (niższy wynik lepszy).
+  const MAHJONG_PREFIX = 'mahjong_leaderboard_v2_';
   // Gry z rekordami jako JSON per-poziom: klucz localStorage -> nazwa gry.
   // Struktura: { <poziom>: [ { name, time, ...pola }, ... ] } (czas, niższy lepszy).
   const JSON_RECORDS = {
@@ -220,6 +224,7 @@
 
   function handleWrite(key, rawValue) {
     if (JSON_RECORDS[key]) { submitJsonRecords(key, rawValue); return; }
+    if (key.indexOf(MAHJONG_PREFIX) === 0) { submitMahjong(key, rawValue); return; }
     const m = matchWatch(key);
     if (!m) return;
     const num = parseFloat(rawValue);
@@ -255,6 +260,57 @@
     }
   }
 
+  // mahjong: leaderboard to TABLICA wpisów pod kluczem per-styl. Wykryj nowy wpis
+  // i wyślij do chmury (niższy score lepszy). Kary/czas trzymamy w meta.
+  function submitMahjong(key, rawValue) {
+    const subgame = key.slice(MAHJONG_PREFIX.length) || 'default';
+    let next; try { next = JSON.parse(rawValue); } catch (e) { return; }
+    if (!Array.isArray(next)) return;
+    const prev = (function () { try { const p = JSON.parse(prevJson[key] || '[]'); return Array.isArray(p) ? p : []; } catch (e) { return []; } })();
+    prevJson[key] = rawValue;
+    if (!ready || !currentUser) return; // gość -> bez zapisu
+    const sig = (e) => JSON.stringify([e && e.name, e && e.score, e && e.elapsedSeconds, e && e.date]);
+    const oldSigs = new Set(prev.map(sig));
+    for (const entry of next) {
+      if (!entry || oldSigs.has(sig(entry))) continue;
+      const s = Number(entry.score);
+      if (!isFinite(s)) continue;
+      const dk = 'mahjong|' + subgame + '|' + sig(entry);
+      if (lastSubmitted[dk]) continue;
+      lastSubmitted[dk] = 1;
+      // niższy score = lepszy -> metryka trafia do time_seconds; pełny wpis (score,
+      // kary, czas, powerupsUsed) trzymamy w meta do wyświetlenia.
+      GryScores.submit('mahjong', s, { subgame: subgame, lowerIsBetter: true, meta: entry });
+    }
+  }
+
+  // Odtwarza leaderboardy mahjonga z chmury (tylko bieżący użytkownik), per styl.
+  async function syncMahjongFromCloud() {
+    if (!ready || !currentUser || !client) return;
+    try {
+      const { data, error } = await client.from('scores')
+        .select('subgame,score,time_seconds,meta,created_at')
+        .eq('game', 'mahjong').eq('user_id', currentUser.id).limit(2000);
+      if (error || !data || !data.length) return;
+      const byStyle = {};
+      for (const row of data) {
+        const st = row.subgame || 'default';
+        (byStyle[st] = byStyle[st] || []);
+        const entry = (row.meta && typeof row.meta === 'object' && Object.keys(row.meta).length)
+          ? row.meta
+          : { name: 'Gracz', score: Number(row.time_seconds), elapsedSeconds: row.time_seconds };
+        byStyle[st].push(entry);
+      }
+      for (const st of Object.keys(byStyle)) {
+        byStyle[st].sort((a, b) => Number(a.score) - Number(b.score));
+        const key = MAHJONG_PREFIX + st;
+        const json = JSON.stringify(byStyle[st].slice(0, 100));
+        if (rawSetItem) rawSetItem.call(localStorage, key, json);
+        prevJson[key] = json;
+      }
+    } catch (e) { /* noop */ }
+  }
+
   // Wariant (podgra) reflex z URL, np. 'znikanie'.
   function reflexSubgame() {
     const parts = location.pathname.split('/').filter(Boolean);
@@ -282,13 +338,19 @@
     } catch (e) { /* noop */ }
   }
   installWatch();
-  // Zapamiętaj bieżący stan rekordów JSON, by pierwszy zapis nie wysłał cudzych wpisów.
+  // Zapamiętaj bieżący stan rekordów JSON/mahjong, by pierwszy zapis nie wysłał cudzych wpisów.
   for (const key of Object.keys(JSON_RECORDS)) {
     try { prevJson[key] = localStorage.getItem(key) || '{}'; } catch (e) { /* noop */ }
   }
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.indexOf(MAHJONG_PREFIX) === 0) prevJson[k] = localStorage.getItem(k) || '[]';
+    }
+  } catch (e) { /* noop */ }
 
-  // Synchronizacja odczytu rekordów z chmury (liczbowe + JSON).
-  function cloudSync() { syncNumericFromCloud(); syncJsonFromCloud(); }
+  // Synchronizacja odczytu rekordów z chmury (liczbowe + JSON + mahjong).
+  function cloudSync() { syncNumericFromCloud(); syncJsonFromCloud(); syncMahjongFromCloud(); }
 
   // Zaciąga najlepszy wynik gracza z chmury do localStorage (odczyt rekordów z Supabase).
   // Gra czyta rekord z localStorage przy starcie — po zsynchronizowaniu pokaże wartość z chmury
