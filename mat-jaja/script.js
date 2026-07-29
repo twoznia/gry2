@@ -255,7 +255,15 @@
                 jajkaY = -50; generujZadanie();
             }
             updateGwiazdki();
-            if (ruchy <= 0 || punkty >= 20 || punkty <= -5) menuEtap = "koniec";
+            if (ruchy <= 0 || punkty >= 20 || punkty <= -5) { menuEtap = "koniec"; saveBest(); }
+        }
+
+        // Rekord: najlepszy wynik per poziom (wiek + tryb). Klucz obserwuje
+        // shared/auth.js -> zapis/odczyt w Supabase dla zalogowanych.
+        function bestKey() { return 'matjaja_best_' + wybranyWiek + '_' + wybranyTryb; }
+        function getBest() { return parseInt(localStorage.getItem(bestKey()) || '0', 10) || 0; }
+        function saveBest() {
+            if (punkty > getBest()) localStorage.setItem(bestKey(), String(punkty));
         }
 
         /* ---- drawing helpers ---- */
@@ -470,6 +478,8 @@
                 ctx.fillText(t.finalScore(punkty), W/2, H*0.43);
                 ctx.fillText(t.correct(poprawne), W/2, H*0.53);
                 ctx.fillText(t.wrong(bledne), W/2, H*0.63);
+                ctx.fillStyle = "#f1c40f";
+                ctx.fillText('🏆 ' + getBest(), W/2, H*0.70);
                 ctx.font = `bold ${Math.min(20, W*0.025)}px 'Segoe UI', Arial`;
                 ctx.fillStyle = "#aad4f5";
                 ctx.fillText(t.tapContinue, W/2, H*0.77);
