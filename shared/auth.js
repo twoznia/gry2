@@ -466,12 +466,15 @@
   function injectStyles() {
     if (document.getElementById('gry-auth-styles')) return;
     const css = `
-    #gry-auth-widget{position:fixed;top:10px;right:10px;z-index:2147483000;display:flex;gap:6px;align-items:center;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:13px}
-    #gry-auth-widget .gry-chip{background:rgba(30,41,59,.92);color:#f8fafc;border:1px solid #334155;border-radius:9999px;padding:5px 12px;display:flex;gap:8px;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.35);backdrop-filter:blur(4px)}
-    #gry-auth-widget button{cursor:pointer;border:none;border-radius:9999px;padding:5px 12px;font-weight:600;font-size:13px}
-    #gry-auth-widget .gry-login{background:#38bdf8;color:#0f172a}
-    #gry-auth-widget .gry-logout{background:transparent;color:#94a3b8;border:1px solid #334155;padding:4px 10px}
-    #gry-auth-widget .gry-user{max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    #gry-auth-widget{position:fixed;top:8px;right:8px;z-index:2147483000;display:flex;gap:6px;align-items:flex-start;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:13px}
+    #gry-auth-widget button{cursor:pointer;border:none;font-weight:600;font-size:13px}
+    #gry-auth-widget .gry-icon-btn{width:30px;height:30px;border-radius:9999px;display:flex;align-items:center;justify-content:center;background:rgba(30,41,59,.85);color:#f8fafc;border:1px solid #334155;box-shadow:0 2px 8px rgba(0,0,0,.35);backdrop-filter:blur(4px);font-size:14px;padding:0;line-height:1}
+    #gry-auth-widget .gry-avatar{background:#38bdf8;color:#0f172a;font-weight:800;text-transform:uppercase}
+    #gry-auth-widget .gry-login{background:#38bdf8;color:#0f172a;border-radius:9999px;padding:6px 12px;box-shadow:0 2px 8px rgba(0,0,0,.35);backdrop-filter:blur(4px)}
+    #gry-auth-widget .gry-wrap{position:relative}
+    #gry-auth-widget .gry-menu{position:absolute;top:36px;right:0;background:#1e293b;border:1px solid #334155;border-radius:12px;padding:10px;box-shadow:0 12px 34px rgba(0,0,0,.55);min-width:150px}
+    #gry-auth-widget .gry-menu .gry-uname{color:#f8fafc;font-size:12px;font-weight:600;margin-bottom:8px;word-break:break-word}
+    #gry-auth-widget .gry-menu .gry-logout{width:100%;background:#0f172a;color:#94a3b8;border:1px solid #334155;border-radius:8px;padding:7px 10px}
     #gry-auth-overlay{position:fixed;inset:0;z-index:2147483001;background:rgba(2,6,23,.7);display:flex;align-items:center;justify-content:center;padding:16px;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
     #gry-auth-overlay .gry-modal{background:#1e293b;color:#f8fafc;border:1px solid #334155;border-radius:16px;width:100%;max-width:360px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
     #gry-auth-overlay h2{margin:0 0 4px;font-size:20px;font-weight:700}
@@ -506,6 +509,7 @@
     document.head.appendChild(st);
   }
 
+  // Kompaktowy widget: małe ikony w narożniku (bez nachodzenia na UI gier).
   function renderWidget() {
     if (!document.body) return;
     let w = document.getElementById('gry-auth-widget');
@@ -514,35 +518,47 @@
       w.id = 'gry-auth-widget';
       document.body.appendChild(w);
     }
+    w.innerHTML = '';
+    const rb = recordsButton(); if (rb) w.appendChild(rb);
+
     if (currentUser) {
-      w.innerHTML = '';
-      const chip = document.createElement('div');
-      chip.className = 'gry-chip';
-      const name = document.createElement('span');
-      name.className = 'gry-user';
-      name.textContent = '👤 ' + displayName(currentUser);
+      // Awatar (inicjał) -> po kliknięciu małe menu z nazwą i „Wyloguj".
+      const wrap = document.createElement('div');
+      wrap.className = 'gry-wrap';
+      const av = document.createElement('button');
+      av.className = 'gry-icon-btn gry-avatar';
+      const nm = displayName(currentUser) || '?';
+      av.textContent = nm.charAt(0) || '👤';
+      av.title = nm;
+      const menu = document.createElement('div');
+      menu.className = 'gry-menu';
+      menu.style.display = 'none';
+      menu.innerHTML = '<div class="gry-uname">👤 ' + nm + '</div>';
       const out = document.createElement('button');
       out.className = 'gry-logout';
       out.textContent = 'Wyloguj';
       out.onclick = () => GryAuth.signOut();
-      chip.appendChild(name);
-      chip.appendChild(out);
-      const rb = recordsButton(); if (rb) w.appendChild(rb);
-      w.appendChild(chip);
+      menu.appendChild(out);
+      av.onclick = (e) => {
+        e.stopPropagation();
+        const open = menu.style.display !== 'none';
+        menu.style.display = open ? 'none' : 'block';
+        if (!open) {
+          const close = (ev) => { if (!wrap.contains(ev.target)) { menu.style.display = 'none'; document.removeEventListener('click', close); } };
+          setTimeout(() => document.addEventListener('click', close), 0);
+        }
+      };
+      wrap.appendChild(av);
+      wrap.appendChild(menu);
+      w.appendChild(wrap);
     } else {
-      w.innerHTML = '';
-      const chip = document.createElement('div');
-      chip.className = 'gry-chip';
-      const label = document.createElement('span');
-      label.textContent = GryAuth.isGuest() ? '🎮 Gość' : 'Niezalogowany';
+      // Niezalogowany/gość: kompaktowy przycisk „Zaloguj".
       const login = document.createElement('button');
       login.className = 'gry-login';
       login.textContent = 'Zaloguj';
+      login.title = GryAuth.isGuest() ? 'Grasz jako gość — zaloguj się, aby zapisywać rekordy' : 'Zaloguj się';
       login.onclick = () => openModal('signin');
-      chip.appendChild(label);
-      chip.appendChild(login);
-      const rb = recordsButton(); if (rb) w.appendChild(rb);
-      w.appendChild(chip);
+      w.appendChild(login);
     }
   }
 
@@ -553,7 +569,7 @@
     const meta = GAME_META[gid];
     if (meta && meta.ownUi) return null;
     const b = document.createElement('button');
-    b.className = 'gry-records';
+    b.className = 'gry-icon-btn';
     b.textContent = '🏆';
     b.title = 'Rekordy (20 najlepszych)';
     b.onclick = () => openRecordsPanel(gid);
