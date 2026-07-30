@@ -206,6 +206,40 @@
   ];
   // mahjong: leaderboard jako TABLICA wpisów pod kluczem per-styl (niższy wynik lepszy).
   const MAHJONG_PREFIX = 'mahjong_leaderboard_v2_';
+
+  // Rejestr gier dla wspólnego panelu „Rekordy" (20 najlepszych z chmury).
+  // lower: niższy wynik lepszy; unit:'time' -> formatuj jako czas. ownUi: gra ma własną tabelę.
+  const GAME_META = {
+    snake: { label: 'Snake' }, riverraid: { label: 'River Raid' }, obrona: { label: 'Obrona' },
+    rybak: { label: 'Rybak' }, imuno: { label: 'Imuno' }, jumper: { label: 'Jumper' },
+    ptak: { label: 'Ptak' }, kulki: { label: 'Kulki' }, anatomia: { label: 'Anatomia' },
+    auta: { label: 'Auta' }, 'mat-jaja': { label: 'Mat-Jaja' },
+    soltaire: { label: 'Pasjans', lower: true, unit: 'time' },
+    memo: { label: 'Memo', lower: true, unit: 'time' },
+    saper: { label: 'Saper', lower: true, unit: 'time' },
+    binairo: { label: 'Binairo', lower: true, unit: 'time' },
+    calcudoku: { label: 'Calcudoku', lower: true, unit: 'time' },
+    nonogram: { label: 'Nonogram', lower: true, unit: 'time' },
+    piramidy: { label: 'Piramidy', lower: true, unit: 'time' },
+    sudoku: { label: 'Sudoku', lower: true, unit: 'time' },
+    mahjong: { label: 'Mahjong', lower: true },
+    reflex: { label: 'Reflex', ownUi: true },
+  };
+  // Identyfikator gry z URL (pierwszy segment ścieżki = folder gry).
+  function currentGameId() {
+    const seg = location.pathname.split('/').filter(Boolean);
+    for (const s of seg) { if (GAME_META[s]) return s; }
+    return null;
+  }
+  function formatVal(v, meta) {
+    if (v == null) return '—';
+    const n = Number(v);
+    if (meta && meta.unit === 'time') {
+      const s = Math.round(n);
+      return s >= 60 ? Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0') : s + ' s';
+    }
+    return String(n);
+  }
   // Gry z rekordami jako JSON per-poziom: klucz localStorage -> nazwa gry.
   // Struktura: { <poziom>: [ { name, time, ...pola }, ... ] } (czas, niższy lepszy).
   const JSON_RECORDS = {
@@ -451,6 +485,13 @@
     #gry-auth-overlay .gry-err{color:#ef4444;font-size:13px;margin:8px 0 0;text-align:center}
     #gry-auth-overlay .gry-ok{color:#22c55e;font-size:13px;margin:8px 0 0;text-align:center}
     #gry-auth-overlay .gry-close{float:right;background:none;border:none;color:#94a3b8;font-size:20px;cursor:pointer;line-height:1;margin:-6px -6px 0 0}
+    #gry-auth-widget .gry-records{background:#1e293b;color:#f8fafc;border:1px solid #334155;padding:5px 10px}
+    #gry-auth-overlay .gry-rec-body{max-height:60vh;overflow-y:auto;margin-top:4px}
+    #gry-auth-overlay .gry-rec-table{width:100%;border-collapse:collapse;font-size:13px}
+    #gry-auth-overlay .gry-rec-table th{color:#94a3b8;text-transform:uppercase;font-size:10px;text-align:left;padding:4px 6px}
+    #gry-auth-overlay .gry-rec-table td{padding:5px 6px;border-top:1px solid #33415580}
+    #gry-auth-overlay .gry-rec-val{color:#22c55e;font-weight:700;font-variant-numeric:tabular-nums}
+    #gry-auth-overlay .gry-rec-date{color:#64748b;font-size:11px;text-align:right}
     `;
     const st = document.createElement('style');
     st.id = 'gry-auth-styles';
@@ -479,6 +520,7 @@
       out.onclick = () => GryAuth.signOut();
       chip.appendChild(name);
       chip.appendChild(out);
+      const rb = recordsButton(); if (rb) w.appendChild(rb);
       w.appendChild(chip);
     } else {
       w.innerHTML = '';
@@ -492,8 +534,23 @@
       login.onclick = () => openModal('signin');
       chip.appendChild(label);
       chip.appendChild(login);
+      const rb = recordsButton(); if (rb) w.appendChild(rb);
       w.appendChild(chip);
     }
+  }
+
+  // Przycisk „🏆 Rekordy" w widgecie — tylko na stronach gier bez własnej tabeli.
+  function recordsButton() {
+    const gid = currentGameId();
+    if (!gid) return null;
+    const meta = GAME_META[gid];
+    if (meta && meta.ownUi) return null;
+    const b = document.createElement('button');
+    b.className = 'gry-records';
+    b.textContent = '🏆';
+    b.title = 'Rekordy (20 najlepszych)';
+    b.onclick = () => openRecordsPanel(gid);
+    return b;
   }
 
   function openModal(mode) {
@@ -507,6 +564,52 @@
     wireModal(ov, mode);
     ov.addEventListener('click', (e) => { if (e.target === ov) ov.remove(); });
   }
+
+  // Wspólny panel „Rekordy" — 20 najlepszych wyników bieżącego gracza dla danej gry.
+  async function openRecordsPanel(gameId) {
+    injectStyles();
+    const meta = GAME_META[gameId] || { label: gameId };
+    let ov = document.getElementById('gry-auth-overlay');
+    if (ov) ov.remove();
+    ov = document.createElement('div');
+    ov.id = 'gry-auth-overlay';
+    ov.innerHTML = '<div class="gry-modal"><button class="gry-close" data-act="close">&times;</button>'
+      + '<h2>🏆 Rekordy — ' + (meta.label || gameId) + '</h2>'
+      + '<p class="sub">Twoje 20 najlepszych wyników</p>'
+      + '<div class="gry-rec-body">Ładowanie…</div></div>';
+    document.body.appendChild(ov);
+    ov.querySelector('[data-act="close"]').onclick = () => ov.remove();
+    ov.addEventListener('click', (e) => { if (e.target === ov) ov.remove(); });
+    const body = ov.querySelector('.gry-rec-body');
+    if (!currentUser) {
+      body.innerHTML = '<p style="color:#94a3b8;text-align:center;margin:8px 0 12px">Zaloguj się, aby zobaczyć swoje rekordy.</p>';
+      const b = document.createElement('button'); b.className = 'gry-primary'; b.textContent = 'Zaloguj';
+      b.onclick = () => openModal('signin'); body.appendChild(b); return;
+    }
+    try {
+      const col = meta.lower ? 'time_seconds' : 'score';
+      const { data, error } = await client.from('scores')
+        .select('score,time_seconds,mode,level,subgame,created_at')
+        .eq('game', gameId).eq('user_id', currentUser.id)
+        .order(col, { ascending: !!meta.lower, nullsFirst: false }).limit(20);
+      if (error) { body.textContent = 'Nie udało się wczytać rekordów.'; return; }
+      if (!data || !data.length) { body.innerHTML = '<p style="color:#94a3b8;text-align:center">Brak rekordów — zagraj, aby zapisać wynik.</p>'; return; }
+      const ctx = (r) => [r.subgame, r.mode, r.level].filter(Boolean).join(' · ');
+      const anyCtx = data.some((r) => ctx(r));
+      const medals = ['🥇', '🥈', '🥉'];
+      let h = '<table class="gry-rec-table"><thead><tr><th>#</th>' + (anyCtx ? '<th>Poziom</th>' : '') + '<th>Wynik</th><th style="text-align:right">Data</th></tr></thead><tbody>';
+      data.forEach((r, i) => {
+        const val = meta.lower ? r.time_seconds : r.score;
+        const date = r.created_at ? new Date(r.created_at).toLocaleDateString('pl-PL') : '';
+        h += '<tr><td>' + (medals[i] || (i + 1) + '.') + '</td>'
+          + (anyCtx ? '<td>' + (ctx(r) || '—') + '</td>' : '')
+          + '<td class="gry-rec-val">' + formatVal(val, meta) + '</td>'
+          + '<td class="gry-rec-date">' + date + '</td></tr>';
+      });
+      body.innerHTML = h + '</tbody></table>';
+    } catch (e) { body.textContent = 'Błąd odczytu rekordów.'; }
+  }
+  GryScores.showRecords = openRecordsPanel;
 
   function renderModalHtml(mode) {
     const titles = { signin: 'Zaloguj się', signup: 'Utwórz konto', reset: 'Reset hasła' };
