@@ -335,6 +335,8 @@
         newGameBtn.addEventListener('click', initGame);
         faceBtn.addEventListener('click', initGame);
         difficultySelect.addEventListener('change', initGame);
+        // Po synchronizacji rekordów z chmury odśwież „Najlepszy czas".
+        window.addEventListener('gry:records-synced', updateBestDisplay);
 
         // Start initial game
         initGame();

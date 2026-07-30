@@ -205,21 +205,32 @@
       resetGame();
     }
 
-    function loadHighScore() {
+    function storedHigh() {
       const cfg = configs[difficulty];
       const saved = localStorage.getItem(cfg.storageKey);
-      const high = saved ? parseInt(saved) : 0;
-      document.getElementById('highscore-display').innerText = formatScore(high);
+      return saved ? parseInt(saved) : 0;
     }
 
+    // Wyświetla zapisany rekord (używane na starcie, przy zmianie poziomu i po
+    // synchronizacji z chmury przez shared/auth.js).
+    function loadHighScore() {
+      document.getElementById('highscore-display').innerText = formatScore(storedHigh());
+    }
+
+    // W trakcie gry pokazujemy „na żywo" większy z: zapisany rekord / bieżący wynik,
+    // ale NIE zapisujemy jeszcze rekordu (spójny zapis dopiero na koniec gry).
+    function updateLiveHigh() {
+      const shown = Math.max(storedHigh(), score);
+      document.getElementById('highscore-display').innerText = formatScore(shown);
+    }
+
+    // Zapis rekordu — wołany raz, na koniec gry (spójnie z innymi grami). Zapis do
+    // localStorage jest podchwytywany przez shared/auth.js i wysyłany do Supabase.
     function saveHighScore() {
-      const cfg = configs[difficulty];
-      const saved = localStorage.getItem(cfg.storageKey);
-      const currentHigh = saved ? parseInt(saved) : 0;
-      if (score > currentHigh) {
-        localStorage.setItem(cfg.storageKey, score);
-        document.getElementById('highscore-display').innerText = formatScore(score);
+      if (score > storedHigh()) {
+        localStorage.setItem(configs[difficulty].storageKey, score);
       }
+      loadHighScore();
     }
 
     function formatScore(num) {
@@ -479,7 +490,7 @@
       if (cfg.bonusPerMove > 0) {
         score += cfg.bonusPerMove;
         document.getElementById('score-display').innerText = formatScore(score);
-        saveHighScore();
+        updateLiveHigh();
       }
 
       const linesToClear = scanAllLines(cfg.minLine);
@@ -582,7 +593,7 @@
       document.getElementById('score-display').innerText = formatScore(score);
       document.getElementById('status-bar').innerText = `Ułożono linię z ${indices.length} kulek! Zdobywasz ${pointsScored} pkt.`;
 
-      saveHighScore();
+      updateLiveHigh();
 
       setTimeout(() => {
         indices.forEach(idx => {
@@ -643,6 +654,7 @@
 
     function triggerGameOver() {
       autoFinishing = false;
+      saveHighScore(); // spójny zapis rekordu: raz, na koniec gry (-> Supabase przez auth.js)
       playSound('gameover');
       document.getElementById('status-bar').innerText = 'Koniec Gry! Brak wolnych ruchów.';
       document.getElementById('modal-final-score').innerText = formatScore(score);
@@ -665,3 +677,7 @@
       }, 300);
     }
     window.finishGame = finishGame;
+
+    // Po synchronizacji rekordów z chmury (logowanie) odśwież wyświetlany rekord.
+    if (window.GryAuth && GryAuth.onRecordsSynced) GryAuth.onRecordsSynced(loadHighScore);
+    else window.addEventListener('gry:records-synced', loadHighScore);

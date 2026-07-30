@@ -75,6 +75,8 @@
 
     onReady(cb) { if (ready) cb(); else readyCbs.push(cb); },
     onChange(cb) { changeCbs.push(cb); if (ready) cb(currentUser); },
+    // Odpala się po każdej synchronizacji rekordów z chmury (gra może odświeżyć wyświetlanie).
+    onRecordsSynced(cb) { recordsSyncedCbs.push(cb); },
 
     setGuest(v) {
       try { localStorage.setItem(GUEST_KEY, v ? '1' : '0'); } catch (e) { /* noop */ }
@@ -350,7 +352,17 @@
   } catch (e) { /* noop */ }
 
   // Synchronizacja odczytu rekordów z chmury (liczbowe + JSON + mahjong).
-  function cloudSync() { syncNumericFromCloud(); syncJsonFromCloud(); syncMahjongFromCloud(); }
+  // Po zakończeniu emituje zdarzenie, by gry mogły odświeżyć wyświetlany rekord.
+  const recordsSyncedCbs = [];
+  function fireRecordsSynced() {
+    recordsSyncedCbs.forEach((cb) => { try { cb(); } catch (e) { /* noop */ } });
+    try { window.dispatchEvent(new Event('gry:records-synced')); } catch (e) { /* noop */ }
+  }
+  async function cloudSync() {
+    try { await Promise.all([syncNumericFromCloud(), syncJsonFromCloud(), syncMahjongFromCloud()]); }
+    catch (e) { /* noop */ }
+    fireRecordsSynced();
+  }
 
   // Zaciąga najlepszy wynik gracza z chmury do localStorage (odczyt rekordów z Supabase).
   // Gra czyta rekord z localStorage przy starcie — po zsynchronizowaniu pokaże wartość z chmury
