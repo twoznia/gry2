@@ -492,6 +492,13 @@
     #gry-auth-overlay .gry-rec-table td{padding:5px 6px;border-top:1px solid #33415580}
     #gry-auth-overlay .gry-rec-val{color:#22c55e;font-weight:700;font-variant-numeric:tabular-nums}
     #gry-auth-overlay .gry-rec-date{color:#64748b;font-size:11px;text-align:right}
+    #gry-auth-overlay .gry-rec-dim{margin:0 0 8px}
+    #gry-auth-overlay .gry-rec-dim .gry-rec-lbl{color:#64748b;font-size:10px;text-transform:uppercase;margin-bottom:3px}
+    #gry-auth-overlay .gry-rec-tabs{display:flex;flex-wrap:wrap;gap:5px}
+    #gry-auth-overlay .gry-rec-tab{background:#0f172a;color:#94a3b8;border:1px solid #334155;border-radius:9999px;padding:3px 11px;font-size:12px;font-weight:600;cursor:pointer}
+    #gry-auth-overlay .gry-rec-tab.active{background:#38bdf8;color:#0f172a;border-color:#38bdf8}
+    #gry-auth-overlay .gry-rec-me{color:#f8fafc}
+    #gry-auth-overlay .gry-rec-table tr.me td{background:#38bdf815}
     `;
     const st = document.createElement('style');
     st.id = 'gry-auth-styles';
@@ -565,7 +572,25 @@
     ov.addEventListener('click', (e) => { if (e.target === ov) ov.remove(); });
   }
 
-  // Wspólny panel „Rekordy" — 20 najlepszych wyników bieżącego gracza dla danej gry.
+  // Ładne etykiety wymiarów i wartości (jak w reflex).
+  const DIM_LABEL = { subgame: 'Wariant', mode: 'Tryb', level: 'Poziom' };
+  const VAL_LABEL = {
+    adult: 'Dorosły', child: 'Dziecko', easy: 'Łatwy', medium: 'Średni', normal: 'Normalny',
+    hard: 'Trudny', vhard: 'Bardzo trudny', extreme: 'Ekstremalny', wave: 'Fala', total: 'Łącznie',
+    level1: 'Poziom 1', level2: 'Poziom 2', level3: 'Poziom 3', level4: 'Poziom 4',
+  };
+  function labelVal(v) { return v === '' || v == null ? 'Ogólne' : (VAL_LABEL[v] || String(v)); }
+  const VAL_ORDER = ['', 'child', 'adult', 'easy', 'medium', 'normal', 'hard', 'vhard', 'extreme',
+    'level1', 'level2', 'level3', 'level4', 'total'];
+  function orderVals(vals) {
+    return vals.slice().sort((a, b) => {
+      const ia = VAL_ORDER.indexOf(a), ib = VAL_ORDER.indexOf(b);
+      if (ia !== -1 || ib !== -1) return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+      return String(a).localeCompare(String(b), 'pl');
+    });
+  }
+
+  // Wspólny panel „Rekordy" z zakładkami (wariant/tryb/poziom) — 20 najlepszych na kategorię.
   async function openRecordsPanel(gameId) {
     injectStyles();
     const meta = GAME_META[gameId] || { label: gameId };
@@ -586,28 +611,53 @@
       const b = document.createElement('button'); b.className = 'gry-primary'; b.textContent = 'Zaloguj';
       b.onclick = () => openModal('signin'); body.appendChild(b); return;
     }
+    let rows;
     try {
-      const col = meta.lower ? 'time_seconds' : 'score';
       const { data, error } = await client.from('scores')
         .select('score,time_seconds,mode,level,subgame,created_at')
-        .eq('game', gameId).eq('user_id', currentUser.id)
-        .order(col, { ascending: !!meta.lower, nullsFirst: false }).limit(20);
+        .eq('game', gameId).eq('user_id', currentUser.id).limit(1000);
       if (error) { body.textContent = 'Nie udało się wczytać rekordów.'; return; }
-      if (!data || !data.length) { body.innerHTML = '<p style="color:#94a3b8;text-align:center">Brak rekordów — zagraj, aby zapisać wynik.</p>'; return; }
-      const ctx = (r) => [r.subgame, r.mode, r.level].filter(Boolean).join(' · ');
-      const anyCtx = data.some((r) => ctx(r));
-      const medals = ['🥇', '🥈', '🥉'];
-      let h = '<table class="gry-rec-table"><thead><tr><th>#</th>' + (anyCtx ? '<th>Poziom</th>' : '') + '<th>Wynik</th><th style="text-align:right">Data</th></tr></thead><tbody>';
-      data.forEach((r, i) => {
-        const val = meta.lower ? r.time_seconds : r.score;
-        const date = r.created_at ? new Date(r.created_at).toLocaleDateString('pl-PL') : '';
-        h += '<tr><td>' + (medals[i] || (i + 1) + '.') + '</td>'
-          + (anyCtx ? '<td>' + (ctx(r) || '—') + '</td>' : '')
-          + '<td class="gry-rec-val">' + formatVal(val, meta) + '</td>'
-          + '<td class="gry-rec-date">' + date + '</td></tr>';
+      rows = data || [];
+    } catch (e) { body.textContent = 'Błąd odczytu rekordów.'; return; }
+    if (!rows.length) { body.innerHTML = '<p style="color:#94a3b8;text-align:center">Brak rekordów — zagraj, aby zapisać wynik.</p>'; return; }
+
+    // Wymiary z ≥2 różnymi wartościami stają się zakładkami (jak w reflex).
+    const dims = ['subgame', 'mode', 'level'];
+    const active = [], selected = {};
+    for (const d of dims) {
+      const vals = orderVals([...new Set(rows.map((r) => r[d] || ''))]);
+      if (vals.length >= 2) { active.push({ dim: d, vals }); selected[d] = vals[0]; }
+    }
+    const col = meta.lower ? 'time_seconds' : 'score';
+    const medals = ['🥇', '🥈', '🥉'];
+
+    function render() {
+      let h = '';
+      for (const a of active) {
+        h += '<div class="gry-rec-dim"><div class="gry-rec-lbl">' + DIM_LABEL[a.dim] + '</div><div class="gry-rec-tabs">'
+          + a.vals.map((v) => '<button class="gry-rec-tab' + (selected[a.dim] === v ? ' active' : '') + '" data-dim="' + a.dim + '" data-val="' + v + '">' + labelVal(v) + '</button>').join('')
+          + '</div></div>';
+      }
+      let list = rows.filter((r) => active.every((a) => (r[a.dim] || '') === selected[a.dim]));
+      list.sort((x, y) => meta.lower ? (x[col] - y[col]) : (y[col] - x[col]));
+      list = list.slice(0, 20);
+      if (!list.length) { h += '<p style="color:#94a3b8;text-align:center;padding:8px 0">Brak rekordów w tej kategorii.</p>'; }
+      else {
+        h += '<table class="gry-rec-table"><thead><tr><th>#</th><th>Wynik</th><th style="text-align:right">Data</th></tr></thead><tbody>';
+        list.forEach((r, i) => {
+          const date = r.created_at ? new Date(r.created_at).toLocaleDateString('pl-PL') : '';
+          h += '<tr><td>' + (medals[i] || (i + 1) + '.') + '</td>'
+            + '<td class="gry-rec-val">' + formatVal(r[col], meta) + '</td>'
+            + '<td class="gry-rec-date">' + date + '</td></tr>';
+        });
+        h += '</tbody></table>';
+      }
+      body.innerHTML = h;
+      body.querySelectorAll('.gry-rec-tab').forEach((btn) => {
+        btn.onclick = () => { selected[btn.dataset.dim] = btn.dataset.val; render(); };
       });
-      body.innerHTML = h + '</tbody></table>';
-    } catch (e) { body.textContent = 'Błąd odczytu rekordów.'; }
+    }
+    render();
   }
   GryScores.showRecords = openRecordsPanel;
 
