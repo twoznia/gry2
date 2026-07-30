@@ -74,6 +74,8 @@
         let koszykX = 0, jajkaY = -50, predkosc = 3;
         let menuEtap = "wiek";
         let wybranyWiek = 10, wybranyTryb = "losowo";
+        // Balans rozgrywki (grywalność): próg wygranej, przegranej i liczba ruchów.
+        const WIN_SCORE = 15, LOSE_SCORE = -6, MAX_RUCHY = 25;
         let zadanie = "", poprawnyWynik = 0, opcje = [];
         let gwiazdki = [], lastFeedback = null, feedbackTimer = 0;
         let chmury = [];
@@ -102,27 +104,27 @@
             if (tryb === "dodawanie") {
                 symbol = "+";
                 if (w == 6) { a = r(1, 9); b = r(1, 9); }
-                else if (w == 10) { a = r(10, 70); b = r(10, 99-a); }
-                else if (w == 14) { a = r(50, 400); b = r(50, 500-a); }
+                else if (w == 10) { a = r(10, 60); b = r(5, 90-a); }
+                else if (w == 14) { a = r(20, 120); b = r(10, 120); }
                 else { a = r(100, 800); b = r(100, 1000-a); }
                 wynik = a + b;
             } else if (tryb === "odejmowanie") {
                 symbol = "-";
                 if (w == 6) { b = r(1, 9); wynik = r(2, 18); a = b + wynik; }
-                else if (w == 10) { a = r(30, 100); b = r(10, a-5); }
-                else if (w == 14) { a = r(100, 500); b = r(50, a-20); }
+                else if (w == 10) { a = r(20, 90); b = r(5, a-5); }
+                else if (w == 14) { a = r(40, 180); b = r(10, a-10); }
                 else { a = r(400, 1000); b = r(100, a-50); }
                 wynik = a - b;
             } else if (tryb === "mnożenie") {
                 symbol = "×";
-                if (w == 10) { a = r(2, 10); b = r(2, 10); }
-                else if (w == 14) { a = r(5, 18); b = r(3, 15); }
+                if (w == 10) { a = r(2, 9); b = r(2, 9); }
+                else if (w == 14) { a = r(3, 12); b = r(2, 12); }
                 else { a = r(10, 32); b = r(5, 28); }
                 wynik = a * b;
             } else if (tryb === "dzielenie") {
                 symbol = "÷";
-                if (w == 10) { wynik = r(2, 10); b = r(2, 10); }
-                else if (w == 14) { wynik = r(5, 15); b = r(3, 12); }
+                if (w == 10) { wynik = r(2, 9); b = r(2, 9); }
+                else if (w == 14) { wynik = r(2, 12); b = r(2, 10); }
                 else { wynik = r(10, 35); b = r(5, 20); }
                 a = wynik * b;
             }
@@ -205,8 +207,8 @@
         }
 
         function resetGry() {
-            punkty = 0; poprawne = 0; bledne = 0; ruchy = 20;
-            predkosc = (wybranyWiek === 6 ? 1 : 3) * H/600; jajkaY = -50; koszykX = W/2; gwiazdki = []; generujZadanie();
+            punkty = 0; poprawne = 0; bledne = 0; ruchy = MAX_RUCHY;
+            predkosc = (wybranyWiek === 6 ? 1 : 2.1) * H/600; jajkaY = -50; koszykX = W/2; gwiazdki = []; generujZadanie();
         }
 
         function spawnGwiazdki(x, y, ok) {
@@ -239,8 +241,12 @@
                 for (let i = 0; i < 3; i++) {
                     if (Math.abs(koszykX - eggXs[i]) < catchRange) {
                         const ok = opcje[i] === poprawnyWynik;
-                        if (ok) { punkty++; poprawne++; predkosc += (wybranyWiek === 6 ? 0.05 : 0.15) * H/600; }
-                        else { punkty--; bledne++; }
+                        if (ok) {
+                            punkty++; poprawne++;
+                            predkosc += (wybranyWiek === 6 ? 0.04 : 0.07) * H/600;
+                            const maxV = (wybranyWiek === 6 ? 2.0 : 4.2) * H/600;
+                            if (predkosc > maxV) predkosc = maxV; // limit prędkości
+                        } else { punkty--; bledne++; }
                         spawnGwiazdki(eggXs[i], H * 0.883, ok);
                         lastFeedback = ok ? "✓" : "✗";
                         feedbackTimer = 45;
@@ -250,12 +256,12 @@
                 }
             }
             if (jajkaY > H) {
-                bledne++; punkty--; ruchy--;
+                bledne++; ruchy--; // pudło kosztuje ruch, ale nie odejmuje punktu
                 lastFeedback = "✗"; feedbackTimer = 45;
                 jajkaY = -50; generujZadanie();
             }
             updateGwiazdki();
-            if (ruchy <= 0 || punkty >= 20 || punkty <= -5) { menuEtap = "koniec"; saveBest(); }
+            if (ruchy <= 0 || punkty >= WIN_SCORE || punkty <= LOSE_SCORE) { menuEtap = "koniec"; saveBest(); }
         }
 
         // Rekord: najlepszy wynik per poziom (wiek + tryb). Klucz obserwuje
@@ -461,8 +467,8 @@
                 drawBasket(koszykX);
                 drawGwiazdki();
             } else if (menuEtap === "koniec") {
-                const win = punkty >= 20;
-                const drawLose = punkty <= -5;
+                const win = punkty >= WIN_SCORE;
+                const drawLose = punkty <= LOSE_SCORE;
                 let msg, endColor;
                 if (drawLose) { msg = t.lose; endColor = "#e74c3c"; }
                 else if (win) { msg = t.win; endColor = "#2ecc71"; }
