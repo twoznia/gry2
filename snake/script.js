@@ -454,6 +454,7 @@
         function gameOver() {
             isGameOver = true;
             clearInterval(gameInterval);
+            if (score > 0 && window.GryScores && GryScores.submit) GryScores.submit('snake', score, {}); // każdy wynik -> chmura
             playSound('die');
 
             // Przywrócenie wibracji przy porażce

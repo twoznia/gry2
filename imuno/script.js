@@ -423,6 +423,7 @@ function levelComplete() {
 
 function gameOver() {
   running = false; waveActive = false;
+  if (level > 0 && window.GryScores && GryScores.submit) GryScores.submit('imuno', level, {}); // każdy wynik -> chmura
   ovTitle.textContent = '💀 Organizm pokonany';
   ovText.textContent = `Patogeny przełamały obronę na poziomie ${level} (${map.name}).\nOsiągnięty poziom: ${level}\nRekord: ${bestLevel}`;
   ovBtn.textContent = '🔄 Zagraj ponownie';

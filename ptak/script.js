@@ -400,7 +400,7 @@
         function gameOver() {
             gameState = 'GAMEOVER';
             saveHighscore();
-            
+            if (score > 0 && window.GryScores && GryScores.submit) GryScores.submit('ptak', score, {}); // każdy wynik -> chmura
             overlayTitle.innerHTML = 'KONIEC<br>GRY';
             startBtn.innerText = 'JESZCZE RAZ';
             overlay.classList.add('active');
