@@ -502,6 +502,12 @@
     #gry-auth-overlay .gry-rec-tab.active{background:#38bdf8;color:#0f172a;border-color:#38bdf8}
     #gry-auth-overlay .gry-rec-me{color:#f8fafc}
     #gry-auth-overlay .gry-rec-table tr.me td{background:#38bdf815}
+    #gry-auth-overlay .gry-rec-table tr.attrs-row td{border-top:none;padding-top:0}
+    #gry-auth-overlay .gry-rec-attrs{color:#94a3b8;font-size:11px;line-height:1.5;padding-left:26px}
+    #gry-auth-overlay .gry-rec-attrs b{color:#cbd5e1;font-weight:600}
+    #gry-auth-overlay .gry-rec-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+    #gry-auth-overlay .gry-rec-actions .gry-primary{width:auto;flex:1;min-width:120px}
+    #gry-auth-overlay .gry-danger{background:#ef4444;color:#fff}
     `;
     const st = document.createElement('style');
     st.id = 'gry-auth-styles';
@@ -607,7 +613,9 @@
   }
 
   // Wspólny panel „Rekordy" z zakładkami (wariant/tryb/poziom) — 20 najlepszych na kategorię.
-  async function openRecordsPanel(gameId) {
+  // options.actions: [{ label, danger?, onClick(close) }] — przyciski na dole (np. „Nowa gra").
+  async function openRecordsPanel(gameId, options) {
+    options = options || {};
     injectStyles();
     const meta = GAME_META[gameId] || { label: gameId };
     let ov = document.getElementById('gry-auth-overlay');
@@ -630,7 +638,7 @@
     let rows;
     try {
       const { data, error } = await client.from('scores')
-        .select('user_id,display_name,score,time_seconds,mode,level,subgame,created_at')
+        .select('user_id,display_name,score,time_seconds,mode,level,subgame,created_at,meta')
         .eq('game', gameId).limit(3000);
       if (error) { body.textContent = 'Nie udało się wczytać rekordów.'; return; }
       rows = data || [];
@@ -676,24 +684,56 @@
       if (!list.length) { h += '<p style="color:#94a3b8;text-align:center;padding:8px 0">Brak rekordów w tej kategorii.</p>'; }
       else {
         const showName = scope === 'all';
+        const ncols = showName ? 4 : 3;
         h += '<table class="gry-rec-table"><thead><tr><th>#</th>' + (showName ? '<th>Gracz</th>' : '') + '<th>Wynik</th><th style="text-align:right">Data</th></tr></thead><tbody>';
         list.forEach((r, i) => {
           const date = r.created_at ? new Date(r.created_at).toLocaleDateString('pl-PL') : '';
           const isMe = r.user_id === myId;
           h += '<tr' + (isMe ? ' class="me"' : '') + '><td>' + (medals[i] || (i + 1) + '.') + '</td>'
-            + (showName ? '<td>' + (r.display_name || '—') + (isMe ? ' (Ty)' : '') + '</td>' : '')
+            + (showName ? '<td>' + escapeHtml(r.display_name || '—') + (isMe ? ' (Ty)' : '') + '</td>' : '')
             + '<td class="gry-rec-val">' + formatVal(r[col], meta) + '</td>'
             + '<td class="gry-rec-date">' + date + '</td></tr>';
+          // Atrybuty (czas, pomoce, kary…) z meta.attrs — generycznie dla każdej gry.
+          const attrs = r.meta && r.meta.attrs;
+          if (attrs && typeof attrs === 'object') {
+            const parts = Object.keys(attrs).filter((k) => k !== 'Kary').map((k) => '<b>' + escapeHtml(k) + ':</b> ' + escapeHtml(String(attrs[k]))).join(' · ');
+            const kary = attrs['Kary'] ? '<div>' + escapeHtml(String(attrs['Kary'])) + '</div>' : '';
+            if (parts || kary) h += '<tr class="attrs-row"><td colspan="' + ncols + '"><div class="gry-rec-attrs">' + parts + kary + '</div></td></tr>';
+          }
         });
         h += '</tbody></table>';
       }
       body.innerHTML = h;
       body.querySelectorAll('[data-scope]').forEach((btn) => { btn.onclick = () => { scope = btn.dataset.scope; render(); }; });
       body.querySelectorAll('[data-dim]').forEach((btn) => { btn.onclick = () => { selected[btn.dataset.dim] = btn.dataset.val; render(); }; });
+      // Przyciski akcji (np. „Nowa gra", „Wyczyść moje wyniki").
+      if (options.actions && options.actions.length) {
+        const bar = document.createElement('div');
+        bar.className = 'gry-rec-actions';
+        options.actions.forEach((a) => {
+          const b = document.createElement('button');
+          b.className = 'gry-primary' + (a.danger ? ' gry-danger' : '');
+          b.textContent = a.label;
+          b.onclick = () => a.onClick(() => ov.remove(), render);
+          bar.appendChild(b);
+        });
+        body.appendChild(bar);
+      }
     }
     render();
   }
   GryScores.showRecords = openRecordsPanel;
+
+  // Usuwa wszystkie wyniki bieżącego gracza dla danej gry (własne wiersze — RLS).
+  GryScores.clearMine = async function (gameId) {
+    if (!ready || !currentUser) return false;
+    const { error } = await client.from('scores').delete().eq('game', gameId).eq('user_id', currentUser.id);
+    return !error;
+  };
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  }
 
   function renderModalHtml(mode) {
     const titles = { signin: 'Zaloguj się', signup: 'Utwórz konto', reset: 'Reset hasła' };
