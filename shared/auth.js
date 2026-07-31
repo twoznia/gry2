@@ -616,22 +616,22 @@
     ov.id = 'gry-auth-overlay';
     ov.innerHTML = '<div class="gry-modal"><button class="gry-close" data-act="close">&times;</button>'
       + '<h2>🏆 Rekordy — ' + (meta.label || gameId) + '</h2>'
-      + '<p class="sub">Twoje 20 najlepszych wyników</p>'
+      + '<p class="sub">20 najlepszych wyników</p>'
       + '<div class="gry-rec-body">Ładowanie…</div></div>';
     document.body.appendChild(ov);
     ov.querySelector('[data-act="close"]').onclick = () => ov.remove();
     ov.addEventListener('click', (e) => { if (e.target === ov) ov.remove(); });
     const body = ov.querySelector('.gry-rec-body');
     if (!currentUser) {
-      body.innerHTML = '<p style="color:#94a3b8;text-align:center;margin:8px 0 12px">Zaloguj się, aby zobaczyć swoje rekordy.</p>';
+      body.innerHTML = '<p style="color:#94a3b8;text-align:center;margin:8px 0 12px">Zaloguj się, aby zobaczyć rekordy.</p>';
       const b = document.createElement('button'); b.className = 'gry-primary'; b.textContent = 'Zaloguj';
       b.onclick = () => openModal('signin'); body.appendChild(b); return;
     }
     let rows;
     try {
       const { data, error } = await client.from('scores')
-        .select('score,time_seconds,mode,level,subgame,created_at')
-        .eq('game', gameId).eq('user_id', currentUser.id).limit(1000);
+        .select('user_id,display_name,score,time_seconds,mode,level,subgame,created_at')
+        .eq('game', gameId).limit(3000);
       if (error) { body.textContent = 'Nie udało się wczytać rekordów.'; return; }
       rows = data || [];
     } catch (e) { body.textContent = 'Błąd odczytu rekordów.'; return; }
@@ -646,32 +646,50 @@
     }
     const col = meta.lower ? 'time_seconds' : 'score';
     const medals = ['🥇', '🥈', '🥉'];
+    const myId = currentUser.id;
+    let scope = 'all'; // 'all' = wszyscy gracze, 'me' = tylko ja
 
     function render() {
-      let h = '';
+      // Zakres: Wszyscy / Ja
+      let h = '<div class="gry-rec-dim"><div class="gry-rec-tabs">'
+        + '<button class="gry-rec-tab' + (scope === 'all' ? ' active' : '') + '" data-scope="all">Wszyscy</button>'
+        + '<button class="gry-rec-tab' + (scope === 'me' ? ' active' : '') + '" data-scope="me">Ja</button>'
+        + '</div></div>';
+      // Zakładki wymiarów
       for (const a of active) {
         h += '<div class="gry-rec-dim"><div class="gry-rec-lbl">' + DIM_LABEL[a.dim] + '</div><div class="gry-rec-tabs">'
           + a.vals.map((v) => '<button class="gry-rec-tab' + (selected[a.dim] === v ? ' active' : '') + '" data-dim="' + a.dim + '" data-val="' + v + '">' + labelVal(v) + '</button>').join('')
           + '</div></div>';
       }
+      const better = (x, y) => meta.lower ? (x[col] - y[col]) : (y[col] - x[col]);
       let list = rows.filter((r) => active.every((a) => (r[a.dim] || '') === selected[a.dim]));
-      list.sort((x, y) => meta.lower ? (x[col] - y[col]) : (y[col] - x[col]));
+      if (scope === 'me') {
+        list = list.filter((r) => r.user_id === myId);
+      } else {
+        // Ranking globalny: najlepszy wynik każdego gracza.
+        const byUser = new Map();
+        for (const r of list) { const c = byUser.get(r.user_id); if (!c || better(r, c) < 0) byUser.set(r.user_id, r); }
+        list = [...byUser.values()];
+      }
+      list.sort(better);
       list = list.slice(0, 20);
       if (!list.length) { h += '<p style="color:#94a3b8;text-align:center;padding:8px 0">Brak rekordów w tej kategorii.</p>'; }
       else {
-        h += '<table class="gry-rec-table"><thead><tr><th>#</th><th>Wynik</th><th style="text-align:right">Data</th></tr></thead><tbody>';
+        const showName = scope === 'all';
+        h += '<table class="gry-rec-table"><thead><tr><th>#</th>' + (showName ? '<th>Gracz</th>' : '') + '<th>Wynik</th><th style="text-align:right">Data</th></tr></thead><tbody>';
         list.forEach((r, i) => {
           const date = r.created_at ? new Date(r.created_at).toLocaleDateString('pl-PL') : '';
-          h += '<tr><td>' + (medals[i] || (i + 1) + '.') + '</td>'
+          const isMe = r.user_id === myId;
+          h += '<tr' + (isMe ? ' class="me"' : '') + '><td>' + (medals[i] || (i + 1) + '.') + '</td>'
+            + (showName ? '<td>' + (r.display_name || '—') + (isMe ? ' (Ty)' : '') + '</td>' : '')
             + '<td class="gry-rec-val">' + formatVal(r[col], meta) + '</td>'
             + '<td class="gry-rec-date">' + date + '</td></tr>';
         });
         h += '</tbody></table>';
       }
       body.innerHTML = h;
-      body.querySelectorAll('.gry-rec-tab').forEach((btn) => {
-        btn.onclick = () => { selected[btn.dataset.dim] = btn.dataset.val; render(); };
-      });
+      body.querySelectorAll('[data-scope]').forEach((btn) => { btn.onclick = () => { scope = btn.dataset.scope; render(); }; });
+      body.querySelectorAll('[data-dim]').forEach((btn) => { btn.onclick = () => { selected[btn.dataset.dim] = btn.dataset.val; render(); }; });
     }
     render();
   }
