@@ -847,6 +847,15 @@
     const subgame = reflexSubgame();
     const lower = !!REFLEX_TIME[subgame];
 
+    // Usuń stary, ręczny zapis (etykieta + pole imienia + „Zapisz") — zapis odbywa się
+    // wyłącznie automatycznie dla zalogowanych. Zostaje „Pokaż tabelę rekordów".
+    const inputWrap = input.parentElement;
+    if (inputWrap) inputWrap.style.display = 'none';
+    const saveLabel = section.querySelector('p');
+    if (saveLabel) saveLabel.style.display = 'none';
+    const saveInfo = document.getElementById('save-info');
+    if (saveInfo) saveInfo.style.display = 'none';
+
     // Odczyt rekordów wyłącznie z chmury (podmiana źródła danych gry).
     window.loadRecords = function () { return reflexCache; };
     // Koniec zapisu lokalnego.

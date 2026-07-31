@@ -211,7 +211,7 @@ function drawPieceOnCtx(ctx, r, c, scale) {
 // ═══════════════════════════════════════════════════════════════
 
 // Pastelowy jasny żółty — tło planszy i tacki
-const BOARD_BG = '#fdf6c4';
+const BOARD_BG = '#ffffff';
 
 function paintBoardBg() {
   boardCtx.clearRect(0, 0, boardPx, boardPx);
