@@ -292,6 +292,18 @@
                     if (!plan.some(p => p.lane === removedLane)) incoming.delete(removedLane);
                 }
 
+                // Zawsze zostaw lukę osiągalną jednym ruchem (±1 pas) — brak niemożliwych
+                // układów 3 aut z luką poza zasięgiem gracza.
+                const nearPlayer = [playerLane - 1, playerLane, playerLane + 1].filter(l => l >= 0 && l <= 3);
+                const reachableOpen = () => [0, 1, 2, 3].some(l => !incoming.has(l) && nearPlayer.includes(l));
+                while (!reachableOpen() && plan.length) {
+                    const idx = plan.findIndex(p => nearPlayer.includes(p.lane));
+                    if (idx === -1) break; // blokada z już jadących przeszkód — nie ruszamy planu
+                    const lane = plan[idx].lane;
+                    plan.splice(idx, 1);
+                    if (!plan.some(p => p.lane === lane)) incoming.delete(lane);
+                }
+
                 plan.forEach(p => (p.isTruck ? spawnTruck(p.lane) : spawnCar(p.lane)));
             }
         }
@@ -331,7 +343,10 @@
 
                     // Heart spawn
                     if (lives < 3 && score - lastHeartScore >= HEART_INTERVAL && Date.now() - lastHeartTime >= 10000) {
-                        const validLanes = [0,1,2,3].filter(l => Math.abs(l - playerLane) >= 2);
+                        const validLanes = [0,1,2,3].filter(l =>
+                            Math.abs(l - playerLane) >= 2 &&
+                            !obstacles.some(o => !o.isHeart && o.lane === l && o.y < 140) // pas wolny od aut przy górze
+                        );
                         if (validLanes.length) {
                             spawnHeart(validLanes[Math.floor(Math.random() * validLanes.length)]);
                             lastHeartScore = score;
@@ -428,14 +443,26 @@
         saveHi();
         updateHiDisplay();
 
-        statusTitle.innerText = TRANSLATIONS[lang].crash;
-        finalInfo.dataset.state = 'end';
-        finalInfo.textContent = `${TRANSLATIONS[lang].yourScore} ${score.toString().padStart(4,'0')}\n${TRANSLATIONS[lang].record} ${hiScore.toString().padStart(4,'0')}`;
+        // Zapis KAŻDEGO wyniku do chmury (top-20 na gracza pilnuje trigger) — logika jak w soltaire.
+        if (score > 0 && window.GryScores && GryScores.submit) {
+            GryScores.submit('auta', score, { mode: gameMode });
+        }
 
-        modeBtns.style.display  = 'none';
-        actionBtn.style.display = 'block';
-        actionBtn.innerText = TRANSLATIONS[lang].playAgain;
-        overlay.style.display = 'flex';
+        // Zatrzymaj obraz na 2 s (widać jak się skończyło), potem pokaż rekordy + menu.
+        setTimeout(() => {
+            statusTitle.innerText = TRANSLATIONS[lang].crash;
+            finalInfo.dataset.state = 'end';
+            finalInfo.textContent = `${TRANSLATIONS[lang].yourScore} ${score.toString().padStart(4,'0')}\n${TRANSLATIONS[lang].record} ${hiScore.toString().padStart(4,'0')}`;
+            modeBtns.style.display  = 'none';
+            actionBtn.style.display = 'block';
+            actionBtn.innerText = TRANSLATIONS[lang].playAgain;
+            overlay.style.display = 'flex';
+            if (window.GryScores && GryScores.showRecords) {
+                GryScores.showRecords('auta', {
+                    actions: [{ label: TRANSLATIONS[lang].playAgain || 'Nowa gra', onClick: (close) => { close(); startGame(lastMode); } }]
+                });
+            }
+        }, 2000);
     }
 
     // ─── Init ──────────────────────────────────────────────────────────────────────
