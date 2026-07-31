@@ -460,24 +460,21 @@
         function handleVictory() {
             gameCompleted = true;
             stopTimer();
-            const leaderboard = loadLeaderboard();
-            const candidateEntry = createCurrentResultEntry('Gracz');
-
-            if (doesEntryQualifyForLeaderboard(candidateEntry, leaderboard)) {
-                pendingLeaderboardEntry = {
-                    score: currentScore,
-                    elapsedSeconds,
-                    powerupsUsed,
-                    penalties: normalizePenaltyBreakdown(penaltyBreakdown)
-                };
-                showNameEntryModal();
-                return;
-            }
-
+            // Rekordy jak w soltaire: auto-zapis (imię = zalogowany gracz) i wspólny panel.
+            const playerName = (window.GryAuth && GryAuth.displayName && GryAuth.displayName()) || 'Gracz';
+            const { entry } = saveCurrentResult(playerName); // zapis lokalny -> Supabase (submitMahjong)
             pendingLeaderboardEntry = null;
-            const sorted = getSortedLeaderboard(leaderboard);
-            const worstEntry = sorted.length > 0 ? sorted[sorted.length - 1] : null;
-            showLeaderboardModal('Zwycięstwo!', `Twój wynik: ${currentScore} pkt, ${formatElapsedTime(elapsedSeconds)}. Nie wszedł do tabeli rekordów.`, leaderboard, null, worstEntry?.id ?? null);
+            highlightedLeaderboardEntryId = entry.id;
+            openMahjongRecords();
+        }
+
+        // Wspólny panel „Rekordy" (Wszyscy/Ja, kary w meta) — jak w soltaire.
+        function openMahjongRecords() {
+            if (window.GryScores && GryScores.showRecords) {
+                GryScores.showRecords('mahjong');
+            } else {
+                showLeaderboardModal(undefined, undefined, getSortedLeaderboard(loadLeaderboard()), highlightedLeaderboardEntryId);
+            }
         }
 
         function getStyleCatalog() {
@@ -930,7 +927,7 @@
         hintToggleEl.addEventListener('click', toggleHints);
         showMoveBtnEl.addEventListener('click', showAvailableMove);
         undoBtnEl.addEventListener('click', restoreUndoState);
-        showScoresBtnEl.addEventListener('click', () => showLeaderboardModal());
+        showScoresBtnEl.addEventListener('click', () => openMahjongRecords());
         leaderboardCloseBtnEl.addEventListener('click', closeLeaderboardModal);
         leaderboardRestartBtnEl.addEventListener('click', () => {
             closeLeaderboardModal();
