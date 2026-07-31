@@ -107,6 +107,13 @@
                 handleFlag(r, c);
             });
 
+            // Podwójne kliknięcie na liczbę = chording (odkryj sąsiadów, gdy flag = liczba)
+            cellEl.addEventListener('dblclick', (e) => {
+                if (!gameActive) return;
+                e.preventDefault();
+                chordReveal(r, c);
+            });
+
             // Touch events for mobile (Long press to flag)
             cellEl.addEventListener('touchstart', (e) => {
                 if (!gameActive) return;
@@ -202,6 +209,31 @@
 
             revealCell(r, c);
             checkWin();
+        }
+
+        // Chording: na odkrytej liczbie, gdy liczba flag wokół = liczba, odkryj resztę sąsiadów.
+        function chordReveal(r, c) {
+            const cell = board[r][c];
+            if (!cell.isRevealed || cell.neighborMines <= 0) return;
+            let flags = 0;
+            for (let dr = -1; dr <= 1; dr++) {
+                for (let dc = -1; dc <= 1; dc++) {
+                    if (dr === 0 && dc === 0) continue;
+                    const nr = r + dr, nc = c + dc;
+                    if (nr < 0 || nc < 0 || nr >= currentConfig.rows || nc >= currentConfig.cols) continue;
+                    if (board[nr][nc].isFlagged) flags++;
+                }
+            }
+            if (flags !== cell.neighborMines) return; // za mało/za dużo flag — nie odkrywaj
+            for (let dr = -1; dr <= 1; dr++) {
+                for (let dc = -1; dc <= 1; dc++) {
+                    if (dr === 0 && dc === 0) continue;
+                    const nr = r + dr, nc = c + dc;
+                    if (nr < 0 || nc < 0 || nr >= currentConfig.rows || nc >= currentConfig.cols) continue;
+                    const n = board[nr][nc];
+                    if (!n.isRevealed && !n.isFlagged) handleReveal(nr, nc);
+                }
+            }
         }
 
         function handleFlag(r, c) {

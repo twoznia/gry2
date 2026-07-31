@@ -8,7 +8,9 @@ const ROWS  = 20;
 const CELL  = 30;           // base cell size in px (may be scaled)
 
 // Points per line-clear at level 1 (×level afterwards)
-const LINE_POINTS = [0, 100, 300, 500, 800];
+// Bonus rośnie mocno z liczbą linii wyczyszczonych naraz (double/triple/tetris).
+const LINE_POINTS = [0, 100, 300, 600, 1200];
+const CLEAR_LABEL = ['', '', 'DOUBLE', 'TRIPLE', 'TETRIS!'];
 
 // Gravity (ms per row) per level (capped at 20)
 function gravityMs(level) {
@@ -237,6 +239,21 @@ function lockPiece() {
 }
 
 // ── Line clears ──────────────────────────────────────────────────
+// Pływający komunikat bonusu (DOUBLE/TRIPLE/TETRIS +punkty) nad planszą.
+function showClearBonus(label, gained) {
+  const host = boardCanvas.parentElement;
+  if (!host) return;
+  if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
+  const el = document.createElement('div');
+  el.textContent = label + '  +' + gained.toLocaleString();
+  el.style.cssText = 'position:absolute;top:38%;left:50%;transform:translate(-50%,-50%);z-index:20;'
+    + 'font-weight:900;font-size:clamp(18px,5vw,34px);color:#facc15;text-shadow:0 2px 10px rgba(0,0,0,.8);'
+    + 'pointer-events:none;transition:opacity .6s ease, transform .6s ease;white-space:nowrap;';
+  host.appendChild(el);
+  requestAnimationFrame(() => { el.style.opacity = '0'; el.style.transform = 'translate(-50%,-140%)'; });
+  setTimeout(() => el.remove(), 650);
+}
+
 function clearLines() {
   const full = [];
   for (let r = 0; r < ROWS; r++) {
@@ -262,7 +279,9 @@ function applyLineClear() {
 
   // Scoring
   lines += count;
-  score += LINE_POINTS[count] * level;
+  const gained = LINE_POINTS[count] * level;
+  score += gained;
+  if (count >= 2) showClearBonus(CLEAR_LABEL[count], gained); // bonus za kilka linii naraz
   level = Math.floor(lines / 10) + 1;
 
   scoreDisplay.textContent = score.toLocaleString();
@@ -641,6 +660,19 @@ function gameLoop(ts) {
 const keysHeld = {};
 let softDropInterval = null;
 
+// Auto-powtarzanie ruchu w bok przy trzymaniu strzałki (DAS/ARR) — bez klikania.
+let shiftTimeout = null, shiftInterval = null;
+function stopShift() { clearTimeout(shiftTimeout); clearInterval(shiftInterval); shiftTimeout = null; shiftInterval = null; }
+function startShift(dir) {
+  stopShift();
+  shiftTimeout = setTimeout(() => {
+    shiftInterval = setInterval(() => {
+      if (state !== 'playing') { stopShift(); return; }
+      if (!collides(current, dir, 0)) { current.x += dir; lockTimer = 0; }
+    }, 40); // ARR: kolejne pola co 40 ms
+  }, 150); // DAS: opóźnienie startu auto-powtarzania
+}
+
 document.addEventListener('keydown', e => {
   if (keysHeld[e.code]) return; // prevent key-repeat on action keys
   keysHeld[e.code] = true;
@@ -653,9 +685,11 @@ document.addEventListener('keydown', e => {
   switch (e.code) {
     case 'ArrowLeft':
       if (!collides(current, -1, 0)) { current.x--; lockTimer = 0; }
+      startShift(-1);
       break;
     case 'ArrowRight':
       if (!collides(current, 1, 0)) { current.x++; lockTimer = 0; }
+      startShift(1);
       break;
     case 'ArrowDown':
       // Initial step on keydown; repeated via interval below
@@ -691,6 +725,7 @@ document.addEventListener('keydown', e => {
 document.addEventListener('keyup', e => {
   delete keysHeld[e.code];
   if (e.code === 'ArrowDown') { clearInterval(softDropInterval); softDropInterval = null; }
+  if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') stopShift();
 });
 
 // ── Pause ────────────────────────────────────────────────────────
