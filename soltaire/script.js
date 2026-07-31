@@ -868,13 +868,15 @@
         function hasPossibleMoves() {
             if (stock.length > 0) return true;
 
-            if (waste.length > 0) {
-                const topWaste = waste[waste.length - 1];
+            // Gdy stock jest pusty, kupkę można przetasować z wastu — więc WSZYSTKIE
+            // karty wastu są jeszcze osiągalne. Sprawdzamy każdą, nie tylko wierzchnią,
+            // żeby nie ogłaszać „brak ruchów" przed ponownym odtworzeniem całej kupki.
+            for (const wc of waste) {
                 for (let i = 0; i < 4; i++) {
-                    if (isValidMove(topWaste, { type: 'foundation', index: i })) return true;
+                    if (isValidMove(wc, { type: 'foundation', index: i })) return true;
                 }
                 for (let i = 0; i < 7; i++) {
-                    if (isValidMove(topWaste, { type: 'tableau', index: i })) return true;
+                    if (isValidMove(wc, { type: 'tableau', index: i })) return true;
                 }
             }
 
