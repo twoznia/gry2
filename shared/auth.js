@@ -191,7 +191,7 @@
   // KAŻDY wynik jawnie przez GryScores.submit na końcu gry — nie przez mostek localStorage.
   const WATCH = [
     { game: 'soltaire',  key: 'solitaire_piatnik_best', lowerIsBetter: true },
-    { game: 'memo',      prefix: 'memo-rec-', lowerIsBetter: true },
+    // memo: zapis jawny w grze (subgame = rozmiar, ruchy w meta) — nie przez mostek.
     { game: 'anatomia',  prefix: 'anatomia_best_' },
     { game: 'kulki',     prefix: 'lines_high_' },
     { game: 'saper',     prefix: 'saper_best_', lowerIsBetter: true },
@@ -561,17 +561,23 @@
     }
   }
 
-  // Przycisk „🏆 Rekordy" w widgecie — tylko na stronach gier bez własnej tabeli.
+  // Przycisk „🏆 Rekordy" w widgecie — spójny we wszystkich grach.
   function recordsButton() {
     const gid = currentGameId();
     if (!gid) return null;
     const meta = GAME_META[gid];
-    if (meta && meta.ownUi) return null;
     const b = document.createElement('button');
     b.className = 'gry-icon-btn';
     b.textContent = '🏆';
-    b.title = 'Rekordy (20 najlepszych)';
-    b.onclick = () => openRecordsPanel(gid);
+    b.title = 'Rekordy';
+    if (meta && meta.ownUi) {
+      // Gry z własną, bogatszą tabelą (reflex): puchar otwiera ich widok rekordów.
+      if (typeof window.showRecordsView !== 'function') return null; // np. menu reflex
+      b.onclick = () => { try { window.showRecordsView(function () {}); } catch (e) { /* noop */ } };
+    } else {
+      b.title = 'Rekordy (20 najlepszych)';
+      b.onclick = () => openRecordsPanel(gid);
+    }
     return b;
   }
 
@@ -863,9 +869,16 @@
           GryScores.submit('reflex', v, {
             subgame: subgame, mode: mode, level: levelKey,
             errors: (errors != null ? errors : null), lowerIsBetter: lower,
-          });
+          }).then(() => scheduleReflexRefresh()); // po zapisie odśwież tabelę (bez opóźnienia)
         } catch (e) { /* noop */ }
       };
+    }
+
+    // Debounce odświeżania tabeli rekordów po zapisaniu wyników do chmury.
+    let reflexRefreshTimer = null;
+    function scheduleReflexRefresh() {
+      clearTimeout(reflexRefreshTimer);
+      reflexRefreshTimer = setTimeout(() => { refreshReflexCache(); }, 250);
     }
 
     // Pobierz wszystkie rekordy tej podgry z chmury i przebuduj cache.

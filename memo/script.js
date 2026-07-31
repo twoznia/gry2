@@ -352,6 +352,15 @@ function endGame() {
     const isNew     = prevRec === null || finalSec < prevRec;
     if (isNew) saveRecord(selectedSizeKey, finalSec);
 
+    // Zapis KAŻDEGO ukończenia do chmury: osobne rekordy per rozmiar (subgame),
+    // czas (niższy lepszy) + liczba ruchów w atrybutach.
+    if (finalSec > 0 && window.GryScores && GryScores.submit) {
+        GryScores.submit('memo', finalSec, {
+            subgame: selectedSizeKey, lowerIsBetter: true,
+            meta: { attrs: { 'Ruchy': String(moveCount) } }
+        });
+    }
+
     const t = T[lang];
     document.getElementById('win-time').textContent  = fmtTime(finalSec);
     document.getElementById('win-moves').textContent = `${moveCount} ${t.moves}`;
