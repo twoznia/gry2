@@ -284,6 +284,7 @@
                 powerupsUsed,
                 penalties: normalizePenaltyBreakdown(penaltyBreakdown)
             };
+            const pen = normalizePenaltyBreakdown(result.penalties);
             return {
                 id: `mahjong-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
                 name: (name || '').trim() || 'Gracz',
@@ -291,7 +292,15 @@
                 elapsedSeconds: result.elapsedSeconds,
                 date: getCurrentDateString(),
                 powerupsUsed: result.powerupsUsed,
-                penalties: normalizePenaltyBreakdown(result.penalties)
+                penalties: pen,
+                // Generyczne atrybuty do wyświetlenia w panelu rekordów (meta.attrs).
+                // Inne gry mogą wypełnić dowolne pary etykieta->wartość.
+                attrs: {
+                    'Czas': formatElapsedTime(result.elapsedSeconds),
+                    'Pomoce': result.powerupsUsed ? 'tak' : 'nie',
+                    'Podświetlenia': String(pen.hints + pen.showMove),
+                    'Kary': `podśw. ${pen.hints}, ruch ${pen.showMove}, cofnij ${pen.undo}, tasuj ${pen.shuffle}`
+                }
             };
         }
 
@@ -468,10 +477,25 @@
             openMahjongRecords();
         }
 
-        // Wspólny panel „Rekordy" (Wszyscy/Ja, kary w meta) — jak w soltaire.
+        // Wspólny panel „Rekordy" (Wszyscy/Ja, atrybuty: czas/pomoce/kary) — jak w soltaire,
+        // z pełną funkcjonalnością starego panelu (Nowa gra, Wyczyść wyniki).
         function openMahjongRecords() {
             if (window.GryScores && GryScores.showRecords) {
-                GryScores.showRecords('mahjong');
+                GryScores.showRecords('mahjong', {
+                    actions: [
+                        { label: 'Nowa gra', onClick: (close) => { close(); startGame(); } },
+                        {
+                            label: 'Wyczyść moje wyniki', danger: true,
+                            onClick: async (close) => {
+                                if (!confirm('Usunąć wszystkie Twoje wyniki mahjonga z chmury?')) return;
+                                if (GryScores.clearMine) await GryScores.clearMine('mahjong');
+                                try { localStorage.removeItem(getLeaderboardStorageKey(selectedStyleId)); } catch (e) { /* noop */ }
+                                close();
+                                openMahjongRecords(); // odśwież (pusta lista)
+                            }
+                        }
+                    ]
+                });
             } else {
                 showLeaderboardModal(undefined, undefined, getSortedLeaderboard(loadLeaderboard()), highlightedLeaderboardEntryId);
             }

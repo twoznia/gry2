@@ -282,6 +282,8 @@ function respawnPlayer() {
 }
 
 function checkHighScore() {
+    // Zapis KAŻDEGO wyniku do chmury (top-20 na gracza pilnuje trigger) — jak w soltaire.
+    if (score > 0 && window.GryScores && GryScores.submit) GryScores.submit('riverraid', score, {});
     if (score > highScore) { highScore = score; localStorage.setItem('riverRaidHighScore', highScore); hiScoreEl.innerText = highScore.toString().padStart(5, '0'); isNewRecord = true; }
 }
 
