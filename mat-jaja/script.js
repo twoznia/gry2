@@ -71,6 +71,7 @@
         window.addEventListener('resize', resize);
 
         let punkty = 0, poprawne = 0, bledne = 0, ruchy = 20;
+        let combo = 0; // seria poprawnych odpowiedzi (mnożnik punktów i tempa)
         let koszykX = 0, jajkaY = -50, predkosc = 3;
         let menuEtap = "wiek";
         let wybranyWiek = 10, wybranyTryb = "losowo";
@@ -207,7 +208,7 @@
         }
 
         function resetGry() {
-            punkty = 0; poprawne = 0; bledne = 0; ruchy = MAX_RUCHY;
+            punkty = 0; poprawne = 0; bledne = 0; ruchy = MAX_RUCHY; combo = 0;
             predkosc = (wybranyWiek === 6 ? 1 : 2.1) * H/600; jajkaY = -50; koszykX = W/2; gwiazdki = []; generujZadanie();
         }
 
@@ -242,13 +243,16 @@
                     if (Math.abs(koszykX - eggXs[i]) < catchRange) {
                         const ok = opcje[i] === poprawnyWynik;
                         if (ok) {
-                            punkty++; poprawne++;
-                            predkosc += (wybranyWiek === 6 ? 0.04 : 0.07) * H/600;
-                            const maxV = (wybranyWiek === 6 ? 2.0 : 4.2) * H/600;
-                            if (predkosc > maxV) predkosc = maxV; // limit prędkości
-                        } else { punkty--; bledne++; }
+                            combo++;
+                            punkty += combo;   // punkty rosną z serią (combo ×N)
+                            poprawne++;
+                            // Tempo rośnie z combo (do limitu) — dłuższa seria = większa emocja.
+                            predkosc += (wybranyWiek === 6 ? 0.04 : 0.07) * H/600 * (1 + combo * 0.15);
+                            const maxV = (wybranyWiek === 6 ? 2.2 : 4.6) * H/600;
+                            if (predkosc > maxV) predkosc = maxV;
+                        } else { punkty--; bledne++; combo = 0; }
                         spawnGwiazdki(eggXs[i], H * 0.883, ok);
-                        lastFeedback = ok ? "✓" : "✗";
+                        lastFeedback = ok ? (combo >= 2 ? 'COMBO ×' + combo : '✓') : '✗';
                         feedbackTimer = 45;
                         ruchy--;
                         jajkaY = -50; generujZadanie(); break;
@@ -256,7 +260,7 @@
                 }
             }
             if (jajkaY > H) {
-                bledne++; ruchy--; // pudło kosztuje ruch, ale nie odejmuje punktu
+                bledne++; ruchy--; combo = 0; // pudło przerywa serię (bez odejmowania punktu)
                 lastFeedback = "✗"; feedbackTimer = 45;
                 jajkaY = -50; generujZadanie();
             }
@@ -407,8 +411,9 @@
             if (feedbackTimer > 0) {
                 ctx.save();
                 ctx.globalAlpha = feedbackTimer / 45;
-                ctx.font = `bold 72px Arial`;
-                ctx.fillStyle = lastFeedback === "✓" ? "#2ecc71" : "#e74c3c";
+                const isCombo = typeof lastFeedback === "string" && lastFeedback.indexOf("COMBO") === 0;
+                ctx.font = `bold ${isCombo ? Math.min(56, W*0.1) : 72}px Arial`;
+                ctx.fillStyle = lastFeedback === "✗" ? "#e74c3c" : (isCombo ? "#f1c40f" : "#2ecc71");
                 ctx.textAlign = "center";
                 ctx.fillText(lastFeedback, W/2, H/2);
                 ctx.textAlign = "left";
