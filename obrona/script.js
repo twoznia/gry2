@@ -703,6 +703,11 @@
             document.getElementById('game-over-overlay').classList.add('active');
             document.getElementById('final-waves').innerText = wave;
             saveHighscore();
+            // Każdy wynik -> chmura (wynik + fala jako osobne metryki).
+            if (window.GryScores && GryScores.submit) {
+                if (score > 0) GryScores.submit('obrona', score, {});
+                if (wave > 0) GryScores.submit('obrona', wave, { mode: 'wave' });
+            }
             updateUI();
         }
 

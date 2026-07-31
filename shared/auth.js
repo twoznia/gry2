@@ -187,19 +187,12 @@
   // Proste gry trzymają rekord jako liczbę pod stałym kluczem. Obserwujemy zapisy
   // do tych kluczy i lustrzanie wysyłamy nowy rekord do chmury (gdy zalogowany).
   // Dzięki temu nie trzeba zmieniać kodu każdej gry.
+  // Gry arkadowe (snake, riverraid, obrona, rybak, imuno, jumper, ptak, auta) zapisują
+  // KAŻDY wynik jawnie przez GryScores.submit na końcu gry — nie przez mostek localStorage.
   const WATCH = [
-    { game: 'snake',     key: 'snake_high_score' },
-    // riverraid: zapis każdego wyniku jawnie w grze (GryScores.submit) — nie przez mostek.
-    { game: 'obrona',    key: 'obronaHighScore' },
-    { game: 'obrona',    key: 'obronaHighWave', mode: 'wave' },
-    { game: 'rybak',     key: 'rybak_hi' },
-    { game: 'imuno',     key: 'imuno_hi_level' },
-    { game: 'jumper',    key: 'neonJumperHighscore' },
-    { game: 'ptak',      key: 'ptak_highscore' },
     { game: 'soltaire',  key: 'solitaire_piatnik_best', lowerIsBetter: true },
     { game: 'memo',      prefix: 'memo-rec-', lowerIsBetter: true },
     { game: 'anatomia',  prefix: 'anatomia_best_' },
-    // auta: zapis każdego wyniku jawnie w grze (GryScores.submit) — nie przez mostek.
     { game: 'kulki',     prefix: 'lines_high_' },
     { game: 'saper',     prefix: 'saper_best_', lowerIsBetter: true },
     { game: 'mat-jaja',  prefix: 'matjaja_best_' },

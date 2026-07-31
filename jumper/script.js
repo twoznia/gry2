@@ -518,6 +518,7 @@
         function gameOver() {
             gameState = 'GAMEOVER';
             saveHighscore();
+            if (score > 0 && window.GryScores && GryScores.submit) GryScores.submit('jumper', score, {}); // każdy wynik -> chmura
             overlayTitle.innerHTML = 'KONIEC<br>GRY';
             overlayDesc.innerText = `Ukończyłeś ${level-1} poziomów i zdobyłeś ${score} punktów!`;
             startBtn.innerText = 'JESZCZE RAZ';

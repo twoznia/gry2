@@ -237,6 +237,8 @@
     function endGame(reason) {
         gameActive = false;
         clearInterval(timerInterval);
+        // Zapis KAŻDEGO wyniku do chmury (top-20 na gracza) — jak w soltaire.
+        if (totalScore > 0 && window.GryScores && GryScores.submit) GryScores.submit('rybak', totalScore, {});
         const isNewRecord = totalScore > hiScore;
         if (isNewRecord) {
             hiScore = totalScore;
@@ -256,6 +258,8 @@
             if (isNewRecord) document.getElementById("new-record-bird").style.display = "block";
             warningMsg.style.display = "none";
         }
+        // Panel rekordów jak w soltaire (Wszyscy/Ja, top-20 z chmury).
+        if (window.GryScores && GryScores.showRecords) setTimeout(() => GryScores.showRecords('rybak'), 500);
     }
 
     function update() {
